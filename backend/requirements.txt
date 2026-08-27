@@ -1,0 +1,7 @@
+# Solo capa de red y validación de forma. NADA de álgebra lineal.
+fastapi>=0.141,<1.0
+uvicorn[standard]>=0.52,<1.0
+pydantic>=2.13,<3.0
+
+# Solo para pruebas de la API (no lo necesita el núcleo).
+httpx>=0.28,<1.0

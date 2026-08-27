@@ -6,11 +6,11 @@ import {
   ErrorDeServidor,
 } from "./lib/api.js";
 import { CASOS, clonarCaso } from "./lib/casos.js";
-import { ESTILO_CLASIFICACION } from "./lib/formato.js";
 import Boton from "./components/ui/Boton.jsx";
 import Panel from "./components/ui/Panel.jsx";
 import ConfiguracionSistema from "./components/ConfiguracionSistema.jsx";
 import MatrizAumentada from "./components/MatrizAumentada.jsx";
+import PanelResultados from "./components/PanelResultados.jsx";
 
 // Límites de tamaño de la rejilla (deben coincidir con los del backend).
 const DIMENSION_MINIMA = 1;
@@ -39,6 +39,12 @@ export default function App() {
 
   const { m, n, coeficientes, terminos } = config;
 
+  // Cualquier cambio en el sistema invalida el resultado mostrado.
+  function limpiarSalida() {
+    setResultado(null);
+    setError(null);
+  }
+
   // --- Cambios de dimensiones: se conservan los valores que sigan cabiendo ---
   function redimensionar(filasNuevas, columnasNuevas) {
     setConfig((previo) => ({
@@ -55,7 +61,7 @@ export default function App() {
         (_, i) => previo.terminos[i] ?? ""
       ),
     }));
-    setError(null);
+    limpiarSalida();
   }
 
   // --- Edición de celdas: se guarda el texto tal cual, sin interpretarlo ---
@@ -66,6 +72,7 @@ export default function App() {
         i === fila ? f.map((v, j) => (j === columna ? valor : v)) : f
       ),
     }));
+    limpiarSalida();
   }
 
   function cambiarTermino(fila, valor) {
@@ -73,6 +80,7 @@ export default function App() {
       ...previo,
       terminos: previo.terminos.map((v, i) => (i === fila ? valor : v)),
     }));
+    limpiarSalida();
   }
 
   function limpiar() {
@@ -81,8 +89,7 @@ export default function App() {
       coeficientes: matrizVacia(previo.m, previo.n),
       terminos: filaVacia(previo.m),
     }));
-    setResultado(null);
-    setError(null);
+    limpiarSalida();
   }
 
   function cargarCaso(caso) {
@@ -94,8 +101,7 @@ export default function App() {
       coeficientes: copia.matriz.map((fila) => fila.slice(0, -1)),
       terminos: copia.matriz.map((fila) => fila.at(-1)),
     });
-    setResultado(null);
-    setError(null);
+    limpiarSalida();
   }
 
   // --- Envío al backend (aquí NO se calcula nada) ---
@@ -196,7 +202,7 @@ export default function App() {
               celdaError={celdaError}
             />
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Boton onClick={resolver} disabled={cargando}>
                 {cargando ? "Resolviendo…" : "Resolver sistema"}
               </Boton>
@@ -207,17 +213,18 @@ export default function App() {
           </div>
         </Panel>
 
-        <Resultado cargando={cargando} error={error} resultado={resultado} />
+        <SalidaResultado
+          cargando={cargando}
+          error={error}
+          resultado={resultado}
+        />
       </main>
     </div>
   );
 }
 
-// Resumen provisional del resultado. Los cuatro paneles completos
-// (Procedimiento, Clasificación, Solución, Verificación) se construyen en la
-// Fase 5; aquí solo se comprueba que la comunicación de extremo a extremo
-// funciona.
-function Resultado({ cargando, error, resultado }) {
+// Decide qué mostrar bajo el panel del sistema: cargando, error o resultados.
+function SalidaResultado({ cargando, error, resultado }) {
   if (cargando) {
     return (
       <Panel titulo="Resultado">
@@ -226,6 +233,7 @@ function Resultado({ cargando, error, resultado }) {
     );
   }
 
+  // Error de servidor u otro no asociado a una celda concreta.
   if (error && !(error instanceof ErrorDeCalculo && error.fila)) {
     const titulo =
       error instanceof ErrorDeServidor
@@ -241,6 +249,7 @@ function Resultado({ cargando, error, resultado }) {
     );
   }
 
+  // Error de celda concreta: el detalle ya se muestra junto a la matriz.
   if (error) {
     return (
       <Panel titulo="Resultado">
@@ -253,58 +262,5 @@ function Resultado({ cargando, error, resultado }) {
 
   if (!resultado) return null;
 
-  const estilo =
-    ESTILO_CLASIFICACION[resultado.clasificacion.tipo] ??
-    ESTILO_CLASIFICACION.determinado;
-  const verificacionesCorrectas = resultado.verificacion.filter(
-    (comprobacion) => comprobacion.coincide
-  ).length;
-
-  return (
-    <Panel
-      titulo="Resultado"
-      descripcion="Resumen provisional. Los paneles Procedimiento / Clasificación / Solución / Verificación llegan en la Fase 5."
-    >
-      <p
-        className="font-display text-xl font-semibold"
-        style={{ color: `var(--${estilo.color})` }}
-      >
-        {estilo.icono} {resultado.clasificacion.titulo}
-      </p>
-      <p className="mt-2 text-sm text-grafito">
-        {resultado.clasificacion.explicacion}
-      </p>
-
-      <dl className="mt-4 grid grid-cols-3 gap-4 font-mono text-sm nums-tabulares">
-        <div>
-          <dt className="text-grafito">rango(A)</dt>
-          <dd className="text-lg">{resultado.rango_A}</dd>
-        </div>
-        <div>
-          <dt className="text-grafito">rango(A|b)</dt>
-          <dd className="text-lg">{resultado.rango_Ab}</dd>
-        </div>
-        <div>
-          <dt className="text-grafito">pasos</dt>
-          <dd className="text-lg">{resultado.pasos.length}</dd>
-        </div>
-      </dl>
-
-      {resultado.verificacion.length > 0 && (
-        <p className="mt-3 text-sm text-grafito">
-          Verificación: {verificacionesCorrectas}/
-          {resultado.verificacion.length} ecuaciones correctas
-        </p>
-      )}
-
-      <details className="mt-4">
-        <summary className="cursor-pointer text-xs text-grafito">
-          Ver respuesta JSON completa del backend
-        </summary>
-        <pre className="mt-2 max-h-80 overflow-auto rounded-lg bg-papel p-3 text-xs">
-          {JSON.stringify(resultado, null, 2)}
-        </pre>
-      </details>
-    </Panel>
-  );
+  return <PanelResultados resultado={resultado} />;
 }

@@ -41,22 +41,45 @@ export function textoDecimal(numero) {
   return texto.length > recortado.length ? `${recortado}…` : recortado;
 }
 
-/** Estilo semántico de cada tipo de clasificación (color = token de Tailwind). */
+/** Signo de un número serializado, leyendo su texto (no se opera). */
+export function signoDe(numero) {
+  return numero.fraccion.startsWith("-") ? "−" : "+";
+}
+
+/** Magnitud (valor absoluto) como texto: quita el "-" inicial si lo hay. */
+export function magnitudDe(numero) {
+  return numero.fraccion.startsWith("-")
+    ? numero.fraccion.slice(1)
+    : numero.fraccion;
+}
+
+/** ¿El número vale 1 o −1? (para omitir el coeficiente al escribir "1·x"). */
+export function esUnidad(numero) {
+  return numero.fraccion === "1" || numero.fraccion === "-1";
+}
+
+/** Estilo semántico de cada tipo de clasificación. */
 export const ESTILO_CLASIFICACION = {
   determinado: {
     etiqueta: "Solución única",
     color: "determinado",
     icono: "◇",
+    clasesTarjeta: "border-determinado bg-determinado/5",
+    clasesTexto: "text-determinado",
   },
   indeterminado: {
     etiqueta: "Infinitas soluciones",
     color: "indeterminado",
     icono: "∞",
+    clasesTarjeta: "border-indeterminado bg-indeterminado/5",
+    clasesTexto: "text-indeterminado",
   },
   inconsistente: {
     etiqueta: "Sin solución",
     color: "inconsistente",
     icono: "∅",
+    clasesTarjeta: "border-inconsistente bg-inconsistente/5",
+    clasesTexto: "text-inconsistente",
   },
 };
 

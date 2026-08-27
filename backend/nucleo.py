@@ -235,8 +235,13 @@ def _registrar_eliminacion(
     factor: Fraction,
 ) -> Dict:
     """Construye el registro de un paso de tipo Fₖ → Fₖ − c·Fᵢ."""
-    # Si el factor es positivo se resta; si es negativo, restar un negativo suma.
-    signo = "-" if factor > 0 else "+"
+    # Restar un factor negativo equivale a sumar; el signo de la notación y el
+    # verbo de la descripción se ajustan para que concuerden.
+    if factor > 0:
+        signo, verbo, veces = "-", "resta", factor
+    else:
+        signo, verbo, veces = "+", "suma", -factor
+    unidad = "vez" if veces == 1 else "veces"
     return {
         "tipo": "eliminacion",
         "notacion": (
@@ -244,7 +249,7 @@ def _registrar_eliminacion(
             f"{_factor_por_fila(factor, fila_pivote)}"
         ),
         "descripcion": (
-            f"Se resta {_formatear_fraccion(factor)} veces la fila pivote "
+            f"Se {verbo} {_formatear_fraccion(veces)} {unidad} la fila pivote "
             f"{fila_pivote + 1} a la fila {fila + 1} para anular su elemento "
             f"en la columna {columna + 1}."
         ),

@@ -29,16 +29,15 @@ function ValorVariable({ indice, valor }) {
   );
 }
 
-/** Un término " ± c·xⱼ" de una expresión paramétrica. */
-function TerminoLibre({ coeficiente, indiceLibre }) {
-  return (
-    <span>
-      {" "}
-      {signoDe(coeficiente)}{" "}
-      {esUnidad(coeficiente) ? "" : `${magnitudDe(coeficiente)}·`}
-      {nombreVariable(indiceLibre)}
-    </span>
-  );
+/** Un término de una expresión paramétrica: "c·xⱼ", "+ c·xⱼ" o "− c·xⱼ". */
+function TerminoLibre({ coeficiente, indiceLibre, primero }) {
+  const negativo = signoDe(coeficiente) === "−";
+  const cuerpo =
+    (esUnidad(coeficiente) ? "" : `${magnitudDe(coeficiente)}·`) +
+    nombreVariable(indiceLibre);
+  // El primer término no lleva "+" delante; sí lleva "−" si es negativo.
+  if (primero) return <span>{negativo ? `−${cuerpo}` : cuerpo}</span>;
+  return <span> {negativo ? "−" : "+"} {cuerpo}</span>;
 }
 
 export default function PanelSolucion({ solucion }) {
@@ -70,25 +69,32 @@ export default function PanelSolucion({ solucion }) {
         </p>
 
         <ul className="space-y-2 font-mono text-base nums-tabulares">
-          {solucion.expresiones.map((expresion) => (
-            <li key={expresion.variable}>
-              <span className="text-pivote">
-                {nombreVariable(expresion.variable)}
-              </span>{" "}
-              = {textoFraccion(expresion.constante)}
-              {expresion.terminos_libres.map((termino) => (
-                <TerminoLibre
-                  key={termino.variable}
-                  coeficiente={termino.coeficiente}
-                  indiceLibre={termino.variable}
-                />
-              ))}
-            </li>
-          ))}
+          {solucion.expresiones.map((expresion) => {
+            // Se omite la constante 0 cuando hay términos con variables libres.
+            const constanteCero = expresion.constante.fraccion === "0";
+            const ocultarConstante =
+              constanteCero && expresion.terminos_libres.length > 0;
+            return (
+              <li key={expresion.variable}>
+                <span className="text-pivote">
+                  {nombreVariable(expresion.variable)}
+                </span>{" "}
+                ={" "}
+                {!ocultarConstante && textoFraccion(expresion.constante)}
+                {expresion.terminos_libres.map((termino, posicion) => (
+                  <TerminoLibre
+                    key={termino.variable}
+                    coeficiente={termino.coeficiente}
+                    indiceLibre={termino.variable}
+                    primero={ocultarConstante && posicion === 0}
+                  />
+                ))}
+              </li>
+            );
+          })}
           {solucion.variables_libres.map((indiceLibre) => (
             <li key={indiceLibre} className="text-grafito">
-              {nombreVariable(indiceLibre)} = {nombreVariable(indiceLibre)}{" "}
-              (libre)
+              {nombreVariable(indiceLibre)} — variable libre
             </li>
           ))}
         </ul>

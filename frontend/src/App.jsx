@@ -135,21 +135,21 @@ export default function App() {
   return (
     <div className="min-h-screen bg-papel pb-16">
       <header className="border-b border-[var(--borde)] bg-superficie">
-        <div className="mx-auto max-w-5xl px-6 py-8">
+        <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-grafito">
             Programa 1 · Álgebra Lineal
           </p>
-          <h1 className="mt-2 text-3xl font-bold">
+          <h1 className="mt-2 text-2xl font-bold sm:text-3xl">
             Calculadora de sistemas <span className="text-pivote">Ax = b</span>
           </h1>
-          <p className="mt-2 max-w-2xl text-grafito">
+          <p className="mt-2 max-w-2xl text-sm text-grafito sm:text-base">
             Eliminación por filas (Gauss-Jordan) con aritmética exacta. Todo el
             cálculo ocurre en el backend de Python.
           </p>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl space-y-6 px-6 py-8">
+      <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6">
         {servidorActivo === false && (
           <div className="rounded-[var(--radio)] border border-inconsistente/40 bg-inconsistente/5 p-4 text-sm">
             <p className="font-semibold text-inconsistente">

@@ -55,6 +55,41 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Movimiento (contenido y breve). Todo se desactiva con prefers-reduced-motion
+   gracias a la regla de más abajo.
+--------------------------------------------------------------------------- */
+@keyframes aparecer-paso {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Resalte breve de una celda que acaba de cambiar en un paso. */
+@keyframes resaltar-celda {
+  from {
+    background-color: rgba(109, 59, 235, 0.4);
+  }
+  to {
+    background-color: rgba(109, 59, 235, 0.14);
+  }
+}
+
+/* La escalera de pivotes se "dibuja" al aparecer. */
+@keyframes dibujar-escalera {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 /* El movimiento es opcional: se desactiva si el sistema lo pide. */
 @media (prefers-reduced-motion: reduce) {
   *,

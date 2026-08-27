@@ -1,12 +1,20 @@
 // Línea de tiempo vertical de la eliminación: un bloque por operación
-// elemental, con su notación destacada y la matriz resultante debajo.
+// elemental, con su notación destacada y la matriz resultante debajo. La
+// escalera de pivotes se redibuja conforme avanzan los pasos.
 
 import { ETIQUETA_PASO } from "../lib/formato.js";
 import MatrizEstatica, { celdasCambiadas } from "./MatrizEstatica.jsx";
 
+// Pivotes ya fijados hasta un paso: los de columna ≤ la columna que trabaja el
+// paso (la eliminación avanza siempre de izquierda a derecha).
+function pivotesHastaColumna(columnasPivote, columnaActual) {
+  return columnasPivote.filter((columna) => columna <= columnaActual);
+}
+
 export default function PanelProcedimiento({
   matrizInicial,
   pasos,
+  matrizReducida,
   columnasPivote,
 }) {
   if (pasos.length === 0) {
@@ -17,7 +25,10 @@ export default function PanelProcedimiento({
           ninguna operación por fila.
         </p>
         <div className="mt-3 overflow-x-auto">
-          <MatrizEstatica matriz={matrizInicial} columnasPivote={columnasPivote} />
+          <MatrizEstatica
+            matriz={matrizReducida}
+            columnasPivote={columnasPivote}
+          />
         </div>
       </div>
     );
@@ -43,6 +54,10 @@ export default function PanelProcedimiento({
           <li
             key={paso.numero}
             className="relative border-l-2 border-[var(--borde)] pl-6"
+            style={{
+              animation: "aparecer-paso 0.35s ease both",
+              animationDelay: `${indice * 35}ms`,
+            }}
           >
             <span
               className="absolute -left-[9px] top-1 h-4 w-4 rounded-full border-2 border-pivote bg-superficie"
@@ -67,12 +82,31 @@ export default function PanelProcedimiento({
               <MatrizEstatica
                 matriz={paso.matriz}
                 celdasResaltadas={cambios}
-                columnasPivote={columnasPivote}
+                columnasPivote={pivotesHastaColumna(
+                  columnasPivote,
+                  paso.columna_pivote
+                )}
               />
             </div>
           </li>
         );
       })}
+
+      <li className="relative border-l-2 border-pivote pl-6">
+        <span
+          className="absolute -left-[9px] top-1 h-4 w-4 rounded-full border-2 border-pivote bg-pivote"
+          aria-hidden="true"
+        />
+        <p className="font-display text-sm font-semibold text-pivote">
+          Forma escalonada reducida por filas
+        </p>
+        <div className="mt-2 overflow-x-auto">
+          <MatrizEstatica
+            matriz={matrizReducida}
+            columnasPivote={columnasPivote}
+          />
+        </div>
+      </li>
     </ol>
   );
 }

@@ -32,6 +32,7 @@ export default function PanelResultados({ resultado }) {
           <PanelProcedimiento
             matrizInicial={resultado.matriz_inicial}
             pasos={resultado.pasos}
+            matrizReducida={resultado.matriz_reducida}
             columnasPivote={resultado.columnas_pivote}
           />
         )}

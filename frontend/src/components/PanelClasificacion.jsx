@@ -40,7 +40,7 @@ export default function PanelClasificacion({
       <dl className="mt-4 grid grid-cols-3 gap-3 text-center">
         <Metrica etiqueta="rango(A)" valor={rangoA} />
         <Metrica etiqueta="rango(A|b)" valor={rangoAb} />
-        <Metrica etiqueta="n (incógnitas)" valor={n} />
+        <Metrica etiqueta="n" valor={n} />
       </dl>
 
       {clasificacion.grados_de_libertad > 0 && (

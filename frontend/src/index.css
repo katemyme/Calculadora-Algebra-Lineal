@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+   Tokens de diseño
+   Mismos valores que tailwind.config.js; aquí como variables CSS para poder
+   usarlos en SVG (escalera de pivotes) y estilos en línea.
+--------------------------------------------------------------------------- */
+:root {
+  --papel: #eef1f6;
+  --superficie: #ffffff;
+  --tinta: #0f1b2d;
+  --grafito: #5a6884;
+  --pivote: #6d3beb;
+  --determinado: #0e9f6e;
+  --indeterminado: #c77700;
+  --inconsistente: #d63c4a;
+
+  --borde: #d7dded;
+  --radio: 0.75rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-papel text-tinta;
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    @apply text-tinta;
+  }
+
+  /* Foco de teclado siempre visible, en el color de acento. */
+  :focus-visible {
+    outline: 2px solid var(--pivote);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /* Obligatoria en toda matriz: alinea columnas sin importar los dígitos. */
+  .nums-tabulares {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+}
+
+/* El movimiento es opcional: se desactiva si el sistema lo pide. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

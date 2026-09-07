@@ -12,11 +12,9 @@ import ConfiguracionSistema from "./components/ConfiguracionSistema.jsx";
 import MatrizAumentada from "./components/MatrizAumentada.jsx";
 import PanelResultados from "./components/PanelResultados.jsx";
 
-// Límites de tamaño de la rejilla (deben coincidir con los del backend).
 const DIMENSION_MINIMA = 1;
 const DIMENSION_MAXIMA = 8;
 
-// Constructores de rejilla vacía (solo estructura de texto, sin cálculo).
 const filaVacia = (columnas) => Array.from({ length: columnas }, () => "");
 const matrizVacia = (filas, columnas) =>
   Array.from({ length: filas }, () => filaVacia(columnas));
@@ -30,7 +28,9 @@ export default function App() {
   });
   const [resultado, setResultado] = useState(null);
   const [error, setError] = useState(null);
+  const [errorParametros, setErrorParametros] = useState(null);
   const [cargando, setCargando] = useState(false);
+  const [evaluandoParametros, setEvaluandoParametros] = useState(false);
   const [servidorActivo, setServidorActivo] = useState(null);
 
   useEffect(() => {
@@ -39,13 +39,12 @@ export default function App() {
 
   const { m, n, coeficientes, terminos } = config;
 
-  // Cualquier cambio en el sistema invalida el resultado mostrado.
   function limpiarSalida() {
     setResultado(null);
     setError(null);
+    setErrorParametros(null);
   }
 
-  // --- Cambios de dimensiones: se conservan los valores que sigan cabiendo ---
   function redimensionar(filasNuevas, columnasNuevas) {
     setConfig((previo) => ({
       m: filasNuevas,
@@ -64,7 +63,6 @@ export default function App() {
     limpiarSalida();
   }
 
-  // --- Edición de celdas: se guarda el texto tal cual, sin interpretarlo ---
   function cambiarCoeficiente(fila, columna, valor) {
     setConfig((previo) => ({
       ...previo,
@@ -97,22 +95,25 @@ export default function App() {
     setConfig({
       m: copia.m,
       n: copia.n,
-      // Se separan coeficientes y término independiente (recorte de arrays).
       coeficientes: copia.matriz.map((fila) => fila.slice(0, -1)),
       terminos: copia.matriz.map((fila) => fila.at(-1)),
     });
     limpiarSalida();
   }
 
-  // --- Envío al backend (aquí NO se calcula nada) ---
+  function matrizActual() {
+    return coeficientes.map((fila, i) => [...fila, terminos[i]]);
+  }
+
+  // Primera resolución: determina RREF, pivotes, clasificación y tipo de solución.
   async function resolver() {
     setCargando(true);
     setError(null);
+    setErrorParametros(null);
     setResultado(null);
-    // Concatenación de cada fila con su término independiente (solo texto).
-    const matriz = coeficientes.map((fila, i) => [...fila, terminos[i]]);
+
     try {
-      const datos = await resolverSistema(m, n, matriz);
+      const datos = await resolverSistema(m, n, matrizActual(), null);
       setResultado(datos);
       setServidorActivo(true);
     } catch (excepcion) {
@@ -123,48 +124,78 @@ export default function App() {
     }
   }
 
+  // Solo se ejecuta cuando hay variables libres y el usuario elige t, t1, ...
+  async function evaluarParametros(valoresParametros) {
+    setEvaluandoParametros(true);
+    setErrorParametros(null);
+
+    try {
+      const datos = await resolverSistema(
+        m,
+        n,
+        matrizActual(),
+        valoresParametros
+      );
+      setResultado(datos);
+      setServidorActivo(true);
+    } catch (excepcion) {
+      setErrorParametros(excepcion);
+      if (excepcion instanceof ErrorDeServidor) setServidorActivo(false);
+    } finally {
+      setEvaluandoParametros(false);
+    }
+  }
+
   const celdaError =
     error instanceof ErrorDeCalculo && error.fila
       ? { fila: error.fila, columna: error.columna ?? null }
       : null;
 
-  // Columnas de [A | b]: se cuenta la longitud de una fila ya concatenada
-  // con su término independiente (sin operar: solo concatenar y medir).
   const columnasAumentada = [...coeficientes[0], terminos[0]].length;
 
   return (
-    <div className="min-h-screen bg-papel pb-16">
-      <header className="border-b border-[var(--borde)] bg-superficie">
-        <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-grafito">
-            Programa 1 · Álgebra Lineal
-          </p>
-          <h1 className="mt-2 text-2xl font-bold sm:text-3xl">
-            Calculadora de sistemas <span className="text-pivote">Ax = b</span>
+    <div className="math-shell min-h-screen pb-16">
+      <header className="math-hero relative overflow-hidden border-b border-white/60">
+        <div className="math-symbol math-symbol-a" aria-hidden="true">Σ</div>
+        <div className="math-symbol math-symbol-b" aria-hidden="true">π</div>
+        <div className="math-symbol math-symbol-c" aria-hidden="true">λ</div>
+        <div className="math-symbol math-symbol-d" aria-hidden="true">[A|b]</div>
+        <div className="math-symbol math-symbol-e" aria-hidden="true">RREF</div>
+
+        <div className="relative mx-auto max-w-6xl px-4 py-9 sm:px-6 sm:py-12">
+          <div className="math-kicker">Álgebra Lineal</div>
+
+          <h1 className="math-title mt-3 text-3xl font-extrabold tracking-tight sm:text-5xl">
+            Calculadora de <span>Gauss-Jordan</span>
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-grafito sm:text-base">
-            Eliminación por filas (Gauss-Jordan) con aritmética exacta. Todo el
-            cálculo ocurre en el backend de Python.
+
+          <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
+            Reduce la matriz aumentada a su forma escalonada reducida, identifica
+            columnas pivote, variables básicas y libres, y construye la solución
+            final del sistema.
           </p>
+
+          
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6">
+      <main className="relative mx-auto max-w-6xl space-y-7 px-4 py-8 sm:px-6">
         {servidorActivo === false && (
-          <div className="rounded-[var(--radio)] border border-inconsistente/40 bg-inconsistente/5 p-4 text-sm">
+          <div className="math-alert rounded-[var(--radio)] border border-inconsistente/30 bg-white/90 p-4 text-sm">
             <p className="font-semibold text-inconsistente">
               El servidor no está disponible
             </p>
             <p className="mt-1 text-tinta">
-              Levanta el backend: en la carpeta <code>backend/</code> ejecuta{" "}
-              <code>uvicorn api:app --reload</code> (puerto 8000).
+              En la carpeta <code>backend/</code> ejecuta{" "}
+              <code>python -m uvicorn api:app --reload</code>.
             </p>
           </div>
         )}
 
         <Panel
-          titulo="Sistema"
-          descripcion="Introduce las dimensiones y los coeficientes de A | b."
+          className="math-panel overflow-hidden"
+          titulo="Sistema de ecuaciones"
+          descripcion="Introduce las dimensiones y los coeficientes de la matriz aumentada A | b."
           acciones={
             <>
               {CASOS.map((caso) => (
@@ -184,6 +215,12 @@ export default function App() {
           }
         >
           <div className="space-y-6">
+            <div className="math-formula-strip" aria-hidden="true">
+              <span>Fᵢ ↔ Fⱼ</span>
+              <span>Fᵢ → kFᵢ</span>
+              <span>Fᵢ → Fᵢ + kFⱼ</span>
+            </div>
+
             <ConfiguracionSistema
               m={m}
               n={n}
@@ -217,31 +254,43 @@ export default function App() {
           cargando={cargando}
           error={error}
           resultado={resultado}
+          onEvaluarParametros={evaluarParametros}
+          evaluandoParametros={evaluandoParametros}
+          errorParametros={errorParametros}
         />
       </main>
     </div>
   );
 }
 
-// Decide qué mostrar bajo el panel del sistema: cargando, error o resultados.
-function SalidaResultado({ cargando, error, resultado }) {
+function SalidaResultado({
+  cargando,
+  error,
+  resultado,
+  onEvaluarParametros,
+  evaluandoParametros,
+  errorParametros,
+}) {
   if (cargando) {
     return (
-      <Panel titulo="Resultado">
-        <p className="text-grafito">Resolviendo el sistema…</p>
+      <Panel className="math-panel" titulo="Resultado">
+        <div className="flex items-center gap-3 text-grafito">
+          <span className="math-loader" aria-hidden="true" />
+          Resolviendo el sistema…
+        </div>
       </Panel>
     );
   }
 
-  // Error de servidor u otro no asociado a una celda concreta.
   if (error && !(error instanceof ErrorDeCalculo && error.fila)) {
     const titulo =
       error instanceof ErrorDeServidor
         ? "Servidor no disponible"
         : "No se pudo resolver el sistema";
+
     return (
-      <Panel titulo="Resultado">
-        <div className="rounded-lg border border-inconsistente/40 bg-inconsistente/5 p-4 text-sm">
+      <Panel className="math-panel" titulo="Resultado">
+        <div className="rounded-xl border border-inconsistente/30 bg-inconsistente/5 p-4 text-sm">
           <p className="font-semibold text-inconsistente">{titulo}</p>
           <p className="mt-1 text-tinta">{error.message}</p>
         </div>
@@ -249,10 +298,9 @@ function SalidaResultado({ cargando, error, resultado }) {
     );
   }
 
-  // Error de celda concreta: el detalle ya se muestra junto a la matriz.
   if (error) {
     return (
-      <Panel titulo="Resultado">
+      <Panel className="math-panel" titulo="Resultado">
         <p className="text-sm text-inconsistente">
           Corrige la celda resaltada en la matriz: {error.message}
         </p>
@@ -262,5 +310,12 @@ function SalidaResultado({ cargando, error, resultado }) {
 
   if (!resultado) return null;
 
-  return <PanelResultados resultado={resultado} />;
+  return (
+    <PanelResultados
+      resultado={resultado}
+      onEvaluarParametros={onEvaluarParametros}
+      evaluando={evaluandoParametros}
+      errorParametros={errorParametros}
+    />
+  );
 }

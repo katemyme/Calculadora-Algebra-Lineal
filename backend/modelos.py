@@ -1,6 +1,6 @@
 """Esquemas Pydantic de entrada y salida de la API."""
 
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -41,5 +41,48 @@ class NumeroSerializado(BaseModel):
 
 class RespuestaError(BaseModel):
     detalle: str
+    campo: Optional[str] = None
     fila: Optional[int] = None
     columna: Optional[int] = None
+
+
+# ---------------------------------------------------------------------------
+# Programa 3
+# ---------------------------------------------------------------------------
+class PeticionVectores(BaseModel):
+    """POST /api/p3/vectores. operacion: suma | resta | escalar."""
+
+    operacion: Literal["suma", "resta", "escalar"]
+    u: List[str] = Field(default_factory=list)
+    v: List[str]
+    c: Optional[str] = None
+
+
+class PeticionMatrices(BaseModel):
+    """POST /api/p3/matrices. operacion: suma | resta | escalar."""
+
+    operacion: Literal["suma", "resta", "escalar"]
+    A: List[List[str]]
+    B: List[List[str]] = Field(default_factory=list)
+    c: Optional[str] = None
+
+
+class PeticionProducto(BaseModel):
+    """POST /api/p3/producto."""
+
+    A: List[List[str]]
+    B: List[List[str]]
+
+
+class PeticionCombinacion(BaseModel):
+    """POST /api/p3/combinacion. Cada vector es una lista de n componentes."""
+
+    vectores: List[List[str]]
+    b: List[str]
+
+
+class PeticionEcuacion(BaseModel):
+    """POST /api/p3/ecuacion. Resuelve A·x = b."""
+
+    A: List[List[str]]
+    b: List[str]

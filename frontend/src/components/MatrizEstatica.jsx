@@ -11,7 +11,9 @@
 import { textoFraccion } from "../lib/formato.js";
 
 // Geometría del dibujo (en píxeles).
-const ANCHO_CELDA = 54;
+const ANCHO_CELDA_MINIMO = 54;
+const ANCHO_POR_CARACTER = 8.6; // aprox. para IBM Plex Mono a 14px
+const RELLENO_CELDA = 18;
 const ALTO_CELDA = 38;
 const SEPARACION_AUMENTADA = 18; // hueco antes de la columna b
 const RELLENO_X = 12;
@@ -37,15 +39,30 @@ export function celdasCambiadas(matrizPrevia, matrizActual) {
 
 export default function MatrizEstatica({
   matriz,
+  aumentada = true, // false: matriz simple, sin barra de la columna b
   celdasResaltadas = new Set(),
   columnasPivote = [],
+  filaDestacada = null, // Programa 3: fila i de A en el producto A·B
+  columnaDestacada = null, // Programa 3: columna j de B en el producto A·B
+  celdaSeleccionada = null, // { fila, columna } base 0
+  onSeleccionarCelda = null,
 }) {
   const filas = matriz.length;
   const columnas = matriz[0].length;
-  const columnasCoef = columnas - 1; // la última columna es b
+  const columnasCoef = aumentada ? columnas - 1 : columnas;
 
-  const anchoContenido =
-    columnasCoef * ANCHO_CELDA + SEPARACION_AUMENTADA + ANCHO_CELDA;
+  // Ancho de celda según el texto más largo (geometría de dibujo, no datos).
+  const textoMasLargo = Math.max(
+    ...matriz.flat().map((valor) => textoFraccion(valor).length)
+  );
+  const ANCHO_CELDA = Math.max(
+    ANCHO_CELDA_MINIMO,
+    Math.ceil(textoMasLargo * ANCHO_POR_CARACTER + RELLENO_CELDA)
+  );
+
+  const anchoContenido = aumentada
+    ? columnasCoef * ANCHO_CELDA + SEPARACION_AUMENTADA + ANCHO_CELDA
+    : columnas * ANCHO_CELDA;
   const altoContenido = filas * ALTO_CELDA;
   const alturaCorchete = altoContenido + RELLENO_Y * 2;
 
@@ -55,6 +72,17 @@ export default function MatrizEstatica({
     columna < columnasCoef
       ? columna * ANCHO_CELDA
       : columnasCoef * ANCHO_CELDA + SEPARACION_AUMENTADA;
+
+  const propsCelda = (indiceFila, columna) => ({
+    resaltada: celdasResaltadas.has(`${indiceFila},${columna}`),
+    destacada: indiceFila === filaDestacada || columna === columnaDestacada,
+    seleccionada:
+      celdaSeleccionada?.fila === indiceFila &&
+      celdaSeleccionada?.columna === columna,
+    onClick: onSeleccionarCelda
+      ? () => onSeleccionarCelda({ fila: indiceFila, columna })
+      : null,
+  });
 
   // Camino de la escalera: desde la esquina superior izquierda, baja un peldaño
   // por cada pivote (pivote i está en la fila i, columna columnasPivote[i]).
@@ -76,9 +104,10 @@ export default function MatrizEstatica({
     return camino;
   };
 
-  const plantillaColumnas =
-    `repeat(${columnasCoef}, ${ANCHO_CELDA}px) ` +
-    `${SEPARACION_AUMENTADA}px ${ANCHO_CELDA}px`;
+  const plantillaColumnas = aumentada
+    ? `repeat(${columnasCoef}, ${ANCHO_CELDA}px) ` +
+      `${SEPARACION_AUMENTADA}px ${ANCHO_CELDA}px`
+    : `repeat(${columnas}, ${ANCHO_CELDA}px)`;
 
   return (
     <div className="inline-flex select-none items-stretch font-mono text-sm nums-tabulares">
@@ -115,15 +144,19 @@ export default function MatrizEstatica({
                 <Celda
                   key={columna}
                   valor={valor}
-                  resaltada={celdasResaltadas.has(`${indiceFila},${columna}`)}
                   esPivote={columnasPivote.includes(columna)}
+                  {...propsCelda(indiceFila, columna)}
                 />
               ))}
-              <div aria-hidden="true" />
-              <Celda
-                valor={fila[columnasCoef]}
-                resaltada={celdasResaltadas.has(`${indiceFila},${columnasCoef}`)}
-              />
+              {aumentada && (
+                <>
+                  <div aria-hidden="true" />
+                  <Celda
+                    valor={fila[columnasCoef]}
+                    {...propsCelda(indiceFila, columnasCoef)}
+                  />
+                </>
+              )}
             </div>
           ))}
         </div>
@@ -140,6 +173,7 @@ export default function MatrizEstatica({
           aria-hidden="true"
         >
           {/* Barra vertical de la matriz aumentada */}
+          {aumentada && (
           <line
             x1={xBordeColumna(columnasCoef) - SEPARACION_AUMENTADA / 2}
             y1="0"
@@ -150,6 +184,7 @@ export default function MatrizEstatica({
             strokeWidth="1"
             strokeDasharray="3 3"
           />
+          )}
 
           {columnasPivote.length > 0 && (
             <>
@@ -199,17 +234,34 @@ export default function MatrizEstatica({
   );
 }
 
-function Celda({ valor, resaltada, esPivote }) {
-  return (
-    <span
-      className={
-        "flex items-center justify-center rounded transition-colors " +
-        (resaltada
+function Celda({ valor, resaltada, esPivote, destacada, seleccionada, onClick }) {
+  const clases =
+    "flex items-center justify-center rounded transition-colors " +
+    (seleccionada
+      ? "bg-pivote font-semibold text-white shadow-md"
+      : destacada
+        ? "bg-[#2563eb]/10 font-semibold text-[#1d4ed8]"
+        : resaltada
           ? "bg-pivote/15 font-semibold text-pivote"
           : esPivote
             ? "text-tinta ring-1 ring-inset ring-pivote/25"
-            : "text-tinta")
-      }
+            : "text-tinta");
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`${clases} cursor-pointer hover:ring-2 hover:ring-pivote/40`}
+      >
+        {textoFraccion(valor)}
+      </button>
+    );
+  }
+
+  return (
+    <span
+      className={clases}
       style={resaltada ? { animation: "resaltar-celda 0.8s ease" } : undefined}
     >
       {textoFraccion(valor)}

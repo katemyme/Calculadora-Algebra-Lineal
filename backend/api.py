@@ -1,4 +1,4 @@
-"""API HTTP de la calculadora de Álgebra Lineal - Programa 2."""
+"""API HTTP de la calculadora de Álgebra Lineal - Programas 2 y 3."""
 
 import logging
 import traceback
@@ -8,9 +8,18 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from modelos import PeticionResolver, RespuestaError
+from modelos import (
+    PeticionCombinacion,
+    PeticionEcuacion,
+    PeticionMatrices,
+    PeticionProducto,
+    PeticionResolver,
+    PeticionVectores,
+    RespuestaError,
+)
 from nucleo import ErrorDeEntrada
 from programa2 import resolver_sistema
+import programa3_web as p3web
 from serializacion import serializar
 
 
@@ -23,12 +32,13 @@ logging.basicConfig(level=logging.INFO)
 registro = logging.getLogger("api")
 
 app = FastAPI(
-    title="Calculadora de Álgebra Lineal - Programa 2",
+    title="Calculadora de Álgebra Lineal - Programas 2 y 3",
     description=(
         "Resuelve sistemas por Gauss-Jordan, muestra la RREF, columnas pivote, "
-        "variables básicas/libres y soluciones general, parametrizada y vectorial."
+        "variables básicas/libres y soluciones general, parametrizada y vectorial. "
+        "Programa 3: operaciones en ℝⁿ, combinación lineal y ecuaciones matriciales."
     ),
-    version="2.0.0",
+    version="3.0.0",
 )
 
 app.add_middleware(
@@ -64,9 +74,45 @@ def resolver_endpoint(peticion: PeticionResolver) -> dict:
     return serializar(resultado)
 
 
+# ---------------------------------------------------------------------------
+# Programa 3 (el cálculo vive en "Programa 3_GrupoX.py")
+# ---------------------------------------------------------------------------
+@app.post("/api/p3/vectores", summary="u + v, u − v o c·v en ℝⁿ",
+          responses={422: {"model": RespuestaError}})
+def p3_vectores(peticion: PeticionVectores) -> dict:
+    return p3web.operar_vectores(peticion.operacion, peticion.u, peticion.v, peticion.c)
+
+
+@app.post("/api/p3/matrices", summary="A + B, A − B o c·A",
+          responses={422: {"model": RespuestaError}})
+def p3_matrices(peticion: PeticionMatrices) -> dict:
+    return p3web.operar_matrices(peticion.operacion, peticion.A, peticion.B, peticion.c)
+
+
+@app.post("/api/p3/producto", summary="Producto matricial A·B",
+          responses={422: {"model": RespuestaError}})
+def p3_producto(peticion: PeticionProducto) -> dict:
+    return p3web.multiplicar_matrices(peticion.A, peticion.B)
+
+
+@app.post("/api/p3/combinacion", summary="¿b es combinación lineal de v₁…vₖ?",
+          responses={422: {"model": RespuestaError}})
+def p3_combinacion(peticion: PeticionCombinacion) -> dict:
+    return p3web.combinacion_lineal(peticion.vectores, peticion.b)
+
+
+@app.post("/api/p3/ecuacion", summary="Resuelve la ecuación matricial A·x = b",
+          responses={422: {"model": RespuestaError}})
+def p3_ecuacion(peticion: PeticionEcuacion) -> dict:
+    return p3web.resolver_ecuacion(peticion.A, peticion.b)
+
+
 @app.exception_handler(ErrorDeEntrada)
 async def manejar_error_de_entrada(_: Request, exc: ErrorDeEntrada) -> JSONResponse:
     cuerpo: dict = {"detalle": exc.mensaje}
+    campo = getattr(exc, "campo", None)
+    if campo is not None:
+        cuerpo["campo"] = campo
     if exc.fila is not None:
         cuerpo["fila"] = exc.fila
     if exc.columna is not None:

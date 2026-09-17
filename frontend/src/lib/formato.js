@@ -14,9 +14,9 @@ export function subindice(numero) {
     .join("");
 }
 
-/** Nombre de la incógnita a partir de su índice base 0 (0 -> "x₁"). */
-export function nombreVariable(indiceBaseCero) {
-  return `x${subindice(indiceBaseCero + 1)}`;
+/** Nombre de la incógnita a partir de su índice base 0 (0 -> "x₁", o "c₁" con letra "c"). */
+export function nombreVariable(indiceBaseCero, letra = "x") {
+  return `${letra}${subindice(indiceBaseCero + 1)}`;
 }
 
 /**

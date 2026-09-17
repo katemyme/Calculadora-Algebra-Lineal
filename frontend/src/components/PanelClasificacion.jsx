@@ -41,6 +41,8 @@ export default function PanelClasificacion({
   columnasPivote,
   variablesBasicas,
   variablesLibres,
+  letra = "x",
+  etiquetaN = "incógnitas n",
 }) {
   const estilo =
     ESTILO_CLASIFICACION[clasificacion.tipo] ??
@@ -67,7 +69,7 @@ export default function PanelClasificacion({
       <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Metrica etiqueta="rango(A)" valor={rangoA} />
         <Metrica etiqueta="rango(A|b)" valor={rangoAb} />
-        <Metrica etiqueta="incógnitas n" valor={n} />
+        <Metrica etiqueta={etiquetaN} valor={n} />
       </dl>
 
       <div className="grid gap-3 lg:grid-cols-3">
@@ -81,13 +83,13 @@ export default function PanelClasificacion({
           titulo="Variables básicas"
           simbolo="B"
           valores={variablesBasicas}
-          transformar={nombreVariable}
+          transformar={(indice) => nombreVariable(indice, letra)}
         />
         <ListaVariables
           titulo="Variables libres"
           simbolo="L"
           valores={variablesLibres}
-          transformar={nombreVariable}
+          transformar={(indice) => nombreVariable(indice, letra)}
         />
       </div>
 

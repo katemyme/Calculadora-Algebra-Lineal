@@ -529,6 +529,157 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Programa 3
+--------------------------------------------------------------------------- */
+.p3-corchetes {
+  position: relative;
+  padding: 0.25rem 14px;
+}
+
+.p3-corchetes::before,
+.p3-corchetes::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 9px;
+  border: 2px solid rgba(90, 104, 132, 0.7);
+}
+
+.p3-corchetes::before {
+  left: 0;
+  border-right: none;
+}
+
+.p3-corchetes::after {
+  right: 0;
+  border-left: none;
+}
+
+.p3-selector {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+}
+
+.p3-selector-boton {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.95rem;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.85rem 1rem;
+  text-align: left;
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+.p3-selector-boton:hover {
+  transform: translateY(-2px);
+  border-color: rgba(109, 59, 235, 0.45);
+  box-shadow: 0 10px 26px rgba(30, 41, 59, 0.08);
+}
+
+.p3-selector-boton[aria-pressed="true"] {
+  border-color: transparent;
+  background: linear-gradient(135deg, #5b21b6, #6d3beb 45%, #2563eb);
+  color: white;
+  box-shadow: 0 14px 30px rgba(91, 33, 182, 0.25);
+}
+
+.p3-selector-simbolo {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--pivote);
+}
+
+.p3-selector-boton[aria-pressed="true"] .p3-selector-simbolo,
+.p3-selector-boton[aria-pressed="true"] .p3-selector-texto {
+  color: white;
+}
+
+.p3-selector-texto {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.p3-lienzo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  overflow-x: auto;
+  border-radius: 1rem;
+  border: 1px dashed rgba(109, 59, 235, 0.2);
+  background: linear-gradient(145deg, rgba(248, 250, 255, 0.9), rgba(245, 243, 255, 0.7));
+  padding: 1.1rem;
+}
+
+.p3-dim {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.p3-dim-ok {
+  background: rgba(14, 159, 110, 0.1);
+  color: var(--determinado);
+}
+
+.p3-dim-mal {
+  background: rgba(214, 60, 74, 0.1);
+  color: var(--inconsistente);
+}
+
+.p3-dim strong {
+  border-radius: 0.3rem;
+  padding: 0 0.2rem;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.p3-termino {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 0.55rem;
+  padding: 0.25rem 0.5rem;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+.p3-modo {
+  display: inline-flex;
+  gap: 0.25rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 0.25rem;
+  box-shadow: inset 0 0 0 1px rgba(109, 59, 235, 0.15);
+}
+
+.p3-modo button {
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--grafito);
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.p3-modo button[aria-pressed="true"] {
+  background: linear-gradient(90deg, #5b21b6, #2563eb);
+  color: white;
+}
+
+/* ---------------------------------------------------------------------------
    Animaciones ya usadas por el proyecto original
 --------------------------------------------------------------------------- */
 @keyframes aparecer-paso {

@@ -9,32 +9,23 @@ export class ErrorDeServidor extends Error {
 }
 
 export class ErrorDeCalculo extends Error {
-  constructor(mensaje, fila = null, columna = null) {
+  constructor(mensaje, fila = null, columna = null, campo = null) {
     super(mensaje);
     this.name = "ErrorDeCalculo";
     this.fila = fila;
     this.columna = columna;
+    this.campo = campo; // Programa 3: "A", "B", "u", "v", "b", "c" o "vectores"
   }
 }
 
-export async function resolverSistema(
-  m,
-  n,
-  matriz,
-  valoresParametros = null
-) {
+async function enviar(ruta, cuerpo) {
   let respuesta;
 
   try {
-    respuesta = await fetch(`${URL_BASE}/api/resolver`, {
+    respuesta = await fetch(`${URL_BASE}${ruta}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        m,
-        n,
-        matriz,
-        valores_parametros: valoresParametros,
-      }),
+      body: JSON.stringify(cuerpo),
     });
   } catch {
     throw new ErrorDeServidor(
@@ -50,7 +41,8 @@ export async function resolverSistema(
       throw new ErrorDeCalculo(
         datos.detalle ?? "Los datos introducidos no son válidos.",
         datos.fila ?? null,
-        datos.columna ?? null
+        datos.columna ?? null,
+        datos.campo ?? null
       );
     }
 
@@ -61,6 +53,25 @@ export async function resolverSistema(
 
   return datos;
 }
+
+export function resolverSistema(m, n, matriz, valoresParametros = null) {
+  return enviar("/api/resolver", {
+    m,
+    n,
+    matriz,
+    valores_parametros: valoresParametros,
+  });
+}
+
+// Programa 3: cada función envía el texto tal cual; el cálculo lo hace
+// "Programa 3_GrupoX.py" en el backend.
+export const programa3 = {
+  vectores: (cuerpo) => enviar("/api/p3/vectores", cuerpo),
+  matrices: (cuerpo) => enviar("/api/p3/matrices", cuerpo),
+  producto: (cuerpo) => enviar("/api/p3/producto", cuerpo),
+  combinacion: (cuerpo) => enviar("/api/p3/combinacion", cuerpo),
+  ecuacion: (cuerpo) => enviar("/api/p3/ecuacion", cuerpo),
+};
 
 export async function comprobarSalud() {
   try {

@@ -11,6 +11,7 @@ import Panel from "./components/ui/Panel.jsx";
 import ConfiguracionSistema from "./components/ConfiguracionSistema.jsx";
 import MatrizAumentada from "./components/MatrizAumentada.jsx";
 import PanelResultados from "./components/PanelResultados.jsx";
+import Programa3 from "./components/programa3/Programa3.jsx";
 
 const DIMENSION_MINIMA = 1;
 const DIMENSION_MAXIMA = 8;
@@ -19,7 +20,27 @@ const filaVacia = (columnas) => Array.from({ length: columnas }, () => "");
 const matrizVacia = (filas, columnas) =>
   Array.from({ length: filas }, () => filaVacia(columnas));
 
+const PROGRAMAS = {
+  p2: {
+    etiqueta: "Programa 2 · Gauss-Jordan",
+    resaltado: "Gauss-Jordan",
+    descripcion:
+      "Reduce la matriz aumentada a su forma escalonada reducida, identifica " +
+      "columnas pivote, variables básicas y libres, y construye la solución " +
+      "final del sistema.",
+  },
+  p3: {
+    etiqueta: "Programa 3 · ℝⁿ y matrices",
+    resaltado: "ℝⁿ y matrices",
+    descripcion:
+      "Opera vectores de ℝⁿ y matrices, decide si un vector es combinación " +
+      "lineal de otros y resuelve la ecuación matricial A·x = b, con cada paso " +
+      "y su verificación.",
+  },
+};
+
 export default function App() {
+  const [programa, setPrograma] = useState("p3");
   const [config, setConfig] = useState({
     m: 3,
     n: 3,
@@ -166,16 +187,25 @@ export default function App() {
           <div className="math-kicker">Álgebra Lineal</div>
 
           <h1 className="math-title mt-3 text-3xl font-extrabold tracking-tight sm:text-5xl">
-            Calculadora de <span>Gauss-Jordan</span>
+            Calculadora de <span>{PROGRAMAS[programa].resaltado}</span>
           </h1>
 
           <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-            Reduce la matriz aumentada a su forma escalonada reducida, identifica
-            columnas pivote, variables básicas y libres, y construye la solución
-            final del sistema.
+            {PROGRAMAS[programa].descripcion}
           </p>
 
-          
+          <div className="p3-modo mt-6" role="group" aria-label="Programa">
+            {Object.entries(PROGRAMAS).map(([id, datos]) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={programa === id}
+                onClick={() => setPrograma(id)}
+              >
+                {datos.etiqueta}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -192,6 +222,10 @@ export default function App() {
           </div>
         )}
 
+        {programa === "p3" && <Programa3 />}
+
+        {programa === "p2" && (
+        <>
         <Panel
           className="math-panel overflow-hidden"
           titulo="Sistema de ecuaciones"
@@ -258,6 +292,8 @@ export default function App() {
           evaluandoParametros={evaluandoParametros}
           errorParametros={errorParametros}
         />
+        </>
+        )}
       </main>
     </div>
   );

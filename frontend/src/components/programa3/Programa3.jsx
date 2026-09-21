@@ -1,11 +1,12 @@
-// Contenedor del Programa 3: operaciones en ℝⁿ, combinación lineal y
-// ecuaciones matriciales. Cada sección conserva su estado al cambiar de una a
+// Contenedor del Programa 3: operaciones en ℝⁿ, combinación lineal,
+// independencia lineal y ecuaciones matriciales. Cada sección conserva su estado al cambiar de una a
 // otra (se ocultan en lugar de desmontarse).
 
 import { useState } from "react";
 import Panel from "../ui/Panel.jsx";
 import SeccionVectores from "./SeccionVectores.jsx";
 import SeccionCombinacion from "./SeccionCombinacion.jsx";
+import SeccionIndependencia from "./SeccionIndependencia.jsx";
 import SeccionMatrices from "./SeccionMatrices.jsx";
 import SeccionProducto from "./SeccionProducto.jsx";
 import SeccionEcuacion from "./SeccionEcuacion.jsx";
@@ -24,6 +25,14 @@ const SECCIONES = [
     titulo: "Combinación lineal",
     descripcion: "¿Se puede escribir b como c₁·v₁ + … + cₖ·vₖ? (opción 4).",
     Componente: SeccionCombinacion,
+  },
+  {
+    id: "independencia",
+    simbolo: "Σ cᵢvᵢ = 0",
+    titulo: "Independencia lineal",
+    descripcion:
+      "¿Es c₁·v₁ + … + cₖ·vₖ = 0 solo con todos los cᵢ = 0? (opción 10).",
+    Componente: SeccionIndependencia,
   },
   {
     id: "matrices",

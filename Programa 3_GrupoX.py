@@ -1,6 +1,7 @@
 """Programa 3 — Calculadora de Álgebra Lineal.
 
-Operaciones algebraicas en ℝⁿ, combinación lineal y ecuaciones matriciales.
+Operaciones algebraicas en ℝⁿ, combinación lineal, independencia lineal
+y ecuaciones matriciales.
 
 CUMPLIMIENTO DE RESTRICCIONES ACADÉMICAS
 ----------------------------------------
@@ -695,6 +696,109 @@ def resolver_combinacion_lineal(vectores, b):
     verificar_combinacion(pesos, vectores, b)
 
 
+# ---------------------------------------------------------------------------
+# Independencia lineal (¿existe una relación no trivial Σ cᵢ·vᵢ = 0?)
+# ---------------------------------------------------------------------------
+def texto_despeje(pesos, indice_libre):
+    """Despeja vⱼ de la relación Σ cᵢ·vᵢ = 0 sabiendo que cⱼ = 1.
+
+    De c₁·v₁ + ⋯ + 1·vⱼ + ⋯ + cₖ·vₖ = 0 se obtiene vⱼ = Σ (−cᵢ)·vᵢ con i ≠ j.
+    """
+    texto = ""
+    for j in range(len(pesos)):
+        if j == indice_libre or es_cero(pesos[j]):
+            continue
+        coeficiente = -pesos[j]                # se pasa al otro lado del "="
+        magnitud = formatear_numero(abs(coeficiente))
+        if magnitud == "1":                    # 1·v se escribe v
+            termino = f"v{subindice(j)}"
+        else:
+            termino = f"{magnitud}·v{subindice(j)}"
+        if texto == "":                        # primer término del despeje
+            texto = ("-" if coeficiente < 0 else "") + termino
+        elif coeficiente < 0:
+            texto += " - " + termino
+        else:
+            texto += " + " + termino
+    if texto == "":                            # todos los demás pesos eran 0
+        texto = "0"
+    return f"v{subindice(indice_libre)} = {texto}"
+
+
+def resolver_independencia(vectores):
+    """¿Son v₁, …, vₖ linealmente independientes?
+
+    Se resuelve el sistema HOMOGÉNEO c₁·v₁ + ⋯ + cₖ·vₖ = 0 con [v₁ … vₖ | 0].
+    Al ser homogéneo siempre es consistente (c = 0 es solución), así que basta
+    comparar rango(A) con k:
+
+    - rango = k  → solución única (la trivial) → LINEALMENTE INDEPENDIENTES;
+    - rango < k  → hay variables libres → soluciones no triviales
+                   → LINEALMENTE DEPENDIENTES.
+    """
+    n = len(vectores[0])
+    k = len(vectores)
+    cero = [0.0] * n
+    Ab = aumentada_desde_columnas(vectores, cero)
+    tipo, reducida, columnas_pivote = analizar_sistema(Ab, n, k)
+    rango = len(columnas_pivote)
+
+    print()
+    if k > n:
+        print(f"  Observación: son k = {k} vectores en ℝ^{n} con k > n, así que")
+        print(f"    rango ≤ {n} < {k} y la dependencia está garantizada de antemano.")
+        print()
+
+    if tipo == "determinado":
+        print("  RESULTADO: los vectores son LINEALMENTE INDEPENDIENTES.")
+        print(f"    rango = {rango} = k = {k}: no hay variables libres, así que la")
+        print("    única solución de c₁·v₁ + ⋯ + cₖ·vₖ = 0 es la trivial")
+        print("    c₁ = c₂ = ⋯ = cₖ = 0.")
+        print("    Ningún vᵢ es combinación lineal de los demás.")
+        print(f"    Forman una base del subespacio que generan (dimensión {rango}).")
+        return
+
+    libres, expresiones = construir_solucion(reducida, k, columnas_pivote)
+    valores = [0.0] * len(libres)
+    valores[0] = 1.0                           # primera variable libre = 1
+    pesos = evaluar_solucion(libres, expresiones, k, valores)
+    indice_libre = libres[0]
+
+    print("  RESULTADO: los vectores son LINEALMENTE DEPENDIENTES.")
+    print(f"    rango = {rango} < k = {k}: quedan {k - rango} variable(s) libre(s),")
+    print("    luego c₁·v₁ + ⋯ + cₖ·vₖ = 0 admite soluciones distintas de la trivial.")
+
+    print()
+    print("  Todas las relaciones de dependencia (solución del sistema homogéneo):")
+    imprimir_solucion_parametrica(libres, expresiones, k, "c")
+
+    print()
+    print(f"  Una relación concreta (c{subindice(indice_libre)} = 1, "
+          "resto de variables libres = 0):")
+    print(f"    {texto_combinacion(pesos)} = 0")
+    print("    Coeficientes: " + ", ".join(
+        f"c{subindice(j)} = {formatear_numero(pesos[j])}" for j in range(k)))
+
+    print()
+    print("  Despejando el vector redundante:")
+    print(f"    {texto_despeje(pesos, indice_libre)}")
+
+    print()
+    print("  Subconjunto linealmente independiente (columnas pivote):")
+    print("    {" + ", ".join(f"v{subindice(c)}" for c in columnas_pivote) + "}"
+          + f"  →  el conjunto genera un subespacio de dimensión {rango}.")
+
+    print()
+    print("  Verificación:")
+    recalculado = combinar_vectores(pesos, vectores)
+    print(f"    Σ cᵢ·vᵢ = {formatear_vector(recalculado)}")
+    print(f"    0       = {formatear_vector(cero)}")
+    if vectores_iguales(recalculado, cero):
+        print("    ✔ Coinciden: la relación de dependencia es correcta.")
+    else:
+        print("    ✘ NO coinciden.")
+
+
 def verificar_ax_b(A, x, b, etiqueta):
     """Comprueba A·x = b calculando A·x con producto_matrices y comparando con b."""
     Ax = columna_a_vector(producto_matrices(A, vector_a_columna(x)))
@@ -911,6 +1015,20 @@ def opcion_combinacion_lineal():
     resolver_combinacion_lineal(vectores, b)
 
 
+def opcion_independencia():
+    """Opción 10: ¿son v₁, …, vₖ linealmente independientes?"""
+    imprimir_titulo("INDEPENDENCIA LINEAL: ¿c₁·v₁ + ... + cₖ·vₖ = 0 solo con cᵢ = 0?")
+    n = leer_entero("  Dimensión n de los vectores: ")
+    k = leer_entero("  Cantidad k de vectores: ")
+    vectores = []
+    for j in range(k):
+        vectores.append(leer_vector(f"v{subindice(j)}", n))
+    print()
+    print("  Se resuelve el sistema homogéneo A·c = 0 con A = [v₁ ... vₖ]")
+    print("  (los vectores van como columnas y el término independiente es 0).")
+    resolver_independencia(vectores)
+
+
 def opcion_operar_matrices(operacion):
     """Opciones 5 y 6: A ± B, validando que ambas sean m×n."""
     if operacion == "suma":
@@ -988,13 +1106,14 @@ def mostrar_menu():
     print()
     print("=" * 62)
     print("  CALCULADORA DE ÁLGEBRA LINEAL — PROGRAMA 3")
-    print("  Operaciones en ℝⁿ, combinación lineal y ecuaciones matriciales")
+    print("  Operaciones en ℝⁿ, combinación lineal, independencia y A·x = b")
     print("=" * 62)
-    print("  1. Suma de vectores          6. Resta de matrices")
-    print("  2. Resta de vectores         7. Escalar × matriz")
-    print("  3. Escalar × vector          8. Producto de matrices")
-    print("  4. Combinación lineal        9. Resolver A·x = b")
-    print("  5. Suma de matrices          0. Salir")
+    print("   1. Suma de vectores          7. Escalar × matriz")
+    print("   2. Resta de vectores         8. Producto de matrices")
+    print("   3. Escalar × vector          9. Resolver A·x = b")
+    print("   4. Combinación lineal       10. Independencia lineal")
+    print("   5. Suma de matrices          0. Salir")
+    print("   6. Resta de matrices")
     print("-" * 62)
 
 
@@ -1025,8 +1144,10 @@ def main():
             opcion_producto_matrices()
         elif opcion == "9":
             opcion_ax_b()
+        elif opcion == "10":
+            opcion_independencia()
         else:
-            print(f"  ✘ Opción inválida: '{opcion}'. Elija un número del 0 al 9.")
+            print(f"  ✘ Opción inválida: '{opcion}'. Elija un número del 0 al 10.")
 
 
 if __name__ == "__main__":

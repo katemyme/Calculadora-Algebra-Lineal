@@ -422,6 +422,103 @@ def combinacion_lineal(vectores_txt: List[List[str]], b_txt: List[str]) -> Dict:
     }
 
 
+def _leer_lista_de_vectores(vectores_txt: List[List[str]], n: int) -> List[List[float]]:
+    """Lee k vectores de ℝⁿ dados como columnas (mismo formato que la opción 4)."""
+    vectores = []
+    for j, texto in enumerate(vectores_txt):
+        nombre = f"v{p3.subindice(j)}"
+        if len(texto) != n:
+            raise ErrorDeCampo(
+                f"{nombre} tiene {len(texto)} componentes y se esperaban {n}.",
+                campo="vectores",
+            )
+        vectores.append(
+            [_convertir(v, "vectores", i + 1, j + 1, nombre) for i, v in enumerate(texto)]
+        )
+    return vectores
+
+
+def independencia_lineal(vectores_txt: List[List[str]]) -> Dict:
+    """¿Son v₁, …, vₖ linealmente independientes?
+
+    Resuelve el sistema HOMOGÉNEO [v₁ … vₖ | 0]. Al ser homogéneo siempre es
+    consistente, así que el veredicto sale de comparar rango(A) con k:
+    rango = k → solo la solución trivial (independientes); rango < k → hay
+    variables libres y por tanto relaciones de dependencia no triviales.
+    """
+    if not vectores_txt:
+        raise ErrorDeCampo("Debe dar al menos un vector.", campo="vectores")
+    _validar_dimension(len(vectores_txt), "La cantidad de vectores k", "vectores")
+    if not vectores_txt[0]:
+        raise ErrorDeCampo("Los vectores están vacíos.", campo="vectores")
+    n = len(vectores_txt[0])
+    _validar_dimension(n, "La dimensión n de los vectores", "vectores")
+
+    vectores = _leer_lista_de_vectores(vectores_txt, n)
+    k = len(vectores)
+    cero = [0.0] * n
+
+    Ab = p3.aumentada_desde_columnas(vectores, cero)
+    analisis = _analizar(Ab, n, k)
+    solucion = _solucion(analisis, k, "c")     # el homogéneo nunca es inconsistente
+    rango = analisis["rango_A"]
+    independientes = rango == k
+
+    relacion = None
+    verificacion = None
+    if not independientes:
+        libres = solucion["_libres"]
+        expresiones = solucion["_expresiones"]
+        valores = [0.0] * len(libres)
+        valores[0] = 1.0                       # primera variable libre = 1
+        pesos = p3.evaluar_solucion(libres, expresiones, k, valores)
+        indice_libre = libres[0]
+
+        # vⱼ = Σ (−cᵢ)·vᵢ con i ≠ j, para pintar el despeje término a término.
+        despeje = [
+            {"indice": j, "nombre": f"v{p3.subindice(j)}", "coeficiente": numero(-pesos[j])}
+            for j in range(k)
+            if j != indice_libre and not p3.es_cero(pesos[j])
+        ]
+        relacion = {
+            "pesos": vector_json(pesos),
+            "expresion": p3.texto_combinacion(pesos) + " = 0",
+            "indice_libre": indice_libre,
+            "nombre_libre": f"v{p3.subindice(indice_libre)}",
+            "despeje": despeje,
+            "texto_despeje": p3.texto_despeje(pesos, indice_libre),
+        }
+
+        recalculado = p3.combinar_vectores(pesos, vectores)
+        verificacion = {
+            "pesos": vector_json(pesos),
+            "terminos": [
+                {"peso": numero(pesos[j]), "vector": vector_json(vectores[j]),
+                 "producto": vector_json(p3.escalar_por_vector(pesos[j], vectores[j]))}
+                for j in range(k)
+            ],
+            "recalculado": vector_json(recalculado),
+            "esperado": vector_json(cero),
+            "coincide": p3.vectores_iguales(recalculado, cero),
+        }
+    _limpiar_privados(solucion)
+
+    return {
+        **analisis,
+        "independientes": independientes,
+        "n": n,
+        "k": k,
+        "rango": rango,
+        "dimension_generado": rango,
+        "vectores_pivote": analisis["columnas_pivote"],
+        "mas_vectores_que_dimensiones": k > n,
+        "solucion": solucion,
+        "relacion": relacion,
+        "verificaciones": [verificacion] if verificacion else [],
+        "vectores": [vector_json(v) for v in vectores],
+    }
+
+
 def _verificar_ax(A, x, b, etiqueta) -> Dict:
     Ax = p3.columna_a_vector(p3.producto_matrices(A, p3.vector_a_columna(x)))
     return {

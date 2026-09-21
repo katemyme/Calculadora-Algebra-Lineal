@@ -81,6 +81,12 @@ class PeticionCombinacion(BaseModel):
     b: List[str]
 
 
+class PeticionIndependencia(BaseModel):
+    """POST /api/p3/independencia. ¿Son v₁…vₖ linealmente independientes?"""
+
+    vectores: List[List[str]]
+
+
 class PeticionEcuacion(BaseModel):
     """POST /api/p3/ecuacion. Resuelve A·x = b."""
 

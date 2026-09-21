@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from modelos import (
     PeticionCombinacion,
     PeticionEcuacion,
+    PeticionIndependencia,
     PeticionMatrices,
     PeticionProducto,
     PeticionResolver,
@@ -36,7 +37,8 @@ app = FastAPI(
     description=(
         "Resuelve sistemas por Gauss-Jordan, muestra la RREF, columnas pivote, "
         "variables básicas/libres y soluciones general, parametrizada y vectorial. "
-        "Programa 3: operaciones en ℝⁿ, combinación lineal y ecuaciones matriciales."
+        "Programa 3: operaciones en ℝⁿ, combinación lineal, independencia lineal "
+        "y ecuaciones matriciales."
     ),
     version="3.0.0",
 )
@@ -99,6 +101,12 @@ def p3_producto(peticion: PeticionProducto) -> dict:
           responses={422: {"model": RespuestaError}})
 def p3_combinacion(peticion: PeticionCombinacion) -> dict:
     return p3web.combinacion_lineal(peticion.vectores, peticion.b)
+
+
+@app.post("/api/p3/independencia", summary="¿Son v₁…vₖ linealmente independientes?",
+          responses={422: {"model": RespuestaError}})
+def p3_independencia(peticion: PeticionIndependencia) -> dict:
+    return p3web.independencia_lineal(peticion.vectores)
 
 
 @app.post("/api/p3/ecuacion", summary="Resuelve la ecuación matricial A·x = b",

@@ -70,6 +70,7 @@ export const programa3 = {
   matrices: (cuerpo) => enviar("/api/p3/matrices", cuerpo),
   producto: (cuerpo) => enviar("/api/p3/producto", cuerpo),
   combinacion: (cuerpo) => enviar("/api/p3/combinacion", cuerpo),
+  independencia: (cuerpo) => enviar("/api/p3/independencia", cuerpo),
   ecuacion: (cuerpo) => enviar("/api/p3/ecuacion", cuerpo),
 };
 

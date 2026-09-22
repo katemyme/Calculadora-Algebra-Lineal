@@ -8,7 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from modelos import (
+from app.modelos import (
     PeticionCombinacion,
     PeticionDistributiva,
     PeticionEcuacion,
@@ -19,10 +19,10 @@ from modelos import (
     PeticionVectores,
     RespuestaError,
 )
-from nucleo import ErrorDeEntrada
-from programa2 import resolver_sistema
-import programa3_web as p3web
-from serializacion import serializar
+from calculo.nucleo import ErrorDeEntrada
+from calculo.programa2 import resolver_sistema
+import calculo.programa3_web as p3web
+from app.serializacion import serializar
 
 
 ORIGENES_PERMITIDOS = [
@@ -78,7 +78,7 @@ def resolver_endpoint(peticion: PeticionResolver) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Programa 3 (el cálculo vive en "Programa 3_GrupoX.py")
+# Programa 3 (el cálculo vive en "programas/Programa 3_GrupoX.py")
 # ---------------------------------------------------------------------------
 @app.post("/api/p3/vectores", summary="u + v, u − v o c·v en ℝⁿ",
           responses={422: {"model": RespuestaError}})

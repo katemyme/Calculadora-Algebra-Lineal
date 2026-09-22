@@ -1,10 +1,10 @@
-# Calculadora de Álgebra Lineal — Programa 2
+# Calculadora de Álgebra Lineal — Programas 2 y 3
 
 Aplicación web que resuelve sistemas de ecuaciones lineales **Ax = b** mediante
 **eliminación por filas (Gauss-Jordan)** con aritmética exacta usando
 `fractions.Fraction`.
 
-Esta versión corresponde al **Programa 2** y amplía el proyecto original para
+El **Programa 2** amplía el proyecto original para
 mostrar de forma explícita la **Forma Escalonada Reducida por Filas (RREF)**,
 las **columnas pivote**, las **variables básicas**, las **variables libres** y la
 estructura completa de la solución.
@@ -12,6 +12,11 @@ estructura completa de la solución.
 Además, cuando existen variables libres, el programa construye la **solución
 general**, **parametrizada** y **vectorial**, permite elegir valores para los
 parámetros y comprueba la solución sustituyéndola en el sistema original.
+
+El **Programa 3** agrega operaciones en ℝⁿ, combinación lineal, independencia
+lineal, ecuaciones matriciales y la propiedad distributiva A(u + v) = A·u + A·v.
+Funciona como programa de consola (`programas/Programa 3_GrupoX.py`) y también
+desde la calculadora web. Ver [Programa 3](#programa-3).
 
 - **Backend:** Python estándar + `fractions.Fraction`.
 - **API:** FastAPI como capa HTTP.
@@ -23,19 +28,22 @@ parámetros y comprueba la solución sustituyéndola en el sistema original.
 ## Índice
 
 1. [Nuevas funcionalidades del Programa 2](#nuevas-funcionalidades-del-programa-2)
-2. [Requisitos](#requisitos)
-3. [Instalación](#instalación)
-4. [Ejecución](#ejecución)
-5. [Funcionamiento del programa](#funcionamiento-del-programa)
-6. [Algoritmo](#algoritmo)
-7. [Clasificación de los sistemas](#clasificación-de-los-sistemas)
-8. [Soluciones con variables libres](#soluciones-con-variables-libres)
-9. [Comprobación con parámetros](#comprobación-con-parámetros)
-10. [Endpoints](#endpoints)
-11. [Estructura del proyecto](#estructura-del-proyecto)
-12. [Casos de prueba](#casos-de-prueba)
-13. [Pruebas del backend](#pruebas-del-backend)
-14. [Cumplimiento de las restricciones académicas](#cumplimiento-de-las-restricciones-académicas)
+2. [Programa 3](#programa-3)
+3. [Requisitos](#requisitos)
+4. [Instalación](#instalación)
+5. [Ejecución](#ejecución)
+6. [Problemas comunes](#problemas-comunes)
+7. [Funcionamiento del programa](#funcionamiento-del-programa)
+8. [Algoritmo](#algoritmo)
+9. [Clasificación de los sistemas](#clasificación-de-los-sistemas)
+10. [Soluciones con variables libres](#soluciones-con-variables-libres)
+11. [Comprobación con parámetros](#comprobación-con-parámetros)
+12. [Endpoints](#endpoints)
+13. [Estructura del proyecto](#estructura-del-proyecto)
+14. [Casos de prueba](#casos-de-prueba)
+15. [Pruebas del backend](#pruebas-del-backend)
+16. [Cumplimiento de las restricciones académicas](#cumplimiento-de-las-restricciones-académicas)
+17. [Ejecución rápida](#ejecución-rápida)
 
 ---
 
@@ -296,109 +304,196 @@ pueda sustituirse.
 
 ---
 
+## Programa 3
+
+Operaciones con vectores y matrices escritas a mano (listas de Python, bucles
+y condicionales, sin importar ningún módulo). Todo el cálculo está en
+`programas/Programa 3_GrupoX.py`; el backend solo lo carga y adapta sus
+resultados para la web.
+
+| Opción | Operación | Pestaña en la web |
+|---|---|---|
+| 1–3 | u + v, u − v y c·v en ℝⁿ | Vectores ℝⁿ |
+| 4 | ¿b es combinación lineal de v₁ … vₖ? | Combinación lineal |
+| 5–7 | A + B, A − B y c·A | Matrices |
+| 8 | Producto A·B | Producto matricial |
+| 9 | Resolver A·x = b | Ecuación matricial |
+| 10 | ¿Son v₁ … vₖ linealmente independientes? | Independencia lineal |
+| 11 | Verificar A(u + v) = A·u + A·v | Propiedad distributiva |
+
+### Versión de consola
+
+Solo necesita Python: no hace falta el entorno virtual, ni `pip install`, ni
+el frontend. Desde la raíz del repositorio:
+
+```powershell
+python "programas/Programa 3_GrupoX.py"
+```
+
+Las comillas son necesarias porque el nombre del archivo tiene un espacio.
+
+### Versión web
+
+Con el backend y el frontend en marcha (ver [Ejecución](#ejecución)), abrir la
+pestaña **Programa 3** de la calculadora.
+
+### Documentación del Programa 3
+
+- [Casos de prueba](docs/programa3/casos_prueba.md)
+- [Explicación técnica](docs/programa3/explicacion_tecnica.md)
+- [Guía para la defensa](docs/programa3/defensa.md)
+
+---
+
 ## Requisitos
 
-| Herramienta | Versión recomendada | Uso |
+| Herramienta | Versión | Uso |
 |---|---|---|
-| Python | 3.11 o superior | Backend y núcleo matemático |
-| Node.js | 18 o superior | Frontend |
+| Git | cualquiera reciente | Clonar el repositorio |
+| Python | 3.10 como mínimo (recomendado 3.11 o superior) | Backend y Programa 3 |
+| Node.js | 18, o 20 y superiores | Frontend |
 | npm | incluido con Node.js | Dependencias del frontend |
 
-No se utiliza base de datos.
+FastAPI y Uvicorn exigen Python 3.10 o superior, y Vite 5 exige Node.js 18 o
+20 en adelante (Node 19 no es compatible).
 
-No se requiere NumPy, SciPy ni ninguna librería especializada de álgebra
-lineal.
+Para comprobar las versiones instaladas:
+
+```powershell
+git --version
+python --version
+node --version
+npm --version
+```
+
+> En Windows, si `python` no se reconoce pero sí `py`, usa `py` en todos los
+> comandos (por ejemplo `py -m venv .venv`).
+
+No se utiliza base de datos ni NumPy, SciPy o cualquier otra librería de
+álgebra lineal.
 
 ---
 
 ## Instalación
 
-### 1. Backend
+La instalación se hace **una sola vez**. Los comandos están escritos para
+Windows PowerShell; el único que cambia en otras terminales es el de activar
+el entorno virtual, y ahí se indica la variante.
 
-Abre una terminal en la raíz del proyecto:
+### 1. Clonar el repositorio
 
 ```powershell
-cd C:\tarea_1_algebra\Calculadora-Algebra-Lineal
+git clone https://github.com/katemyme/Calculadora-Algebra-Lineal.git
+cd Calculadora-Algebra-Lineal
 ```
 
-Entra a la carpeta del backend:
+A partir de aquí, "raíz del repositorio" es esta carpeta: la que contiene
+`README.md`, `backend/`, `frontend/` y `programas/`.
+
+### 2. Backend
+
+Desde la raíz del repositorio, entra a la carpeta del backend:
 
 ```powershell
 cd backend
 ```
 
-#### Crear entorno virtual
-
-Solo es necesario hacerlo la primera vez:
+#### Crear el entorno virtual
 
 ```powershell
 python -m venv .venv
 ```
 
-#### Activar el entorno virtual en Windows PowerShell
+Esto crea la carpeta `backend/.venv/`, que Git ignora (no se sube al
+repositorio).
 
-Estando dentro de `backend`:
+#### Activar el entorno virtual
+
+En Windows PowerShell:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 ```
 
-Al activarse correctamente, la terminal mostrará algo parecido a:
+`Set-ExecutionPolicy -Scope Process` solo afecta a la terminal actual: permite
+ejecutar el script de activación sin cambiar la configuración del sistema.
+
+Otras terminales:
+
+| Terminal | Comando de activación |
+|---|---|
+| Windows `cmd` | `.venv\Scripts\activate.bat` |
+| Git Bash | `source .venv/Scripts/activate` |
+| macOS / Linux | `source .venv/bin/activate` |
+
+Al activarse correctamente, la terminal muestra `(.venv)` al inicio:
 
 ```text
-(.venv) PS C:\tarea_1_algebra\Calculadora-Algebra-Lineal\backend>
+(.venv) PS ...\Calculadora-Algebra-Lineal\backend>
 ```
 
 #### Instalar dependencias
+
+Con el entorno virtual activo:
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-Las dependencias del backend corresponden principalmente a:
+Se instalan:
 
-- FastAPI;
-- Uvicorn;
-- Pydantic;
-- httpx para pruebas.
+- **FastAPI**: capa HTTP;
+- **Uvicorn**: servidor que ejecuta la API;
+- **Pydantic**: validación de la forma de las peticiones;
+- **httpx**: solo para las pruebas de la API.
 
-El cálculo matricial continúa realizándose con Python estándar y
-`fractions.Fraction`.
+El cálculo matricial no depende de ninguna de ellas: se hace con Python
+estándar y `fractions.Fraction`.
+
+Para comprobar que todo quedó bien instalado, corre las pruebas (deben terminar
+en `OK`):
+
+```powershell
+python -m unittest discover -s pruebas -t . -p "pruebas_*.py"
+```
 
 ---
 
-### 2. Frontend
+### 3. Frontend
 
-Abre otra terminal y entra a:
-
-```powershell
-cd C:\tarea_1_algebra\Calculadora-Algebra-Lineal\frontend
-```
-
-Instala las dependencias:
+Abre **otra terminal**, ve a la raíz del repositorio y entra al frontend:
 
 ```powershell
+cd frontend
 npm install
 ```
 
-Este paso solo es necesario la primera vez o cuando cambien las dependencias
-del proyecto.
+`npm install` descarga las dependencias en `frontend/node_modules/` (Git
+también la ignora). Solo hay que repetirlo si cambia `package.json`.
+
+> Es normal que `npm install` muestre avisos de `npm audit`. **No** ejecutes
+> `npm audit fix --force`: actualiza paquetes a versiones incompatibles y puede
+> romper el proyecto.
 
 ---
 
 ## Ejecución
 
-Para ejecutar la aplicación se necesitan **dos terminales abiertas al mismo
-tiempo**.
+Para usar la calculadora web se necesitan **dos terminales abiertas al mismo
+tiempo**: una con el backend y otra con el frontend. Si solo se levanta el
+frontend, la página muestra el aviso "El servidor no está disponible".
 
 ### Terminal 1 — Backend
 
+Desde la raíz del repositorio:
+
 ```powershell
-cd C:\tarea_1_algebra\Calculadora-Algebra-Lineal\backend
+cd backend
 ```
 
-Activa el entorno virtual:
+Activa el entorno virtual (hay que hacerlo cada vez que se abre una terminal
+nueva):
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
@@ -408,8 +503,12 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 Inicia FastAPI:
 
 ```powershell
-python -m uvicorn api:app --reload
+python -m uvicorn app.api:app --reload
 ```
+
+El comando debe ejecutarse **dentro de `backend/`**: `app.api:app` significa
+"el objeto `app` del archivo `app/api.py`". `--reload` reinicia el servidor
+automáticamente al guardar cambios en el código.
 
 Si el servidor inicia correctamente aparecerá:
 
@@ -438,8 +537,10 @@ http://127.0.0.1:8000/docs
 
 ### Terminal 2 — Frontend
 
+Desde la raíz del repositorio:
+
 ```powershell
-cd C:\tarea_1_algebra\Calculadora-Algebra-Lineal\frontend
+cd frontend
 npm run dev
 ```
 
@@ -454,6 +555,25 @@ Abre en el navegador:
 ```text
 http://localhost:5173
 ```
+
+En la parte superior se elige entre **Programa 2** (sistemas Ax = b) y
+**Programa 3**.
+
+Para detener cualquiera de los dos servidores, pulsa `Ctrl + C` en su terminal.
+
+---
+
+## Problemas comunes
+
+| Síntoma | Causa | Solución |
+|---|---|---|
+| `Activate.ps1 no se puede cargar porque la ejecución de scripts está deshabilitada` | PowerShell bloquea scripts por defecto | Ejecuta antes `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` |
+| `python` no se reconoce como comando | Python no está en el PATH | Usa `py` en lugar de `python`, o reinstala Python marcando "Add python.exe to PATH" |
+| `No module named 'fastapi'` o `No module named uvicorn` | El entorno virtual no está activo | Actívalo (debe verse `(.venv)`) y, si hace falta, repite `python -m pip install -r requirements.txt` |
+| `ModuleNotFoundError: No module named 'app'` | Uvicorn se lanzó fuera de `backend/` | Entra a `backend/` y vuelve a ejecutar el comando |
+| `Port 5173 is already in use` | Otro `npm run dev` sigue abierto | Ciérralo con `Ctrl + C`. El puerto debe ser 5173 porque es el único que el backend autoriza (CORS) |
+| La página muestra "El servidor no está disponible" | El backend no está corriendo | Levanta el backend en la Terminal 1 y recarga la página |
+| `'vite' no se reconoce como un comando` | Faltan las dependencias del frontend | Ejecuta `npm install` dentro de `frontend/` |
 
 ---
 
@@ -609,7 +729,7 @@ Si no pertenece, es libre.
 Ejemplo:
 
 ```text
-columnas_pivote = [1, 2]
+columnas_pivote = [0, 1]    (columnas 1 y 2)
 
 Variables básicas:
 x₁, x₂
@@ -724,6 +844,13 @@ http://localhost:8000
 |---|---|---|
 | `GET` | `/api/salud` | Comprueba que el backend esté activo |
 | `POST` | `/api/resolver` | Resuelve el sistema y devuelve RREF, pivotes, clasificación, solución y verificación |
+| `POST` | `/api/p3/vectores` | Programa 3: u + v, u − v o c·v |
+| `POST` | `/api/p3/matrices` | Programa 3: A + B, A − B o c·A |
+| `POST` | `/api/p3/producto` | Programa 3: producto A·B |
+| `POST` | `/api/p3/combinacion` | Programa 3: ¿b es combinación lineal de v₁ … vₖ? |
+| `POST` | `/api/p3/independencia` | Programa 3: independencia lineal |
+| `POST` | `/api/p3/ecuacion` | Programa 3: resolver A·x = b |
+| `POST` | `/api/p3/distributiva` | Programa 3: verificar A(u + v) = A·u + A·v |
 | `GET` | `/docs` | Documentación interactiva de FastAPI |
 
 ---
@@ -781,15 +908,29 @@ sistema original.
 ```text
 Calculadora-Algebra-Lineal/
 │
+├── README.md
+├── programas/
+│   └── Programa 3_GrupoX.py      ← Programa 3 de consola (todo el cálculo del P3)
+│
+├── docs/
+│   └── programa3/
+│       ├── casos_prueba.md
+│       ├── defensa.md
+│       └── explicacion_tecnica.md
+│
 ├── backend/
-│   ├── .venv/
-│   ├── api.py
-│   ├── modelos.py
-│   ├── nucleo.py
-│   ├── programa2.py
-│   ├── pruebas_nucleo.py
 │   ├── requirements.txt
-│   └── serializacion.py
+│   ├── app/                      ← capa HTTP (FastAPI), no hace álgebra
+│   │   ├── api.py                ← rutas /api/...
+│   │   ├── modelos.py            ← esquemas Pydantic de las peticiones
+│   │   └── serializacion.py      ← Fraction → JSON
+│   ├── calculo/                  ← álgebra lineal
+│   │   ├── nucleo.py             ← Gauss-Jordan exacto (Programa 1)
+│   │   ├── programa2.py          ← RREF, variables y formas de solución (Programa 2)
+│   │   └── programa3_web.py      ← adaptador web de programas/Programa 3_GrupoX.py
+│   └── pruebas/
+│       ├── pruebas_nucleo.py
+│       └── pruebas_programa3.py
 │
 └── frontend/
     ├── index.html
@@ -803,7 +944,7 @@ Calculadora-Algebra-Lineal/
         ├── main.jsx
         │
         ├── components/
-        │   ├── ConfiguracionSistema.jsx
+        │   ├── ConfiguracionSistema.jsx   ← Programa 2
         │   ├── MatrizAumentada.jsx
         │   ├── MatrizEstatica.jsx
         │   ├── PanelClasificacion.jsx
@@ -811,7 +952,8 @@ Calculadora-Algebra-Lineal/
         │   ├── PanelResultados.jsx
         │   ├── PanelSolucion.jsx
         │   ├── PanelVerificacion.jsx
-        │   └── ui/
+        │   ├── programa3/                 ← una sección por operación del Programa 3
+        │   └── ui/                        ← botones, paneles, pestañas
         │
         └── lib/
             ├── api.js
@@ -821,7 +963,7 @@ Calculadora-Algebra-Lineal/
 
 ### Archivos principales agregados o modificados en Programa 2
 
-#### `backend/programa2.py`
+#### `backend/calculo/programa2.py`
 
 Amplía la salida del núcleo original para agregar:
 
@@ -835,12 +977,12 @@ Amplía la salida del núcleo original para agregar:
 - evaluación de parámetros;
 - verificación de la solución elegida.
 
-#### `backend/api.py`
+#### `backend/app/api.py`
 
 Permite enviar opcionalmente valores para los parámetros y devuelve toda la
 información generada por Programa 2.
 
-#### `backend/modelos.py`
+#### `backend/app/modelos.py`
 
 Agrega al cuerpo de la petición:
 
@@ -989,16 +1131,22 @@ El sistema no tiene solución.
 
 ## Pruebas del backend
 
-Las pruebas del núcleo pueden ejecutarse sin levantar el frontend.
+Las pruebas se ejecutan sin levantar el servidor ni el frontend.
 
-Con el entorno virtual activo:
+Con el entorno virtual activo, desde la raíz del repositorio:
 
 ```powershell
 cd backend
-python pruebas_nucleo.py
+python -m unittest discover -s pruebas -t . -p "pruebas_*.py"
 ```
 
-Las pruebas cubren, entre otros casos:
+Para correr un solo archivo: `python -m pruebas.pruebas_nucleo` o
+`python -m pruebas.pruebas_programa3`.
+
+`pruebas_programa3.py` prueba las rutas `/api/p3/...` (incluida la propiedad
+distributiva) con el `TestClient` de FastAPI, sin levantar el servidor.
+
+Las pruebas del núcleo cubren, entre otros casos:
 
 - solución única;
 - infinitas soluciones;
@@ -1076,6 +1224,20 @@ Las operaciones de Gauss-Jordan permanecen separadas de la API.
 
 ---
 
+### Programa 3
+
+`programas/Programa 3_GrupoX.py` es autocontenido: **no importa ningún módulo**
+(ni NumPy, ni `fractions`, ni `math`). Vectores y matrices son listas de Python
+y todas las operaciones se hacen con bucles, condicionales y funciones.
+
+Trabaja con números `float`; como un `float` casi nunca es exactamente 0, todo
+valor con |x| < 10⁻¹⁰ se trata como cero.
+
+En la web, `backend/calculo/programa3_web.py` solo carga ese archivo, valida
+las dimensiones y convierte los resultados a JSON: no repite ningún cálculo.
+
+---
+
 ### El frontend no resuelve el sistema
 
 React se utiliza exclusivamente para:
@@ -1089,7 +1251,8 @@ React se utiliza exclusivamente para:
 - mostrar soluciones;
 - mostrar la comprobación.
 
-Los coeficientes del sistema no son procesados matemáticamente en JavaScript.
+Ni los coeficientes del Programa 2 ni los vectores y matrices del Programa 3
+se procesan matemáticamente en JavaScript.
 
 ---
 
@@ -1118,16 +1281,18 @@ Respecto al programa anterior, esta versión incorpora:
 
 ## Ejecución rápida
 
+Una vez hecha la [instalación](#instalación), desde la raíz del repositorio:
+
 ### Backend
 
 ```powershell
-cd C:\tarea_1_algebra\Calculadora-Algebra-Lineal\backend
+cd backend
 
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 .\.venv\Scripts\Activate.ps1
 
-python -m uvicorn api:app --reload
+python -m uvicorn app.api:app --reload
 ```
 
 ### Frontend
@@ -1135,7 +1300,7 @@ python -m uvicorn api:app --reload
 En otra terminal:
 
 ```powershell
-cd C:\tarea_1_algebra\Calculadora-Algebra-Lineal\frontend
+cd frontend
 
 npm run dev
 ```
@@ -1144,4 +1309,10 @@ Abrir:
 
 ```text
 http://localhost:5173
+```
+
+### Programa 3 en consola
+
+```powershell
+python "programas/Programa 3_GrupoX.py"
 ```

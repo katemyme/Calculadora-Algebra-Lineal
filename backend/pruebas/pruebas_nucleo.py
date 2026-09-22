@@ -1,13 +1,13 @@
 """Pruebas del núcleo matemático.
 
-Se ejecutan sin levantar la API:  python pruebas_nucleo.py
+Se ejecutan sin levantar la API, desde backend/:  python -m pruebas.pruebas_nucleo
 Usa únicamente `unittest` de la biblioteca estándar.
 """
 
 import unittest
 from fractions import Fraction
 
-from nucleo import (
+from calculo.nucleo import (
     ErrorDeEntrada,
     calcular_rangos,
     construir_matriz_aumentada,

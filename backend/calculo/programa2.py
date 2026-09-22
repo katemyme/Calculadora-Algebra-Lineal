@@ -18,7 +18,7 @@ aritmética se conserva exacta mediante ``fractions.Fraction``.
 from fractions import Fraction
 from typing import Dict, List, Optional
 
-from nucleo import (
+from calculo.nucleo import (
     ErrorDeEntrada,
     parsear_valor,
     resolver_sistema as resolver_base,

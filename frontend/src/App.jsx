@@ -217,7 +217,7 @@ export default function App() {
             </p>
             <p className="mt-1 text-tinta">
               En la carpeta <code>backend/</code> ejecuta{" "}
-              <code>python -m uvicorn api:app --reload</code>.
+              <code>python -m uvicorn app.api:app --reload</code>.
             </p>
           </div>
         )}

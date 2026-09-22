@@ -1,6 +1,6 @@
 # Programa 3 — Explicación técnica del producto matricial
 
-Archivo: `Programa 3_GrupoX.py` · función `producto_matrices(A, B)`
+Archivo: `programas/Programa 3_GrupoX.py` · función `producto_matrices(A, B)`
 
 ## 1. Definición algebraica
 

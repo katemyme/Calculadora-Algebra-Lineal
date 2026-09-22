@@ -1,6 +1,6 @@
 """Adaptador web del Programa 3.
 
-Todo el álgebra se hace en ``Programa 3_GrupoX.py`` (en la raíz del repositorio),
+Todo el álgebra se hace en ``programas/Programa 3_GrupoX.py``,
 que se carga aquí como módulo. Este archivo solo:
 
 - convierte el texto recibido por HTTP en listas de float,
@@ -18,9 +18,12 @@ import importlib.util
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from nucleo import ErrorDeEntrada
+from calculo.nucleo import ErrorDeEntrada
 
-_RUTA_PROGRAMA3 = Path(__file__).resolve().parent.parent / "Programa 3_GrupoX.py"
+# backend/calculo/ → raíz del repositorio → programas/
+_RUTA_PROGRAMA3 = (
+    Path(__file__).resolve().parents[2] / "programas" / "Programa 3_GrupoX.py"
+)
 _especificacion = importlib.util.spec_from_file_location("programa3", _RUTA_PROGRAMA3)
 p3 = importlib.util.module_from_spec(_especificacion)
 _especificacion.loader.exec_module(p3)

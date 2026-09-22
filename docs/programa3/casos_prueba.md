@@ -3,7 +3,7 @@
 Ejecutar desde la raíz del repositorio:
 
 ```
-python "Programa 3_GrupoX.py"
+python "programas/Programa 3_GrupoX.py"
 ```
 
 En cada caso, escriba **una línea por renglón** de la columna "Teclear" y pulse

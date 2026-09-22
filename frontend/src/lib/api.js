@@ -30,7 +30,7 @@ async function enviar(ruta, cuerpo) {
   } catch {
     throw new ErrorDeServidor(
       "No se pudo conectar con el servidor. En backend ejecuta: " +
-        "python -m uvicorn api:app --reload"
+        "python -m uvicorn app.api:app --reload"
     );
   }
 
@@ -64,7 +64,7 @@ export function resolverSistema(m, n, matriz, valoresParametros = null) {
 }
 
 // Programa 3: cada función envía el texto tal cual; el cálculo lo hace
-// "Programa 3_GrupoX.py" en el backend.
+// "programas/Programa 3_GrupoX.py", a través del backend.
 export const programa3 = {
   vectores: (cuerpo) => enviar("/api/p3/vectores", cuerpo),
   matrices: (cuerpo) => enviar("/api/p3/matrices", cuerpo),

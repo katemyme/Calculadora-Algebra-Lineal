@@ -4,7 +4,7 @@ from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from nucleo import DIMENSION_MAXIMA, DIMENSION_MINIMA
+from calculo.nucleo import DIMENSION_MAXIMA, DIMENSION_MINIMA
 
 
 class PeticionResolver(BaseModel):

@@ -1,7 +1,7 @@
 // Resultado de la opción 10: ¿son v₁, …, vₖ linealmente independientes?
 //
 // NOTA DE CUMPLIMIENTO: este componente solo PINTA lo que devolvió el backend
-// ("Programa 3_GrupoX.py"). No realiza ninguna operación algebraica.
+// ("programas/Programa 3_GrupoX.py"). No realiza ninguna operación algebraica.
 
 import { useState } from "react";
 import { subindice } from "../../lib/formato.js";

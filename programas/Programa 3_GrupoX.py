@@ -12,7 +12,7 @@ CUMPLIMIENTO DE RESTRICCIONES ACADÉMICAS
 - Se trabaja con números float. Como un float rara vez es exactamente 0,
   todo valor con |x| < EPS se trata como cero (EPS = 1e-10).
 - El Gauss-Jordan es una copia de `escalonar` del Programa 2
-  (backend/nucleo.py), adaptada a float:
+  (backend/calculo/nucleo.py), adaptada a float:
       * `== 0` se sustituye por |x| < EPS,
       * el pivote normalizado se fija en 1.0 exacto,
       * los residuos |x| < EPS se limpian a 0.0 tras cada operación.

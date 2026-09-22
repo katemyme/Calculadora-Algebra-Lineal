@@ -2,7 +2,7 @@
 //
 // NOTA DE CUMPLIMIENTO: aquí solo se guardan textos y se manejan índices de
 // la rejilla. Todas las operaciones algebraicas las hace el backend
-// ("Programa 3_GrupoX.py").
+// ("programas/Programa 3_GrupoX.py").
 
 import { useRef, useState } from "react";
 import { ErrorDeCalculo, ErrorDeServidor } from "../../lib/api.js";

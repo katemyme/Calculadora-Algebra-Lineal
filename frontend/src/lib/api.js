@@ -72,6 +72,7 @@ export const programa3 = {
   combinacion: (cuerpo) => enviar("/api/p3/combinacion", cuerpo),
   independencia: (cuerpo) => enviar("/api/p3/independencia", cuerpo),
   ecuacion: (cuerpo) => enviar("/api/p3/ecuacion", cuerpo),
+  distributiva: (cuerpo) => enviar("/api/p3/distributiva", cuerpo),
 };
 
 export async function comprobarSalud() {

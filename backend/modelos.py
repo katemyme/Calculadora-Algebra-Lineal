@@ -92,3 +92,11 @@ class PeticionEcuacion(BaseModel):
 
     A: List[List[str]]
     b: List[str]
+
+
+class PeticionDistributiva(BaseModel):
+    """POST /api/p3/distributiva. Verifica A(u + v) = A·u + A·v."""
+
+    A: List[List[str]]
+    u: List[str]
+    v: List[str]

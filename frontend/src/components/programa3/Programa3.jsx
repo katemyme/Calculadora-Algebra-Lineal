@@ -1,5 +1,5 @@
 // Contenedor del Programa 3: operaciones en ℝⁿ, combinación lineal,
-// independencia lineal y ecuaciones matriciales. Cada sección conserva su estado al cambiar de una a
+// independencia lineal, ecuaciones matriciales y la propiedad A(u + v) = Au + Av. Cada sección conserva su estado al cambiar de una a
 // otra (se ocultan en lugar de desmontarse).
 
 import { useState } from "react";
@@ -10,6 +10,7 @@ import SeccionIndependencia from "./SeccionIndependencia.jsx";
 import SeccionMatrices from "./SeccionMatrices.jsx";
 import SeccionProducto from "./SeccionProducto.jsx";
 import SeccionEcuacion from "./SeccionEcuacion.jsx";
+import SeccionDistributiva from "./SeccionDistributiva.jsx";
 
 const SECCIONES = [
   {
@@ -54,6 +55,13 @@ const SECCIONES = [
     titulo: "Ecuación matricial",
     descripcion: "Resolver y clasificar A·x = b y verificar con A·x (opción 9).",
     Componente: SeccionEcuacion,
+  },
+  {
+    id: "distributiva",
+    simbolo: "A(u+v)",
+    titulo: "Propiedad distributiva",
+    descripcion: "Verificar A(u + v) = A·u + A·v calculando ambos lados (opción 11).",
+    Componente: SeccionDistributiva,
   },
 ];
 

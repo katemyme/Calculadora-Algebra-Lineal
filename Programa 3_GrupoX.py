@@ -203,11 +203,16 @@ def combinar_vectores(pesos, vectores):
 
 
 def vectores_iguales(u, v):
-    """Igualdad en ℝⁿ con tolerancia: u = v  ⇔  |uᵢ − vᵢ| < EPS para todo i."""
+    """Igualdad en ℝⁿ con tolerancia relativa: u = v  ⇔  |uᵢ − vᵢ| < EPS·max(1, |uᵢ|, |vᵢ|).
+
+    La tolerancia crece con la magnitud: con números grandes el error de
+    redondeo del float también es grande y una tolerancia fija daría "≠".
+    """
     if len(u) != len(v):
         return False
     for i in range(len(u)):
-        if not es_cero(u[i] - v[i]):
+        escala = max(1.0, abs(u[i]), abs(v[i]))
+        if abs(u[i] - v[i]) >= EPS * escala:
             return False
     return True
 
@@ -849,6 +854,33 @@ def resolver_ax_b(A, b):
                    " (" + ", ".join(p + " = 1" for p in parametros) + ")")
 
 
+def matriz_por_vector(A, x):
+    """Calcula A·x (A m×n, x ∈ ℝⁿ) y devuelve el resultado como vector de ℝᵐ."""
+    return columna_a_vector(producto_matrices(A, vector_a_columna(x)))
+
+
+def verificar_distributiva(A, u, v):
+    """Comprueba A(u + v) = A·u + A·v calculando ambos lados por separado."""
+    u_mas_v = suma_vectores(u, v)
+    izquierda = matriz_por_vector(A, u_mas_v)             # A(u + v)
+    Au = matriz_por_vector(A, u)
+    Av = matriz_por_vector(A, v)
+    derecha = suma_vectores(Au, Av)                        # A·u + A·v
+
+    print("  Lado izquierdo:")
+    print(f"    u + v      = {formatear_vector(u_mas_v)}")
+    print(f"    A(u + v)   = {formatear_vector(izquierda)}")
+    print("  Lado derecho:")
+    print(f"    A·u        = {formatear_vector(Au)}")
+    print(f"    A·v        = {formatear_vector(Av)}")
+    print(f"    A·u + A·v  = {formatear_vector(derecha)}")
+    print()
+    if vectores_iguales(izquierda, derecha):
+        print("  ✔ A(u + v) = A·u + A·v: se cumple la propiedad distributiva.")
+    else:
+        print("  ✘ A(u + v) ≠ A·u + A·v")
+
+
 # ---------------------------------------------------------------------------
 # Entrada validada
 # ---------------------------------------------------------------------------
@@ -1098,6 +1130,22 @@ def opcion_ax_b():
     resolver_ax_b(A, b)
 
 
+def opcion_distributiva():
+    """Opción 11: verificar A(u + v) = A·u + A·v con u, v ∈ ℝⁿ."""
+    imprimir_titulo("PROPIEDAD DISTRIBUTIVA: A(u + v) = A·u + A·v")
+    m, n = leer_dimensiones_matriz("A")
+    A = leer_matriz("A", m, n)
+    print(f"  u y v deben estar en ℝ^{n} (tantas componentes como columnas de A).")
+    u = leer_vector("u", n)
+    v = leer_vector("v", n)
+    print()
+    imprimir_matriz(A, f"A ({formatear_dimension(A)})")
+    print(f"  u = {formatear_vector(u)}")
+    print(f"  v = {formatear_vector(v)}")
+    print()
+    verificar_distributiva(A, u, v)
+
+
 # ---------------------------------------------------------------------------
 # Menú principal
 # ---------------------------------------------------------------------------
@@ -1112,8 +1160,8 @@ def mostrar_menu():
     print("   2. Resta de vectores         8. Producto de matrices")
     print("   3. Escalar × vector          9. Resolver A·x = b")
     print("   4. Combinación lineal       10. Independencia lineal")
-    print("   5. Suma de matrices          0. Salir")
-    print("   6. Resta de matrices")
+    print("   5. Suma de matrices         11. Propiedad A(u+v) = Au + Av")
+    print("   6. Resta de matrices         0. Salir")
     print("-" * 62)
 
 
@@ -1146,8 +1194,10 @@ def main():
             opcion_ax_b()
         elif opcion == "10":
             opcion_independencia()
+        elif opcion == "11":
+            opcion_distributiva()
         else:
-            print(f"  ✘ Opción inválida: '{opcion}'. Elija un número del 0 al 10.")
+            print(f"  ✘ Opción inválida: '{opcion}'. Elija un número del 0 al 11.")
 
 
 if __name__ == "__main__":

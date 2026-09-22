@@ -565,3 +565,40 @@ def resolver_ecuacion(a_txt: List[List[str]], b_txt: List[str]) -> Dict:
         "solucion": solucion,
         "verificaciones": verificaciones,
     }
+
+
+# ---------------------------------------------------------------------------
+# 4. Propiedad distributiva A(u + v) = A·u + A·v
+# ---------------------------------------------------------------------------
+def verificar_distributiva(a_txt: List[List[str]], u_txt: List[str], v_txt: List[str]) -> Dict:
+    """Mismos pasos que ``verificar_distributiva`` del Programa 3, sin imprimir."""
+    A = leer_matriz(a_txt, "A")
+    u = leer_vector(u_txt, "u")
+    v = leer_vector(v_txt, "v")
+    m, n = p3.dimensiones(A)
+    for nombre, vector in (("u", u), ("v", v)):
+        if len(vector) != n:
+            raise ErrorDeCampo(
+                f"A tiene {n} columnas y {nombre} tiene {len(vector)} componentes; "
+                f"{nombre} debe estar en ℝ^{n}.",
+                campo=nombre,
+            )
+
+    u_mas_v = p3.suma_vectores(u, v)
+    izquierda = p3.matriz_por_vector(A, u_mas_v)     # A(u + v)
+    Au = p3.matriz_por_vector(A, u)
+    Av = p3.matriz_por_vector(A, v)
+    derecha = p3.suma_vectores(Au, Av)               # A·u + A·v
+
+    return {
+        "A": matriz_json(A),
+        "u": vector_json(u),
+        "v": vector_json(v),
+        "dimensiones": {"A": _orden(A), "m": m, "n": n},
+        "u_mas_v": vector_json(u_mas_v),
+        "izquierda": vector_json(izquierda),
+        "Au": vector_json(Au),
+        "Av": vector_json(Av),
+        "derecha": vector_json(derecha),
+        "coincide": p3.vectores_iguales(izquierda, derecha),
+    }

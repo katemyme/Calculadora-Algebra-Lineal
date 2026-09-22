@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 
 from modelos import (
     PeticionCombinacion,
+    PeticionDistributiva,
     PeticionEcuacion,
     PeticionIndependencia,
     PeticionMatrices,
@@ -38,7 +39,7 @@ app = FastAPI(
         "Resuelve sistemas por Gauss-Jordan, muestra la RREF, columnas pivote, "
         "variables básicas/libres y soluciones general, parametrizada y vectorial. "
         "Programa 3: operaciones en ℝⁿ, combinación lineal, independencia lineal "
-        "y ecuaciones matriciales."
+        "ecuaciones matriciales y la propiedad A(u + v) = A·u + A·v."
     ),
     version="3.0.0",
 )
@@ -113,6 +114,12 @@ def p3_independencia(peticion: PeticionIndependencia) -> dict:
           responses={422: {"model": RespuestaError}})
 def p3_ecuacion(peticion: PeticionEcuacion) -> dict:
     return p3web.resolver_ecuacion(peticion.A, peticion.b)
+
+
+@app.post("/api/p3/distributiva", summary="Verifica A(u + v) = A·u + A·v",
+          responses={422: {"model": RespuestaError}})
+def p3_distributiva(peticion: PeticionDistributiva) -> dict:
+    return p3web.verificar_distributiva(peticion.A, peticion.u, peticion.v)
 
 
 @app.exception_handler(ErrorDeEntrada)

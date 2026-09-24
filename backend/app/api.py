@@ -107,7 +107,7 @@ def p3_combinacion(peticion: PeticionCombinacion) -> dict:
 @app.post("/api/p3/independencia", summary="¿Son v₁…vₖ linealmente independientes?",
           responses={422: {"model": RespuestaError}})
 def p3_independencia(peticion: PeticionIndependencia) -> dict:
-    return p3web.independencia_lineal(peticion.vectores)
+    return p3web.independencia_lineal(peticion.vectores, peticion.valores_parametros)
 
 
 @app.post("/api/p3/ecuacion", summary="Resuelve la ecuación matricial A·x = b",

@@ -85,6 +85,13 @@ class PeticionIndependencia(BaseModel):
     """POST /api/p3/independencia. ¿Son v₁…vₖ linealmente independientes?"""
 
     vectores: List[List[str]]
+    valores_parametros: Optional[List[str]] = Field(
+        default=None,
+        description=(
+            "Valores opcionales elegidos por el usuario para t, t1, … al evaluar "
+            "la solución general del sistema homogéneo."
+        ),
+    )
 
 
 class PeticionEcuacion(BaseModel):

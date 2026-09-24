@@ -60,10 +60,20 @@ export default function SeccionIndependencia() {
     limpiar();
   }
 
+  function vectoresActuales() {
+    return Array.from({ length: k }, (_, j) => rejilla.map((fila) => fila[j]));
+  }
+
   function calcular() {
-    // Cada columna j de la rejilla es un vector.
-    const vectores = Array.from({ length: k }, (_, j) => rejilla.map((fila) => fila[j]));
-    ejecutar(() => programa3.independencia({ vectores }));
+    ejecutar(() => programa3.independencia({ vectores: vectoresActuales() }));
+  }
+
+  async function evaluarParametros(valoresParametros) {
+    const datos = await programa3.independencia({
+      vectores: vectoresActuales(),
+      valores_parametros: valoresParametros,
+    });
+    return datos.evaluacion_parametros;
   }
 
   // El backend reporta los errores de "vectores" con fila y columna.
@@ -111,7 +121,7 @@ export default function SeccionIndependencia() {
       </div>
 
       <div className="math-formula-strip" aria-hidden="true">
-        <span>c₁·v₁ + c₂·v₂ + … + cₖ·vₖ = 0</span>
+        <span>x₁·v₁ + x₂·v₂ + … + xₖ·vₖ = 0</span>
         <span>rango = k ⇒ independientes</span>
         <span>rango &lt; k ⇒ dependientes</span>
       </div>
@@ -139,7 +149,9 @@ export default function SeccionIndependencia() {
 
       {cargando && <Cargando texto="Reduciendo [v₁ … vₖ | 0]…" />}
       <AvisoError error={error} />
-      {resultado && <ResultadoIndependencia resultado={resultado} />}
+      {resultado && (
+        <ResultadoIndependencia resultado={resultado} onEvaluar={evaluarParametros} />
+      )}
     </div>
   );
 }

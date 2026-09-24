@@ -294,6 +294,7 @@ def _analizar(Ab: List[List[float]], m: int, n: int) -> Dict:
 
     return {
         "matriz_inicial": matriz_json(Ab),
+        "homogeneo": p3.es_homogeneo(Ab, m, n),
         "pasos": [
             {
                 "numero": indice + 1,
@@ -571,7 +572,103 @@ def resolver_ecuacion(a_txt: List[List[str]], b_txt: List[str]) -> Dict:
 
 
 # ---------------------------------------------------------------------------
-# 4. Propiedad distributiva A(u + v) = A·u + A·v
+# 4. Balanceo de ecuaciones químicas (sistema homogéneo)
+# ---------------------------------------------------------------------------
+def balancear_ecuacion(texto: str) -> Dict:
+    """Mismos pasos que ``balancear_reaccion`` del Programa 3, sin imprimir.
+
+    La reacción se convierte en el sistema homogéneo [A | 0] (una fila por
+    elemento, una columna por compuesto, productos con signo −), se resuelve
+    por Gauss-Jordan y la solución no trivial se lleva a enteros mínimos.
+    """
+    if texto is None or texto.strip() == "":
+        raise ErrorDeCampo("Escriba la reacción química.", campo="reaccion")
+    ok, lectura = p3.leer_reaccion(texto)
+    if not ok:
+        raise ErrorDeCampo(lectura[0].upper() + lectura[1:] + ".", campo="reaccion")
+    reactivos, productos = lectura
+    if len(reactivos) + len(productos) < 2:
+        raise ErrorDeCampo("La reacción necesita al menos dos compuestos.", campo="reaccion")
+
+    compuestos = reactivos + productos
+    k = len(compuestos)
+    p = len(reactivos)
+    elementos, A = p3.plantear_reaccion(reactivos, productos)
+    m = len(elementos)
+
+    Ab = p3.aumentada_desde_matriz([[float(a) for a in fila] for fila in A], [0.0] * m)
+    analisis = _analizar(Ab, m, k)
+    solucion = _solucion(analisis, k, "x")     # el homogéneo nunca es inconsistente
+    rango = analisis["rango_A"]
+    dependientes = rango < k
+
+    estado = "independientes"
+    coeficientes = None
+    parametro_t = None
+    verificacion = []
+    if dependientes:
+        libres = solucion["_libres"]
+        if len(libres) > 1:
+            estado = "varias"
+        else:
+            pesos = p3.evaluar_solucion(libres, solucion["_expresiones"], k, [1.0])
+            coeficientes = p3.coeficientes_enteros(pesos, libres[0])
+            if coeficientes is None:
+                estado = "sin_enteros"
+            elif any(c <= 0 for c in coeficientes):
+                estado = "no_valida"
+            else:
+                estado = "balanceada"
+                parametro_t = coeficientes[libres[0]]
+                for i in range(m):
+                    izquierda = sum(coeficientes[j] * A[i][j] for j in range(p))
+                    derecha = sum(-coeficientes[j] * A[i][j] for j in range(p, k))
+                    verificacion.append({
+                        "elemento": elementos[i],
+                        "reactivos": izquierda,
+                        "productos": derecha,
+                        "coincide": izquierda == derecha,
+                    })
+    _limpiar_privados(solucion)
+
+    ecuacion = None
+    if estado == "balanceada":
+        ecuacion = (p3.texto_lado(reactivos, coeficientes[:p]) + " → "
+                    + p3.texto_lado(productos, coeficientes[p:]))
+
+    return {
+        **analisis,
+        "compuestos": [
+            {
+                "indice": j,
+                "variable": f"x{p3.subindice(j)}",
+                "formula": formula,
+                "formula_bonita": p3.formula_con_subindices(formula),
+                "lado": "reactivo" if j < p else "producto",
+                "vector": vector_json([float(A[i][j]) for i in range(m)]),
+            }
+            for j, (formula, _) in enumerate(compuestos)
+        ],
+        "elementos": elementos,
+        "ecuaciones": [
+            {"elemento": elementos[i], "texto": p3.texto_ecuacion_elemento(A[i])}
+            for i in range(m)
+        ],
+        "n_reactivos": p,
+        "k": k,
+        "rango": rango,
+        "dependientes": dependientes,
+        "estado": estado,
+        "coeficientes": coeficientes,
+        "parametro_t": parametro_t,
+        "ecuacion_balanceada": ecuacion,
+        "solucion": solucion,
+        "verificacion": verificacion,
+    }
+
+
+# ---------------------------------------------------------------------------
+# 5. Propiedad distributiva A(u + v) = A·u + A·v
 # ---------------------------------------------------------------------------
 def verificar_distributiva(a_txt: List[List[str]], u_txt: List[str], v_txt: List[str]) -> Dict:
     """Mismos pasos que ``verificar_distributiva`` del Programa 3, sin imprimir."""

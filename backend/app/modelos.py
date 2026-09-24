@@ -100,3 +100,9 @@ class PeticionDistributiva(BaseModel):
     A: List[List[str]]
     u: List[str]
     v: List[str]
+
+
+class PeticionBalanceo(BaseModel):
+    """POST /api/p3/balanceo. Reacción escrita con fórmulas: "H2 + O2 -> H2O"."""
+
+    reaccion: str = Field(..., max_length=300)

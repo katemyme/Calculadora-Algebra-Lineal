@@ -66,6 +66,42 @@ class PruebasProgramaTres(unittest.TestCase):
         self.assertEqual(textos(datos["solucion"]["valores"]), ["1", "2"])
 
     # --- Propiedad distributiva (opción 11) ----------------------------------
+    # --- Balanceo de ecuaciones químicas --------------------------------------
+    def test_balanceo_alka_seltzer(self):
+        respuesta = self.enviar("balanceo", {"reaccion": "NaHCO3 + H3C6H5O7 -> Na3C6H5O7 + H2O + CO2"})
+        self.assertEqual(respuesta.status_code, 200)
+        datos = respuesta.json()
+        self.assertTrue(datos["homogeneo"])
+        self.assertTrue(datos["dependientes"])
+        self.assertEqual(datos["estado"], "balanceada")
+        self.assertEqual(datos["coeficientes"], [3, 1, 1, 3, 3])
+        self.assertEqual(datos["elementos"], ["Na", "H", "C", "O"])
+        self.assertTrue(all(v["coincide"] for v in datos["verificacion"]))
+
+    def test_balanceo_pegado_desde_word(self):
+        reaccion = "x_1 NaHCO_3+x_2 〖H_3 C_6 H_5 O〗_7→x_3 〖〖Na〗_3 C_6 H_5 O〗_7+x_4 H_2 O+x_5 CO_2"
+        respuesta = self.enviar("balanceo", {"reaccion": reaccion})
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual(respuesta.json()["coeficientes"], [3, 1, 1, 3, 3])
+
+    def test_balanceo_con_parentesis(self):
+        respuesta = self.enviar("balanceo", {"reaccion": "Ca(OH)2 + HCl → CaCl2 + H2O"})
+        self.assertEqual(respuesta.json()["coeficientes"], [1, 2, 1, 2])
+
+    def test_balanceo_imposible(self):
+        respuesta = self.enviar("balanceo", {"reaccion": "H2O -> CO2"})
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual(respuesta.json()["estado"], "independientes")
+
+    def test_balanceo_con_coeficiente_escrito(self):
+        respuesta = self.enviar("balanceo", {"reaccion": "2H2 + O2 -> H2O"})
+        self.assertEqual(respuesta.status_code, 422)
+        self.assertEqual(respuesta.json()["campo"], "reaccion")
+
+    def test_ecuacion_no_homogenea(self):
+        respuesta = self.enviar("ecuacion", {"A": [["1", "1"], ["1", "-1"]], "b": ["3", "1"]})
+        self.assertFalse(respuesta.json()["homogeneo"])
+
     def test_distributiva_se_cumple(self):
         respuesta = self.enviar("distributiva", {
             "A": [["1", "2", "3"], ["0", "-1", "4"]],

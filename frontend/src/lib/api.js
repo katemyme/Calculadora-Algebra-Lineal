@@ -14,7 +14,7 @@ export class ErrorDeCalculo extends Error {
     this.name = "ErrorDeCalculo";
     this.fila = fila;
     this.columna = columna;
-    this.campo = campo; // Programa 3: "A", "B", "u", "v", "b", "c" o "vectores"
+    this.campo = campo; // Programa 3: "A", "B", "u", "v", "b", "c", "vectores" o "reaccion"
   }
 }
 
@@ -73,6 +73,7 @@ export const programa3 = {
   independencia: (cuerpo) => enviar("/api/p3/independencia", cuerpo),
   ecuacion: (cuerpo) => enviar("/api/p3/ecuacion", cuerpo),
   distributiva: (cuerpo) => enviar("/api/p3/distributiva", cuerpo),
+  balanceo: (cuerpo) => enviar("/api/p3/balanceo", cuerpo),
 };
 
 export async function comprobarSalud() {

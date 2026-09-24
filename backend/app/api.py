@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.modelos import (
+    PeticionBalanceo,
     PeticionCombinacion,
     PeticionDistributiva,
     PeticionEcuacion,
@@ -39,7 +40,8 @@ app = FastAPI(
         "Resuelve sistemas por Gauss-Jordan, muestra la RREF, columnas pivote, "
         "variables básicas/libres y soluciones general, parametrizada y vectorial. "
         "Programa 3: operaciones en ℝⁿ, combinación lineal, independencia lineal "
-        "ecuaciones matriciales y la propiedad A(u + v) = A·u + A·v."
+        "ecuaciones matriciales, la propiedad A(u + v) = A·u + A·v y el "
+        "balanceo de ecuaciones químicas."
     ),
     version="3.0.0",
 )
@@ -120,6 +122,12 @@ def p3_ecuacion(peticion: PeticionEcuacion) -> dict:
           responses={422: {"model": RespuestaError}})
 def p3_distributiva(peticion: PeticionDistributiva) -> dict:
     return p3web.verificar_distributiva(peticion.A, peticion.u, peticion.v)
+
+
+@app.post("/api/p3/balanceo", summary="Balancea una ecuación química (sistema homogéneo)",
+          responses={422: {"model": RespuestaError}})
+def p3_balanceo(peticion: PeticionBalanceo) -> dict:
+    return p3web.balancear_ecuacion(peticion.reaccion)
 
 
 @app.exception_handler(ErrorDeEntrada)

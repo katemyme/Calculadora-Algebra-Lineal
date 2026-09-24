@@ -1,5 +1,5 @@
 // Contenedor del Programa 3: operaciones en ℝⁿ, combinación lineal,
-// independencia lineal, ecuaciones matriciales y la propiedad A(u + v) = Au + Av. Cada sección conserva su estado al cambiar de una a
+// independencia lineal, ecuaciones matriciales, la propiedad A(u + v) = Au + Av y el balanceo de ecuaciones químicas. Cada sección conserva su estado al cambiar de una a
 // otra (se ocultan en lugar de desmontarse).
 
 import { useState } from "react";
@@ -11,6 +11,7 @@ import SeccionMatrices from "./SeccionMatrices.jsx";
 import SeccionProducto from "./SeccionProducto.jsx";
 import SeccionEcuacion from "./SeccionEcuacion.jsx";
 import SeccionDistributiva from "./SeccionDistributiva.jsx";
+import SeccionBalanceo from "./SeccionBalanceo.jsx";
 
 const SECCIONES = [
   {
@@ -62,6 +63,14 @@ const SECCIONES = [
     titulo: "Propiedad distributiva",
     descripcion: "Verificar A(u + v) = A·u + A·v calculando ambos lados (opción 11).",
     Componente: SeccionDistributiva,
+  },
+  {
+    id: "balanceo",
+    simbolo: "⇌",
+    titulo: "Balanceo químico",
+    descripcion:
+      "Escriba la reacción con sus fórmulas: se plantea el sistema homogéneo y se balancea por Gauss-Jordan (opción 12).",
+    Componente: SeccionBalanceo,
   },
 ];
 

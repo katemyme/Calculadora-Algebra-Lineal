@@ -63,6 +63,7 @@ export default function ResultadoSistema({ resultado, modo }) {
         {activa === "clasificacion" && (
           <PanelClasificacion
             clasificacion={resultado.clasificacion}
+            homogeneo={resultado.homogeneo}
             rangoA={resultado.rango_A}
             rangoAb={resultado.rango_Ab}
             n={incognitas}

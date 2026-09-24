@@ -58,6 +58,7 @@ export default function ResultadoIndependencia({ resultado }) {
         {activa === "clasificacion" && (
           <PanelClasificacion
             clasificacion={resultado.clasificacion}
+            homogeneo={resultado.homogeneo}
             rangoA={resultado.rango_A}
             rangoAb={resultado.rango_Ab}
             n={resultado.k}

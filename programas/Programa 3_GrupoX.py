@@ -1,7 +1,8 @@
 """Programa 3 — Calculadora de Álgebra Lineal.
 
 Operaciones algebraicas en ℝⁿ, combinación lineal, independencia lineal
-y ecuaciones matriciales.
+y ecuaciones matriciales. Incluye el balanceo de ecuaciones químicas
+como aplicación de los sistemas homogéneos (opción 12).
 
 CUMPLIMIENTO DE RESTRICCIONES ACADÉMICAS
 ----------------------------------------
@@ -562,12 +563,30 @@ def vectores_direccion(libres, expresiones, n):
     return direcciones
 
 
+def es_homogeneo(Ab, m, n):
+    """Un sistema [A | b] es homogéneo si b = 0 (todos los términos independientes son 0)."""
+    for i in range(m):
+        if not es_cero(Ab[i][n]):
+            return False
+    return True
+
+
+def imprimir_homogeneidad(Ab, m, n):
+    """Indica si el sistema es homogéneo (b = 0) o no homogéneo (b ≠ 0)."""
+    if es_homogeneo(Ab, m, n):
+        print("  Tipo de sistema: HOMOGÉNEO (b = 0).")
+        print("    Siempre es consistente: al menos tiene la solución trivial x = 0.")
+    else:
+        print("  Tipo de sistema: NO HOMOGÉNEO (b ≠ 0).")
+
+
 def analizar_sistema(Ab, m, n):
     """Resuelve [A | b] por Gauss-Jordan e imprime procedimiento, RREF, pivotes y clasificación.
 
     Devuelve (tipo, matriz_reducida, columnas_pivote).
     """
     imprimir_matriz(Ab, "Matriz aumentada inicial", columnas_izquierda=n)
+    imprimir_homogeneidad(Ab, m, n)
 
     matriz_reducida, pasos, columnas_pivote = escalonar(Ab, m, n)
 
@@ -882,6 +901,308 @@ def verificar_distributiva(A, u, v):
 
 
 # ---------------------------------------------------------------------------
+# Balanceo de ecuaciones químicas
+# ---------------------------------------------------------------------------
+# Idea: cada compuesto es un vector de ℝᵐ (m = nº de elementos) con la
+# cantidad de átomos de cada elemento. Conservar los átomos significa
+#     x₁·r₁ + … + xₚ·rₚ = x_{p+1}·q₁ + … + xₖ·q_{k-p}
+# y pasando los productos a la izquierda se obtiene el sistema HOMOGÉNEO
+#     [r₁ … rₚ  −q₁ … −q_{k-p} | 0].
+# Sus soluciones no triviales (vectores dependientes) son los coeficientes.
+
+def leer_formula(formula):
+    """Cuenta los átomos de una fórmula: "Ca(OH)2" → {"Ca": 1, "O": 2, "H": 2}.
+
+    Acepta elementos (mayúscula + minúsculas), subíndices y grupos entre
+    ( ) o [ ] con multiplicador. Devuelve (True, conteo) o (False, mensaje).
+    """
+    pila = [{}]                               # un diccionario por nivel de paréntesis
+    i = 0
+    largo = len(formula)
+
+    while i < largo:
+        caracter = formula[i]
+
+        if caracter in "([":
+            pila.append({})
+            i += 1
+        elif caracter in ")]":
+            if len(pila) == 1:
+                return False, f"paréntesis de cierre sin abrir en '{formula}'"
+            i += 1
+            inicio = i
+            while i < largo and formula[i].isdigit():
+                i += 1
+            multiplicador = int(formula[inicio:i]) if i > inicio else 1
+            grupo = pila.pop()
+            for elemento in grupo:            # el grupo se suma al nivel de afuera
+                pila[-1][elemento] = pila[-1].get(elemento, 0) + grupo[elemento] * multiplicador
+        elif "A" <= caracter <= "Z":
+            inicio = i
+            i += 1
+            while i < largo and "a" <= formula[i] <= "z":
+                i += 1
+            elemento = formula[inicio:i]
+            inicio = i
+            while i < largo and formula[i].isdigit():
+                i += 1
+            cantidad = int(formula[inicio:i]) if i > inicio else 1
+            pila[-1][elemento] = pila[-1].get(elemento, 0) + cantidad
+        elif caracter.isdigit():
+            return False, (f"'{formula}' empieza o sigue con un número suelto; "
+                           "no escriba coeficientes, el programa los calcula")
+        else:
+            return False, f"carácter no válido '{caracter}' en '{formula}'"
+
+    if len(pila) != 1:
+        return False, f"falta cerrar un paréntesis en '{formula}'"
+    if len(pila[0]) == 0:
+        return False, "hay un compuesto vacío (revise los signos +)"
+    return True, pila[0]
+
+
+# Subíndices Unicode → dígitos normales (H₂O → H2O).
+_DIGITOS_NORMALES = str.maketrans("₀₁₂₃₄₅₆₇₈₉", "0123456789")
+
+
+def quitar_variable(formula):
+    """Quita la incógnita que antecede al compuesto: "x1NaHCO3" → "NaHCO3".
+
+    Ningún símbolo químico empieza con minúscula, así que una x inicial
+    seguida de dígitos solo puede ser el nombre del coeficiente.
+    """
+    if len(formula) > 1 and formula[0] == "x" and formula[1].isdigit():
+        i = 1
+        while i < len(formula) and formula[i].isdigit():
+            i += 1
+        return formula[i:]
+    return formula
+
+
+def leer_reaccion(texto):
+    """Separa "A + B -> C + D" en reactivos y productos ya contados.
+
+    Acepta como flecha ->, →, => o =. También acepta la ecuación copiada de
+    Word, por ejemplo  x_1 NaHCO_3 + x_2 〖H_3 C_6 H_5 O〗_7 → …:
+    se ignoran las incógnitas x₁…xₖ, los "_", las llaves 〖 〗 / { } y los
+    subíndices Unicode. Devuelve (True, (reactivos, productos)) donde cada
+    lado es una lista de (formula, conteo), o (False, mensaje).
+    """
+    limpio = texto.translate(_DIGITOS_NORMALES)
+    for simbolo in ("_", "〖", "〗", "{", "}"):
+        limpio = limpio.replace(simbolo, "")
+    limpio = limpio.replace("→", "->").replace("=>", "->")
+    if "->" not in limpio and "=" in limpio:
+        limpio = limpio.replace("=", "->")
+    lados = limpio.split("->")
+    if len(lados) != 2:
+        return False, "escriba una sola flecha (->) entre reactivos y productos"
+
+    resultado = []
+    for lado in lados:
+        compuestos = []
+        for parte in lado.split("+"):
+            formula = quitar_variable(parte.replace(" ", ""))
+            ok, conteo = leer_formula(formula)
+            if not ok:
+                return False, conteo
+            compuestos.append((formula, conteo))
+        resultado.append(compuestos)
+    return True, (resultado[0], resultado[1])
+
+
+def formula_con_subindices(formula):
+    """NaHCO3 → NaHCO₃ (solo para mostrar)."""
+    return formula.translate(_SUBINDICES)
+
+
+def mcd(a, b):
+    """Máximo común divisor por el algoritmo de Euclides."""
+    a, b = abs(a), abs(b)
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+
+def a_enteros(vector, limite=10000):
+    """Busca el menor múltiplo entero de un vector racional: (1, 1/3, 1/3) → (3, 1, 1).
+
+    Prueba multiplicadores 1, 2, 3, … hasta que todas las componentes sean
+    enteras y luego divide por el MCD. Devuelve None si no lo encuentra.
+    """
+    for multiplicador in range(1, limite + 1):
+        enteros = []
+        for valor in vector:
+            producto = valor * multiplicador
+            redondeado = round(producto)
+            if abs(producto - redondeado) > 1e-6:
+                break
+            enteros.append(int(redondeado))
+        else:
+            divisor = 0
+            for valor in enteros:
+                divisor = mcd(divisor, valor)
+            if divisor == 0:
+                return None
+            return [valor // divisor for valor in enteros]
+    return None
+
+
+def texto_ecuacion_elemento(fila):
+    """Escribe a₁x₁ + a₂x₂ + … = 0 omitiendo los términos nulos."""
+    texto = ""
+    for j in range(len(fila)):
+        a = fila[j]
+        if a == 0:
+            continue
+        magnitud = "" if abs(a) == 1 else str(abs(a))
+        termino = f"{magnitud}x{subindice(j)}"
+        if texto == "":
+            texto = ("-" if a < 0 else "") + termino
+        else:
+            texto += (" - " if a < 0 else " + ") + termino
+    return texto + " = 0"
+
+
+def texto_lado(compuestos, coeficientes):
+    """Escribe un lado de la reacción: 3 NaHCO₃ + H₃C₆H₅O₇."""
+    partes = []
+    for indice in range(len(compuestos)):
+        c = coeficientes[indice]
+        prefijo = "" if c == 1 else f"{c} "
+        partes.append(prefijo + formula_con_subindices(compuestos[indice][0]))
+    return " + ".join(partes)
+
+
+def plantear_reaccion(reactivos, productos):
+    """Construye la matriz de átomos de la reacción.
+
+    Devuelve (elementos, A): A tiene una fila por elemento y una columna por
+    compuesto; los reactivos van con signo + y los productos con signo −.
+    """
+    compuestos = reactivos + productos
+    p = len(reactivos)
+
+    elementos = []                            # en orden de aparición
+    for formula, conteo in compuestos:
+        for elemento in conteo:
+            if elemento not in elementos:
+                elementos.append(elemento)
+
+    A = []
+    for elemento in elementos:
+        fila = []
+        for j in range(len(compuestos)):
+            cantidad = compuestos[j][1].get(elemento, 0)
+            fila.append(cantidad if j < p else -cantidad)
+        A.append(fila)
+    return elementos, A
+
+
+def coeficientes_enteros(pesos, indice_libre):
+    """Lleva la solución con x_libre = 1 a los enteros mínimos con x_libre > 0.
+
+    Devuelve la lista de enteros o None si no se encontraron.
+    """
+    enteros = a_enteros(pesos)
+    if enteros is None:
+        return None
+    if enteros[indice_libre] < 0:             # se toma la solución positiva
+        enteros = [-c for c in enteros]
+    return enteros
+
+
+def balancear_reaccion(reactivos, productos):
+    """Plantea, resuelve por Gauss-Jordan y balancea la reacción química."""
+    compuestos = reactivos + productos
+    k = len(compuestos)
+    p = len(reactivos)
+    elementos, A = plantear_reaccion(reactivos, productos)
+    m = len(elementos)
+
+    print("  Variables:")
+    for j in range(k):
+        lado = "reactivo" if j < p else "producto"
+        print(f"    x{subindice(j)} = coeficiente de {formula_con_subindices(compuestos[j][0])}  ({lado})")
+
+    print()
+    print("  Sistema de ecuaciones (conservación de átomos, productos pasados a la izquierda):")
+    ancho = max(len(e) for e in elementos)
+    for i in range(m):
+        print(f"    {elementos[i].ljust(ancho)}: {texto_ecuacion_elemento(A[i])}")
+
+    print()
+    print("  Vectores de composición (una componente por elemento: " + ", ".join(elementos) + "):")
+    for j in range(k):
+        columna = [A[i][j] for i in range(m)]
+        print(f"    v{subindice(j)} = {formatear_vector(columna)}   ({formula_con_subindices(compuestos[j][0])})")
+
+    print()
+    Ab = aumentada_desde_matriz([[float(a) for a in fila] for fila in A], [0.0] * m)
+    tipo, reducida, columnas_pivote = analizar_sistema(Ab, m, k)
+    rango = len(columnas_pivote)
+
+    print()
+    if tipo == "determinado":
+        print("  Dependencia: los vectores son LINEALMENTE INDEPENDIENTES")
+        print(f"    (rango = {rango} = k = {k}): la única solución es la trivial x = 0,")
+        print("    así que la reacción NO se puede balancear. Revise las fórmulas.")
+        return
+
+    print("  Dependencia: los vectores son LINEALMENTE DEPENDIENTES")
+    print(f"    (rango = {rango} < k = {k}): existen soluciones no triviales,")
+    print("    que son justamente los coeficientes de la reacción.")
+    print()
+
+    libres, expresiones = construir_solucion(reducida, k, columnas_pivote)
+    imprimir_solucion_parametrica(libres, expresiones, k, "x")
+
+    if len(libres) > 1:
+        print()
+        print(f"  ✘ Hay {len(libres)} variables libres: la reacción admite varias")
+        print("    combinaciones independientes y no tiene un balanceo único.")
+        return
+
+    pesos = evaluar_solucion(libres, expresiones, k, [1.0])
+    enteros = coeficientes_enteros(pesos, libres[0])
+    if enteros is None:
+        print()
+        print("  ✘ No se encontraron coeficientes enteros razonables.")
+        return
+
+    print()
+    print(f"  Coeficientes enteros mínimos (tomando t = {enteros[libres[0]]}):")
+    print("    " + ", ".join(f"x{subindice(j)} = {enteros[j]}" for j in range(k)))
+
+    positivos = True
+    for c in enteros:
+        if c <= 0:
+            positivos = False
+    if not positivos:
+        print()
+        print("  ✘ Algún coeficiente es 0 o negativo: la reacción, tal como está")
+        print("    escrita, no es químicamente válida (revise reactivos y productos).")
+        return
+
+    print()
+    print("  ECUACIÓN BALANCEADA:")
+    print(f"    {texto_lado(reactivos, enteros[:p])} → {texto_lado(productos, enteros[p:])}")
+
+    print()
+    print("  Verificación (átomos a cada lado):")
+    correcto = True
+    for i in range(m):
+        izquierda = sum(enteros[j] * A[i][j] for j in range(p))
+        derecha = sum(-enteros[j] * A[i][j] for j in range(p, k))
+        marca = "✔" if izquierda == derecha else "✘"
+        if izquierda != derecha:
+            correcto = False
+        print(f"    {marca} {elementos[i].ljust(ancho)}: {izquierda} = {derecha}")
+    if correcto:
+        print("    ✔ Se conserva cada elemento: la ecuación está balanceada.")
+
+
+# ---------------------------------------------------------------------------
 # Entrada validada
 # ---------------------------------------------------------------------------
 def leer_linea(mensaje):
@@ -1146,6 +1467,23 @@ def opcion_distributiva():
     verificar_distributiva(A, u, v)
 
 
+def opcion_balanceo():
+    """Opción 12: balancear una ecuación química escrita con sus fórmulas."""
+    imprimir_titulo("BALANCEO DE ECUACIONES QUÍMICAS (sistema homogéneo)")
+    print("  Escriba la reacción sin coeficientes, por ejemplo:")
+    print("    NaHCO3 + H3C6H5O7 -> Na3C6H5O7 + H2O + CO2")
+    print("  (respete mayúsculas: Co es cobalto, CO es carbono + oxígeno)")
+    while True:
+        texto = leer_linea("  Reacción: ")
+        ok, resultado = leer_reaccion(texto)
+        if ok:
+            break
+        print(f"  ✘ {resultado}. Intente de nuevo.")
+    print()
+    reactivos, productos = resultado
+    balancear_reaccion(reactivos, productos)
+
+
 # ---------------------------------------------------------------------------
 # Menú principal
 # ---------------------------------------------------------------------------
@@ -1161,7 +1499,8 @@ def mostrar_menu():
     print("   3. Escalar × vector          9. Resolver A·x = b")
     print("   4. Combinación lineal       10. Independencia lineal")
     print("   5. Suma de matrices         11. Propiedad A(u+v) = Au + Av")
-    print("   6. Resta de matrices         0. Salir")
+    print("   6. Resta de matrices        12. Balancear ecuación química")
+    print("                                0. Salir")
     print("-" * 62)
 
 
@@ -1196,8 +1535,10 @@ def main():
             opcion_independencia()
         elif opcion == "11":
             opcion_distributiva()
+        elif opcion == "12":
+            opcion_balanceo()
         else:
-            print(f"  ✘ Opción inválida: '{opcion}'. Elija un número del 0 al 11.")
+            print(f"  ✘ Opción inválida: '{opcion}'. Elija un número del 0 al 12.")
 
 
 if __name__ == "__main__":

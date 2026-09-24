@@ -43,6 +43,7 @@ export default function PanelClasificacion({
   variablesLibres,
   letra = "x",
   etiquetaN = "incógnitas n",
+  homogeneo = null,
 }) {
   const estilo =
     ESTILO_CLASIFICACION[clasificacion.tipo] ??
@@ -65,6 +66,25 @@ export default function PanelClasificacion({
           {clasificacion.explicacion}
         </p>
       </div>
+
+      {homogeneo != null && (
+        <div className="math-info-card">
+          <div className="flex items-center gap-2">
+            <span className="math-mini-symbol">{homogeneo ? "0" : "b"}</span>
+            <p className="text-sm font-semibold">
+              Tipo de sistema:{" "}
+              <span className={homogeneo ? "text-determinado" : "text-pivote"}>
+                {homogeneo ? "HOMOGÉNEO (b = 0)" : "NO HOMOGÉNEO (b ≠ 0)"}
+              </span>
+            </p>
+          </div>
+          <p className="mt-2 text-sm text-grafito">
+            {homogeneo
+              ? "Todos los términos independientes son 0: siempre es consistente, al menos tiene la solución trivial x = 0."
+              : "Algún término independiente es distinto de 0: el sistema puede ser inconsistente."}
+          </p>
+        </div>
+      )}
 
       <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Metrica etiqueta="rango(A)" valor={rangoA} />

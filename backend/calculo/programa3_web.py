@@ -10,8 +10,8 @@ que se carga aquí como módulo. Este archivo solo:
 
 Los números se serializan con el mismo formato que usa el Programa 2
 (``{"fraccion", "decimal", "es_entero"}``), así el frontend reutiliza sus
-componentes. En este caso ``fraccion`` contiene el texto que produce
-``formatear_numero`` del Programa 3 (entero o decimal sin -0).
+componentes. El campo ``fraccion`` usa el formateador racional del Programa 3
+(1/3 en vez de 0.333333), mientras ``decimal`` conserva el valor float.
 """
 
 import importlib.util
@@ -57,11 +57,11 @@ class ErrorDeCampo(ErrorDeEntrada):
 # Serialización
 # ---------------------------------------------------------------------------
 def numero(valor: float) -> Dict:
-    texto = p3.formatear_numero(valor)
+    texto = p3.formatear_fraccion(valor)
     return {
         "fraccion": texto,
         "decimal": p3.limpiar(valor),
-        "es_entero": "." not in texto,
+        "es_entero": "/" not in texto,
     }
 
 
@@ -442,13 +442,20 @@ def _leer_lista_de_vectores(vectores_txt: List[List[str]], n: int) -> List[List[
     return vectores
 
 
-def independencia_lineal(vectores_txt: List[List[str]]) -> Dict:
+def independencia_lineal(
+    vectores_txt: List[List[str]], valores_parametros_txt: Optional[List[str]] = None
+) -> Dict:
     """¿Son v₁, …, vₖ linealmente independientes?
 
     Resuelve el sistema HOMOGÉNEO [v₁ … vₖ | 0]. Al ser homogéneo siempre es
-    consistente, así que el veredicto sale de comparar rango(A) con k:
-    rango = k → solo la solución trivial (independientes); rango < k → hay
-    variables libres y por tanto relaciones de dependencia no triviales.
+    consistente y siempre contiene la solución trivial x = 0. El veredicto
+    sale de comparar rango(A) con k:
+
+    - rango = k → solo la solución trivial → independientes;
+    - rango < k → hay variables libres y soluciones no triviales → dependientes.
+
+    Si ``valores_parametros_txt`` llega desde la interfaz, se evalúa la solución
+    general para esos valores de t, t1, … y se devuelve el vector x concreto.
     """
     if not vectores_txt:
         raise ErrorDeCampo("Debe dar al menos un vector.", campo="vectores")
@@ -464,12 +471,15 @@ def independencia_lineal(vectores_txt: List[List[str]]) -> Dict:
 
     Ab = p3.aumentada_desde_columnas(vectores, cero)
     analisis = _analizar(Ab, n, k)
-    solucion = _solucion(analisis, k, "c")     # el homogéneo nunca es inconsistente
+    # En Programa 3 se muestran los coeficientes desconocidos como x₁, …, xₖ.
+    solucion = _solucion(analisis, k, "x")
     rango = analisis["rango_A"]
     independientes = rango == k
 
     relacion = None
     verificacion = None
+    evaluacion_parametros = None
+
     if not independientes:
         libres = solucion["_libres"]
         expresiones = solucion["_expresiones"]
@@ -478,7 +488,7 @@ def independencia_lineal(vectores_txt: List[List[str]]) -> Dict:
         pesos = p3.evaluar_solucion(libres, expresiones, k, valores)
         indice_libre = libres[0]
 
-        # vⱼ = Σ (−cᵢ)·vᵢ con i ≠ j, para pintar el despeje término a término.
+        # vⱼ = Σ (−xᵢ)·vᵢ con i ≠ j, para pintar el despeje término a término.
         despeje = [
             {"indice": j, "nombre": f"v{p3.subindice(j)}", "coeficiente": numero(-pesos[j])}
             for j in range(k)
@@ -505,11 +515,54 @@ def independencia_lineal(vectores_txt: List[List[str]]) -> Dict:
             "esperado": vector_json(cero),
             "coincide": p3.vectores_iguales(recalculado, cero),
         }
+
+        if valores_parametros_txt is not None:
+            parametros = solucion["parametros"]
+            if len(valores_parametros_txt) != len(parametros):
+                raise ErrorDeCampo(
+                    f"Se esperaban {len(parametros)} valor(es) de parámetro y se recibieron "
+                    f"{len(valores_parametros_txt)}.",
+                    campo="parametros",
+                )
+            valores_elegidos = []
+            for i, texto in enumerate(valores_parametros_txt):
+                if texto is None or str(texto).strip() == "":
+                    raise ErrorDeCampo(
+                        f"Debe escribir un valor para {parametros[i]}.",
+                        campo="parametros",
+                        fila=i + 1,
+                    )
+                valores_elegidos.append(
+                    _convertir(texto, "parametros", i + 1, None, parametros[i])
+                )
+
+            vector_x = p3.evaluar_solucion(libres, expresiones, k, valores_elegidos)
+            comprobacion = p3.combinar_vectores(vector_x, vectores)
+            evaluacion_parametros = {
+                "parametros": [
+                    {"nombre": parametros[i], "valor": numero(valores_elegidos[i])}
+                    for i in range(len(parametros))
+                ],
+                "vector": vector_json(vector_x),
+                "texto_vector": p3.formatear_vector_fraccion(vector_x),
+                "conjunto_solucion": "{" + p3.formatear_vector_fraccion(vector_x) + "}",
+                "es_trivial": all(p3.es_cero(valor) for valor in vector_x),
+                "verificacion": {
+                    "recalculado": vector_json(comprobacion),
+                    "esperado": vector_json(cero),
+                    "coincide": p3.vectores_iguales(comprobacion, cero),
+                },
+            }
+
     _limpiar_privados(solucion)
 
     return {
         **analisis,
         "independientes": independientes,
+        "es_homogeneo": True,
+        "tiene_solucion_trivial": True,
+        "solo_solucion_trivial": independientes,
+        "tiene_soluciones_no_triviales": not independientes,
         "n": n,
         "k": k,
         "rango": rango,
@@ -518,6 +571,7 @@ def independencia_lineal(vectores_txt: List[List[str]]) -> Dict:
         "mas_vectores_que_dimensiones": k > n,
         "solucion": solucion,
         "relacion": relacion,
+        "evaluacion_parametros": evaluacion_parametros,
         "verificaciones": [verificacion] if verificacion else [],
         "vectores": [vector_json(v) for v in vectores],
     }

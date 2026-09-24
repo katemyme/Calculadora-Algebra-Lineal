@@ -59,6 +59,39 @@ class PruebasProgramaTres(unittest.TestCase):
         self.assertFalse(datos["independientes"])
         self.assertTrue(datos["verificaciones"][0]["coincide"])
 
+
+    def test_independencia_con_fracciones_y_parametro(self):
+        # Caso de balanceo: las columnas son las incógnitas x1..x5.
+        vectores = [
+            ["1", "1", "1", "3"],
+            ["0", "8", "6", "7"],
+            ["-3", "-5", "-6", "-7"],
+            ["0", "-2", "0", "-1"],
+            ["0", "0", "-1", "-2"],
+        ]
+        respuesta = self.enviar(
+            "independencia",
+            {"vectores": vectores, "valores_parametros": ["3"]},
+        )
+        self.assertEqual(respuesta.status_code, 200)
+        datos = respuesta.json()
+        self.assertFalse(datos["independientes"])
+        self.assertTrue(datos["es_homogeneo"])
+        self.assertTrue(datos["tiene_solucion_trivial"])
+        self.assertEqual(
+            [linea["texto"] for linea in datos["solucion"]["forma_parametrica"]],
+            ["t", "1/3t", "1/3t", "t", "t"],
+        )
+        self.assertEqual(
+            textos(datos["evaluacion_parametros"]["vector"]),
+            ["3", "1", "1", "3", "3"],
+        )
+        self.assertEqual(
+            datos["evaluacion_parametros"]["conjunto_solucion"],
+            "{(3, 1, 1, 3, 3)}",
+        )
+        self.assertTrue(datos["evaluacion_parametros"]["verificacion"]["coincide"])
+
     def test_ecuacion_con_solucion_unica(self):
         respuesta = self.enviar("ecuacion", {"A": [["2", "0"], ["0", "4"]], "b": ["2", "8"]})
         datos = respuesta.json()
@@ -111,9 +144,9 @@ class PruebasProgramaTres(unittest.TestCase):
         self.assertEqual(respuesta.status_code, 200)
         datos = respuesta.json()
         self.assertTrue(datos["coincide"])
-        self.assertEqual(textos(datos["u_mas_v"]), ["1.5", "3", "1"])
+        self.assertEqual(textos(datos["u_mas_v"]), ["3/2", "3", "1"])
         self.assertEqual(textos(datos["izquierda"]), textos(datos["derecha"]))
-        self.assertEqual(textos(datos["izquierda"]), ["10.5", "1"])
+        self.assertEqual(textos(datos["izquierda"]), ["21/2", "1"])
 
     def test_distributiva_con_u_de_dimension_incorrecta(self):
         respuesta = self.enviar("distributiva", {

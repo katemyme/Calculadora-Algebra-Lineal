@@ -69,14 +69,66 @@ def formatear_numero(valor):
     return texto
 
 
+def _fraccion_aproximada(valor, max_denominador=10000):
+    """Aproxima un float por una fracción reducida usando fracciones continuas.
+
+    Se mantiene el requisito académico del Programa 3: no se importa
+    ``fractions.Fraction``. Esta función solo cambia la PRESENTACIÓN del número;
+    el cálculo sigue realizándose con las operaciones implementadas a mano.
+    """
+    if es_cero(valor):
+        return 0, 1
+
+    signo = -1 if valor < 0 else 1
+    x = abs(valor)
+    entero = int(round(x))
+    if abs(x - entero) < EPS * max(1.0, x):
+        return signo * entero, 1
+
+    # Convergentes de la fracción continua de x.
+    h_anterior2, h_anterior1 = 0, 1
+    k_anterior2, k_anterior1 = 1, 0
+    y = x
+    mejor_num, mejor_den = int(round(x)), 1
+
+    for _ in range(32):
+        a = int(y)
+        h = a * h_anterior1 + h_anterior2
+        k = a * k_anterior1 + k_anterior2
+        if k > max_denominador:
+            break
+        mejor_num, mejor_den = h, k
+        resto = y - a
+        if abs(resto) < EPS:
+            break
+        h_anterior2, h_anterior1 = h_anterior1, h
+        k_anterior2, k_anterior1 = k_anterior1, k
+        y = 1.0 / resto
+
+    return signo * mejor_num, mejor_den
+
+
+def formatear_fraccion(valor):
+    """Muestra enteros o fracciones simples: 0.333333… → 1/3, 1.5 → 3/2."""
+    numerador, denominador = _fraccion_aproximada(valor)
+    if denominador == 1:
+        return str(numerador)
+    return f"{numerador}/{denominador}"
+
+
 def subindice(indice_base_cero):
     """Convierte el índice i (base 0) en el subíndice Unicode de i + 1."""
     return str(indice_base_cero + 1).translate(_SUBINDICES)
 
 
 def formatear_vector(vector):
-    """Escribe v = (v₁, v₂, …, vₙ) como texto."""
+    """Escribe v = (v₁, v₂, …, vₙ) como texto decimal/entero."""
     return "(" + ", ".join(formatear_numero(x) for x in vector) + ")"
+
+
+def formatear_vector_fraccion(vector):
+    """Escribe un vector usando fracciones simples cuando sea necesario."""
+    return "(" + ", ".join(formatear_fraccion(x) for x in vector) + ")"
 
 
 def nombres_parametros(cantidad):
@@ -96,12 +148,12 @@ def formatear_expresion(constante, terminos):
     """
     texto = ""
     if not es_cero(constante):
-        texto = formatear_numero(constante)
+        texto = formatear_fraccion(constante)
 
     for coeficiente, nombre in terminos:
         if es_cero(coeficiente):
             continue
-        magnitud = formatear_numero(abs(coeficiente))
+        magnitud = formatear_fraccion(abs(coeficiente))
         if magnitud == "1":                   # 1·t se escribe t
             magnitud = ""
         if texto == "":                       # primer término de la expresión
@@ -639,9 +691,9 @@ def imprimir_solucion_parametrica(libres, expresiones, n, letra):
 
     particular = evaluar_solucion(libres, expresiones, n, [0.0] * len(libres))
     direcciones = vectores_direccion(libres, expresiones, n)
-    forma = f"    {letra} = {formatear_vector(particular)}"
+    forma = f"    {letra} = {formatear_vector_fraccion(particular)}"
     for indice in range(len(libres)):
-        forma += f" + {parametros[indice]}·{formatear_vector(direcciones[indice])}"
+        forma += f" + {parametros[indice]}·{formatear_vector_fraccion(direcciones[indice])}"
     print()
     print("  Forma vectorial:")
     print(forma)
@@ -656,7 +708,7 @@ def texto_combinacion(pesos):
     texto = ""
     for j in range(len(pesos)):
         c = pesos[j]
-        magnitud = formatear_numero(abs(c))
+        magnitud = formatear_fraccion(abs(c))
         termino = f"{magnitud}·v{subindice(j)}"
         if j == 0:
             texto = ("-" if c < 0 and not es_cero(c) else "") + termino
@@ -733,7 +785,7 @@ def texto_despeje(pesos, indice_libre):
         if j == indice_libre or es_cero(pesos[j]):
             continue
         coeficiente = -pesos[j]                # se pasa al otro lado del "="
-        magnitud = formatear_numero(abs(coeficiente))
+        magnitud = formatear_fraccion(abs(coeficiente))
         if magnitud == "1":                    # 1·v se escribe v
             termino = f"v{subindice(j)}"
         else:
@@ -752,8 +804,8 @@ def texto_despeje(pesos, indice_libre):
 def resolver_independencia(vectores):
     """¿Son v₁, …, vₖ linealmente independientes?
 
-    Se resuelve el sistema HOMOGÉNEO c₁·v₁ + ⋯ + cₖ·vₖ = 0 con [v₁ … vₖ | 0].
-    Al ser homogéneo siempre es consistente (c = 0 es solución), así que basta
+    Se resuelve el sistema HOMOGÉNEO x₁·v₁ + ⋯ + xₖ·vₖ = 0 con [v₁ … vₖ | 0].
+    Al ser homogéneo siempre es consistente (x = 0 es solución), así que basta
     comparar rango(A) con k:
 
     - rango = k  → solución única (la trivial) → LINEALMENTE INDEPENDIENTES;
@@ -776,8 +828,8 @@ def resolver_independencia(vectores):
     if tipo == "determinado":
         print("  RESULTADO: los vectores son LINEALMENTE INDEPENDIENTES.")
         print(f"    rango = {rango} = k = {k}: no hay variables libres, así que la")
-        print("    única solución de c₁·v₁ + ⋯ + cₖ·vₖ = 0 es la trivial")
-        print("    c₁ = c₂ = ⋯ = cₖ = 0.")
+        print("    única solución de x₁·v₁ + ⋯ + xₖ·vₖ = 0 es la trivial")
+        print("    x₁ = x₂ = ⋯ = xₖ = 0.")
         print("    Ningún vᵢ es combinación lineal de los demás.")
         print(f"    Forman una base del subespacio que generan (dimensión {rango}).")
         return
@@ -790,18 +842,18 @@ def resolver_independencia(vectores):
 
     print("  RESULTADO: los vectores son LINEALMENTE DEPENDIENTES.")
     print(f"    rango = {rango} < k = {k}: quedan {k - rango} variable(s) libre(s),")
-    print("    luego c₁·v₁ + ⋯ + cₖ·vₖ = 0 admite soluciones distintas de la trivial.")
+    print("    luego x₁·v₁ + ⋯ + xₖ·vₖ = 0 admite soluciones distintas de la trivial.")
 
     print()
     print("  Todas las relaciones de dependencia (solución del sistema homogéneo):")
-    imprimir_solucion_parametrica(libres, expresiones, k, "c")
+    imprimir_solucion_parametrica(libres, expresiones, k, "x")
 
     print()
-    print(f"  Una relación concreta (c{subindice(indice_libre)} = 1, "
+    print(f"  Una relación concreta (x{subindice(indice_libre)} = 1, "
           "resto de variables libres = 0):")
     print(f"    {texto_combinacion(pesos)} = 0")
     print("    Coeficientes: " + ", ".join(
-        f"c{subindice(j)} = {formatear_numero(pesos[j])}" for j in range(k)))
+        f"x{subindice(j)} = {formatear_fraccion(pesos[j])}" for j in range(k)))
 
     print()
     print("  Despejando el vector redundante:")
@@ -1377,7 +1429,7 @@ def opcion_independencia():
     for j in range(k):
         vectores.append(leer_vector(f"v{subindice(j)}", n))
     print()
-    print("  Se resuelve el sistema homogéneo A·c = 0 con A = [v₁ ... vₖ]")
+    print("  Se resuelve el sistema homogéneo A·x = 0 con A = [v₁ ... vₖ]")
     print("  (los vectores van como columnas y el término independiente es 0).")
     resolver_independencia(vectores)
 

@@ -1,4 +1,4 @@
-"""API HTTP de la calculadora de Álgebra Lineal - Programas 2 y 3."""
+"""API HTTP de la calculadora de Álgebra Lineal - Programas 2, 3 y 4."""
 
 import logging
 import traceback
@@ -14,15 +14,19 @@ from app.modelos import (
     PeticionDistributiva,
     PeticionEcuacion,
     PeticionIndependencia,
+    PeticionIndependenciaP4,
     PeticionMatrices,
     PeticionProducto,
     PeticionResolver,
+    PeticionTranspuesta,
     PeticionVectores,
     RespuestaError,
 )
 from calculo.nucleo import ErrorDeEntrada
 from calculo.programa2 import resolver_sistema
 import calculo.programa3_web as p3web
+import calculo.programa4_web as p4web
+import calculo.transpuesta as transpuesta
 from app.serializacion import serializar
 
 
@@ -128,6 +132,23 @@ def p3_distributiva(peticion: PeticionDistributiva) -> dict:
           responses={422: {"model": RespuestaError}})
 def p3_balanceo(peticion: PeticionBalanceo) -> dict:
     return p3web.balancear_ecuacion(peticion.reaccion)
+
+
+@app.post("/api/p3/transpuesta", summary="Demuestra un teorema de la matriz transpuesta",
+          responses={422: {"model": RespuestaError}})
+def p3_transpuesta(peticion: PeticionTranspuesta) -> dict:
+    return serializar(
+        transpuesta.demostrar(peticion.teorema, peticion.A, peticion.B, peticion.r)
+    )
+
+
+# ---------------------------------------------------------------------------
+# Programa 4 (el cálculo vive en "backend/programa_4/modulos/modulo_vectores.py")
+# ---------------------------------------------------------------------------
+@app.post("/api/p4/independencia", summary="Vectores: ¿v₁…vₖ son L.I. o L.D.?",
+          responses={422: {"model": RespuestaError}})
+def p4_independencia(peticion: PeticionIndependenciaP4) -> dict:
+    return serializar(p4web.independencia_lineal(peticion.vectores))
 
 
 @app.exception_handler(ErrorDeEntrada)

@@ -16,7 +16,7 @@ CUMPLIMIENTO DE RESTRICCIONES ACADÉMICAS
 """
 
 from fractions import Fraction
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from teoremas.resumen_teoremas import TEOREMAS
 
@@ -88,12 +88,17 @@ def _buscar_fila_pivote(
 
 
 def _anular_columna(
-    matriz: List[List[Fraction]], m: int, fila_pivote: int, columna: int
+    matriz: List[List[Fraction]],
+    m: int,
+    fila_pivote: int,
+    columna: int,
+    historial: Optional[list] = None,
 ) -> List[str]:
     """Aplica Fₖ → Fₖ − c·Fᵢ a todas las filas salvo la del pivote.
 
     Anula la columna del pivote tanto por encima como por debajo de él
-    (eliminación de Gauss-Jordan, no solo de Gauss).
+    (eliminación de Gauss-Jordan, no solo de Gauss). Si se da `historial`,
+    se guarda en él la matriz tras cada operación (ver `escalonar`).
     """
     pasos: List[str] = []
     for fila in range(m):
@@ -114,11 +119,13 @@ def _anular_columna(
             f"F{_subindice(fila)} → F{_subindice(fila)} {signo} "
             f"{_factor_por_fila(factor, fila_pivote)}"
         )
+        if historial is not None:
+            historial.append(("eliminacion", columna, _copiar_matriz(matriz)))
     return pasos
 
 
 def escalonar(
-    Ab: List[List[Fraction]], m: int, n: int
+    Ab: List[List[Fraction]], m: int, n: int, historial: Optional[list] = None
 ) -> Tuple[List[List[Fraction]], List[str], List[int]]:
     """Lleva [A | 0] a su forma escalonada reducida por filas (Gauss-Jordan).
 
@@ -130,6 +137,10 @@ def escalonar(
       4. Fᵢ → (1/p)·Fᵢ  para dejar el pivote en 1.
       5. Fₖ → Fₖ − c·Fᵢ  para anular la columna arriba y abajo.
       6. Incrementa fila_pivote.
+
+    Si se da `historial` (una lista), por cada paso se agrega en él
+    (tipo, columna, copia_de_la_matriz) para que la web pueda dibujar la
+    matriz después de cada operación. La consola no lo usa.
     """
     matriz = _copiar_matriz(Ab)               # se trabaja sobre una copia
     pasos: List[str] = []
@@ -153,6 +164,8 @@ def escalonar(
                 matriz[fila_pivote],
             )
             pasos.append(f"F{_subindice(fila_pivote)} ↔ F{_subindice(fila_maxima)}")
+            if historial is not None:
+                historial.append(("intercambio", columna, _copiar_matriz(matriz)))
 
         # Paso 4: Fᵢ → (1/p)·Fᵢ para normalizar el pivote a 1.
         pivote = matriz[fila_pivote][columna]
@@ -162,9 +175,11 @@ def escalonar(
             pasos.append(
                 f"F{_subindice(fila_pivote)} → ({inverso})·F{_subindice(fila_pivote)}"
             )
+            if historial is not None:
+                historial.append(("normalizacion", columna, _copiar_matriz(matriz)))
 
         # Paso 5: Fₖ → Fₖ − c·Fᵢ para anular el resto de la columna.
-        pasos.extend(_anular_columna(matriz, m, fila_pivote, columna))
+        pasos.extend(_anular_columna(matriz, m, fila_pivote, columna, historial))
 
         # Paso 6: esta columna ya tiene pivote; pasa a la siguiente fila.
         columnas_pivote.append(columna)

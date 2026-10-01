@@ -113,3 +113,21 @@ class PeticionBalanceo(BaseModel):
     """POST /api/p3/balanceo. Reacción escrita con fórmulas: "H2 + O2 -> H2O"."""
 
     reaccion: str = Field(..., max_length=300)
+
+
+# ---------------------------------------------------------------------------
+# Programa 4
+# ---------------------------------------------------------------------------
+class PeticionIndependenciaP4(BaseModel):
+    """POST /api/p4/independencia. Cada vector es una lista de n componentes."""
+
+    vectores: List[List[str]]
+
+
+class PeticionTranspuesta(BaseModel):
+    """POST /api/p3/transpuesta. Demuestra un teorema de la transpuesta."""
+
+    teorema: Literal["doble", "suma", "escalar", "producto"]
+    A: List[List[str]]
+    B: List[List[str]] = Field(default_factory=list)
+    r: Optional[str] = None

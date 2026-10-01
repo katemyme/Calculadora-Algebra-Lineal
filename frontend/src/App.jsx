@@ -12,6 +12,7 @@ import ConfiguracionSistema from "./components/ConfiguracionSistema.jsx";
 import MatrizAumentada from "./components/MatrizAumentada.jsx";
 import PanelResultados from "./components/PanelResultados.jsx";
 import Programa3 from "./components/programa3/Programa3.jsx";
+import Programa4 from "./components/programa4/Programa4.jsx";
 
 const DIMENSION_MINIMA = 1;
 const DIMENSION_MAXIMA = 8;
@@ -22,20 +23,28 @@ const matrizVacia = (filas, columnas) =>
 
 const PROGRAMAS = {
   p2: {
-    etiqueta: "Programa 2 · Gauss-Jordan",
-    resaltado: "Gauss-Jordan",
+    etiqueta: "Sistemas de Ecuaciones Lineales",
+    resaltado: "Sistemas de Ecuaciones Lineales",
     descripcion:
       "Reduce la matriz aumentada a su forma escalonada reducida, identifica " +
       "columnas pivote, variables básicas y libres, y construye la solución " +
       "final del sistema.",
   },
   p3: {
-    etiqueta: "Programa 3 · ℝⁿ y matrices",
-    resaltado: "ℝⁿ y matrices",
+    etiqueta: "Matrices",
+    resaltado: "Matrices",
     descripcion:
       "Opera vectores de ℝⁿ y matrices, decide si un vector es combinación " +
       "lineal de otros y resuelve la ecuación matricial A·x = b, con cada paso " +
       "y su verificación.",
+  },
+  p4: {
+    etiqueta: "Vectores",
+    resaltado: "Vectores",
+    descripcion:
+      "Evalúa si un conjunto de vectores de ℝⁿ es linealmente independiente " +
+      "(L.I.) o dependiente (L.D.) reduciendo la matriz de columnas [A | 0] " +
+      "y contando sus pivotes.",
   },
 };
 
@@ -223,6 +232,8 @@ export default function App() {
         )}
 
         {programa === "p3" && <Programa3 />}
+
+        {programa === "p4" && <Programa4 />}
 
         {programa === "p2" && (
         <>

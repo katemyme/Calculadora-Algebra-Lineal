@@ -4,7 +4,7 @@
 TEOREMAS: dict = {
     1: "En construcción",
     2: (
-        "Teorema de Independencia Lineal: Un conjunto de k vectores en R^n es "
+        "Teorema de Independencia Lineal: Un conjunto de k vectores en ℝⁿ es "
         "L.I. si y solo si la única solución a c₁v₁ + c₂v₂ + ... + cₖvₖ = 0 es "
         "la trivial (sin variables libres)."
     ),

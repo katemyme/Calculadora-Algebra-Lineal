@@ -74,6 +74,7 @@ export const programa3 = {
   ecuacion: (cuerpo) => enviar("/api/p3/ecuacion", cuerpo),
   distributiva: (cuerpo) => enviar("/api/p3/distributiva", cuerpo),
   balanceo: (cuerpo) => enviar("/api/p3/balanceo", cuerpo),
+  transpuesta: (cuerpo) => enviar("/api/p3/transpuesta", cuerpo),
 };
 
 export async function comprobarSalud() {
@@ -84,3 +85,9 @@ export async function comprobarSalud() {
     return false;
   }
 }
+
+// Programa 4 (botón "Vectores"): el cálculo lo hace
+// "backend/programa_4/modulos/modulo_vectores.py", a través del backend.
+export const programa4 = {
+  independencia: (cuerpo) => enviar("/api/p4/independencia", cuerpo),
+};

@@ -12,6 +12,7 @@ import SeccionProducto from "./SeccionProducto.jsx";
 import SeccionEcuacion from "./SeccionEcuacion.jsx";
 import SeccionDistributiva from "./SeccionDistributiva.jsx";
 import SeccionBalanceo from "./SeccionBalanceo.jsx";
+import SeccionTranspuesta from "./SeccionTranspuesta.jsx";
 
 const SECCIONES = [
   {
@@ -49,6 +50,14 @@ const SECCIONES = [
     titulo: "Producto matricial",
     descripcion: "cᵢⱼ = Σₖ aᵢₖ·bₖⱼ con tres bucles anidados (opción 8).",
     Componente: SeccionProducto,
+  },
+  {
+    id: "transpuesta",
+    simbolo: "Aᵀ",
+    titulo: "Transpuesta",
+    descripcion:
+      "Visualiza cómo cada fila pasa a ser columna y demuestra los teoremas de la transpuesta paso a paso.",
+    Componente: SeccionTranspuesta,
   },
   {
     id: "ecuacion",

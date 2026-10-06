@@ -13,6 +13,7 @@ import MatrizAumentada from "./components/MatrizAumentada.jsx";
 import PanelResultados from "./components/PanelResultados.jsx";
 import Programa3 from "./components/programa3/Programa3.jsx";
 import Programa4 from "./components/programa4/Programa4.jsx";
+import Programa5 from "./components/programa5/Programa5.jsx";
 
 const DIMENSION_MINIMA = 1;
 const DIMENSION_MAXIMA = 8;
@@ -45,6 +46,14 @@ const PROGRAMAS = {
       "Evalúa si un conjunto de vectores de ℝⁿ es linealmente independiente " +
       "(L.I.) o dependiente (L.D.) reduciendo la matriz de columnas [A | 0] " +
       "y contando sus pivotes.",
+  },
+  p5: {
+    etiqueta: "Álgebra de Matrices",
+    resaltado: "Álgebra de Matrices",
+    descripcion:
+      "Opera matrices, calcula el determinante por cofactores, Sarrus y " +
+      "reducción triangular, obtiene la inversa por Gauss-Jordan o por la " +
+      "adjunta y verifica sus propiedades con fracciones exactas.",
   },
 };
 
@@ -234,6 +243,8 @@ export default function App() {
         {programa === "p3" && <Programa3 />}
 
         {programa === "p4" && <Programa4 />}
+
+        {programa === "p5" && <Programa5 />}
 
         {programa === "p2" && (
         <>

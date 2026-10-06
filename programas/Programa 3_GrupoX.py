@@ -888,6 +888,43 @@ def verificar_ax_b(A, x, b, etiqueta):
         print("    ✘ A·x ≠ b")
 
 
+def filas_de_texto(textos):
+    """Da forma "[ a b c ]" a cada fila de textos, alineando las columnas a la derecha."""
+    anchos = [max(len(fila[j]) for fila in textos) for j in range(len(textos[0]))]
+    return ["[ " + " ".join(fila[j].rjust(anchos[j]) for j in range(len(fila))) + " ]"
+            for fila in textos]
+
+
+def imprimir_forma_matricial(A, b):
+    """Muestra el sistema como A·x = b, identificando A, x y b lado a lado."""
+    m, n = dimensiones(A)
+    bloque_A = filas_de_texto([[formatear_numero(a) for a in fila] for fila in A])
+    bloque_x = filas_de_texto([["x" + subindice(j)] for j in range(n)])
+    bloque_b = filas_de_texto([[formatear_numero(bi)] for bi in b])
+
+    # A y b tienen m filas; x tiene n. Se rellenan con espacios hasta la mayor.
+    alto = max(m, n)
+    medio = (alto - 1) // 2
+    bloques = []
+    for bloque in (bloque_A, bloque_x, bloque_b):
+        ancho = len(bloque[0])
+        bloques.append(bloque + [" " * ancho] * (alto - len(bloque)))
+
+    print("  Forma matricial A·x = b:")
+    print()
+    for i in range(alto):
+        por = " · " if i == medio else "   "
+        igual = " = " if i == medio else "   "
+        print(f"    {bloques[0][i]}{por}{bloques[1][i]}{igual}{bloques[2][i]}")
+    print(f"    {'A'.center(len(bloques[0][0]))}   {'x'.center(len(bloques[1][0]))}"
+          f"   {'b'.center(len(bloques[2][0]))}")
+    print()
+    print(f"    A = matriz de coeficientes ({m}×{n})")
+    print(f"    x = vector incógnita ({', '.join('x' + subindice(j) for j in range(n))})")
+    print(f"    b = vector de términos independientes {formatear_vector(b)}")
+    print()
+
+
 def resolver_ax_b(A, b):
     """Resuelve la ecuación matricial A·x = b (A m×n, b ∈ ℝᵐ) mediante [A | b]."""
     m, n = dimensiones(A)
@@ -1500,6 +1537,7 @@ def opcion_ax_b():
     A = leer_matriz("A", m, n)
     b = leer_vector("b", m)
     print()
+    imprimir_forma_matricial(A, b)
     resolver_ax_b(A, b)
 
 

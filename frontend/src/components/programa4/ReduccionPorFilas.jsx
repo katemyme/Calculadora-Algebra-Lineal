@@ -1,7 +1,8 @@
-// Reducción por filas de [A | 0], una operación a la vez: matriz de antes →
-// operación → matriz de después, con las celdas que cambian resaltadas y la
-// escalera de pivotes creciendo. Las matrices ya vienen calculadas por el
-// backend (`pasos_detalle`); aquí solo se elige cuál mostrar.
+// Reducción por filas de [A | 0] (o de [A | I], indicando `columnasDerecha`),
+// una operación a la vez: matriz de antes → operación → matriz de después, con
+// las celdas que cambian resaltadas y la escalera de pivotes creciendo. Las
+// matrices ya vienen calculadas por el backend (`pasos_detalle`); aquí solo se
+// elige cuál mostrar.
 
 import { useEffect, useState } from "react";
 import { ETIQUETA_PASO } from "../../lib/formato.js";
@@ -10,7 +11,12 @@ import { BotonControl } from "../programa3/VisualTranspuesta.jsx";
 
 const MS_POR_PASO = 1800;
 
-export default function ReduccionPorFilas({ matrizInicial, pasos, columnasPivote }) {
+export default function ReduccionPorFilas({
+  matrizInicial,
+  pasos,
+  columnasPivote,
+  columnasDerecha = 1, // n para reducir [A | I] (Programa 5)
+}) {
   const total = pasos.length;
   const [actual, setActual] = useState(1); // paso que se muestra (1..total)
   const [reproduciendo, setReproduciendo] = useState(false);
@@ -86,7 +92,7 @@ export default function ReduccionPorFilas({ matrizInicial, pasos, columnasPivote
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3 overflow-x-auto">
           <div className="space-y-1">
             <p className="text-xs font-semibold text-grafito">Antes</p>
-            <MatrizEstatica matriz={previa} />
+            <MatrizEstatica matriz={previa} columnasDerecha={columnasDerecha} />
           </div>
           <div className="flex flex-col items-center text-pivote">
             <span className="font-display text-xs font-semibold">{paso.notacion}</span>
@@ -96,6 +102,7 @@ export default function ReduccionPorFilas({ matrizInicial, pasos, columnasPivote
             <p className="text-xs font-semibold text-grafito">Después</p>
             <MatrizEstatica
               matriz={paso.matriz}
+              columnasDerecha={columnasDerecha}
               celdasResaltadas={cambios}
               columnasPivote={pivotesHastaAqui}
             />

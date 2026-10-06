@@ -345,6 +345,48 @@ pestaña **Programa 3** de la calculadora.
 
 ---
 
+## Programa 5
+
+Módulo III de la calculadora: **Álgebra de Matrices**. Todo el cálculo está en
+`backend/programa_4/modulos/modulo_matrices.py`, con listas anidadas y
+`fractions.Fraction`; la consola y la web usan esas mismas funciones.
+
+| Opción | Operación | Pestaña en la web |
+|---|---|---|
+| 0 | Teoremas clave del módulo | Teoremas clave |
+| 1–5 | A + B, A − B, k·A, A·B y Aᵀ | Operaciones |
+| 6 | Determinante: cofactores, Sarrus y reducción triangular | Determinante |
+| 7–8 | Inversa por Gauss-Jordan sobre [A \| I] y por adjunta | Inversa |
+| 9 | Verificador de seis propiedades de la inversa y del determinante | Verificador |
+
+### Versión de consola
+
+Solo necesita Python. Desde `backend/programa_4/`:
+
+```powershell
+python main.py
+```
+
+y elegir la opción **3. Álgebra de Matrices** del menú principal.
+
+### Versión web
+
+Con el backend y el frontend en marcha (ver [Ejecución](#ejecución)), abrir el
+botón **Álgebra de Matrices** de la calculadora.
+
+### Pruebas y documentación del Programa 5
+
+Desde `backend/`:
+
+```powershell
+python -m pruebas.pruebas_programa5        # funciones de cálculo, solo con assert
+python -m pruebas.pruebas_programa5_web    # los mismos casos a través de la API
+```
+
+- [Notas para el informe](docs/programa5/NOTAS_INFORME_P5.md)
+
+---
+
 ## Requisitos
 
 | Herramienta | Versión | Uso |
@@ -851,6 +893,11 @@ http://localhost:8000
 | `POST` | `/api/p3/independencia` | Programa 3: independencia lineal |
 | `POST` | `/api/p3/ecuacion` | Programa 3: resolver A·x = b |
 | `POST` | `/api/p3/distributiva` | Programa 3: verificar A(u + v) = A·u + A·v |
+| `POST` | `/api/p5/operacion` | Programa 5: A + B, A − B, k·A, A·B o Aᵀ |
+| `POST` | `/api/p5/determinante` | Programa 5: det(A) por cofactores, Sarrus y reducción triangular |
+| `POST` | `/api/p5/inversa` | Programa 5: A⁻¹ por Gauss-Jordan o por adjunta |
+| `POST` | `/api/p5/verificador` | Programa 5: verificador de propiedades con A y B invertibles |
+| `GET` | `/api/p5/teoremas` | Programa 5: teoremas clave del módulo |
 | `GET` | `/docs` | Documentación interactiva de FastAPI |
 
 ---

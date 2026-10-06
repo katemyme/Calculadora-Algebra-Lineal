@@ -14,19 +14,17 @@ export class ErrorDeCalculo extends Error {
     this.name = "ErrorDeCalculo";
     this.fila = fila;
     this.columna = columna;
-    this.campo = campo; // Programa 3: "A", "B", "u", "v", "b", "c", "vectores" o "reaccion"
+    // Programa 3: "A", "B", "u", "v", "b", "c", "vectores" o "reaccion".
+    // Programa 5: "A", "B", "k", "intercambio", "reemplazo" o "escalamiento".
+    this.campo = campo;
   }
 }
 
-async function enviar(ruta, cuerpo) {
+async function solicitar(ruta, opciones) {
   let respuesta;
 
   try {
-    respuesta = await fetch(`${URL_BASE}${ruta}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(cuerpo),
-    });
+    respuesta = await fetch(`${URL_BASE}${ruta}`, opciones);
   } catch {
     throw new ErrorDeServidor(
       "No se pudo conectar con el servidor. En backend ejecuta: " +
@@ -52,6 +50,18 @@ async function enviar(ruta, cuerpo) {
   }
 
   return datos;
+}
+
+function enviar(ruta, cuerpo) {
+  return solicitar(ruta, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(cuerpo),
+  });
+}
+
+function consultar(ruta) {
+  return solicitar(ruta, { method: "GET" });
 }
 
 export function resolverSistema(m, n, matriz, valoresParametros = null) {
@@ -90,4 +100,14 @@ export async function comprobarSalud() {
 // "backend/programa_4/modulos/modulo_vectores.py", a través del backend.
 export const programa4 = {
   independencia: (cuerpo) => enviar("/api/p4/independencia", cuerpo),
+};
+
+// Programa 5 (botón "Álgebra de Matrices"): el cálculo lo hace
+// "backend/programa_4/modulos/modulo_matrices.py", a través del backend.
+export const programa5 = {
+  operacion: (cuerpo) => enviar("/api/p5/operacion", cuerpo),
+  determinante: (cuerpo) => enviar("/api/p5/determinante", cuerpo),
+  inversa: (cuerpo) => enviar("/api/p5/inversa", cuerpo),
+  verificador: (cuerpo) => enviar("/api/p5/verificador", cuerpo),
+  teoremas: () => consultar("/api/p5/teoremas"),
 };

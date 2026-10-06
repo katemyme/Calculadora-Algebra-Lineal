@@ -7,7 +7,7 @@ import Pestanas from "../ui/Pestanas.jsx";
 import PanelProcedimiento from "../PanelProcedimiento.jsx";
 import PanelClasificacion from "../PanelClasificacion.jsx";
 import MatrizEstatica from "../MatrizEstatica.jsx";
-import { Operador, VectorColumna, textoVector } from "./comunes.jsx";
+import { BloqueMatriz, Operador, VectorColumna, textoVector } from "./comunes.jsx";
 
 const PESTANAS = [
   { id: "resultado", etiqueta: "Resultado" },
@@ -48,7 +48,10 @@ export default function ResultadoSistema({ resultado, modo }) {
 
       <div className="p-5 sm:p-6">
         {activa === "resultado" && (
-          <PanelRespuesta resultado={resultado} letra={letra} esCombinacion={esCombinacion} />
+          <div className="space-y-6">
+            {!esCombinacion && <FormaMatricial matrizInicial={resultado.matriz_inicial} />}
+            <PanelRespuesta resultado={resultado} letra={letra} esCombinacion={esCombinacion} />
+          </div>
         )}
 
         {activa === "procedimiento" && (
@@ -82,6 +85,49 @@ export default function ResultadoSistema({ resultado, modo }) {
             <VerificacionEcuacion resultado={resultado} />
           ))}
       </div>
+    </div>
+  );
+}
+
+/** El sistema escrito como A·x = b, identificando A, x y b a partir de [A | b]. */
+function FormaMatricial({ matrizInicial }) {
+  // Solo se separan columnas de la aumentada (recorte de filas de texto).
+  const A = matrizInicial.map((fila) => fila.slice(0, -1));
+  const b = matrizInicial.map((fila) => fila[fila.length - 1]);
+  const m = A.length;
+  const n = A[0].length;
+  const nombres = Array.from({ length: n }, (_, j) => `x${subindice(j + 1)}`);
+  const x = nombres.map((nombre) => ({ fraccion: nombre }));
+
+  return (
+    <div className="math-form-card">
+      <p className="text-xs font-semibold uppercase tracking-wide text-grafito">
+        Forma matricial A·x = b
+      </p>
+      <div className="p3-lienzo mt-3">
+        <BloqueMatriz nombre="A" orden={`${m}×${n}`}>
+          <MatrizEstatica matriz={A} aumentada={false} />
+        </BloqueMatriz>
+        <Operador>·</Operador>
+        <BloqueMatriz nombre="x" orden={`${n}×1`}>
+          <VectorColumna vector={x} />
+        </BloqueMatriz>
+        <Operador>=</Operador>
+        <BloqueMatriz nombre="b" orden={`${m}×1`}>
+          <VectorColumna vector={b} />
+        </BloqueMatriz>
+      </div>
+      <ul className="mt-3 space-y-1 text-sm text-tinta">
+        <li>
+          <strong>A</strong> = matriz de coeficientes ({m}×{n})
+        </li>
+        <li>
+          <strong>x</strong> = vector incógnita ({nombres.join(", ")})
+        </li>
+        <li>
+          <strong>b</strong> = vector de términos independientes {textoVector(b)}
+        </li>
+      </ul>
     </div>
   );
 }

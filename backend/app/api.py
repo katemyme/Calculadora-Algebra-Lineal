@@ -1,4 +1,4 @@
-"""API HTTP de la calculadora de Álgebra Lineal - Programas 2, 3 y 4."""
+"""API HTTP de la calculadora de Álgebra Lineal - Programas 2, 3, 4 y 5."""
 
 import logging
 import traceback
@@ -11,21 +11,26 @@ from fastapi.responses import JSONResponse
 from app.modelos import (
     PeticionBalanceo,
     PeticionCombinacion,
+    PeticionDeterminanteP5,
     PeticionDistributiva,
     PeticionEcuacion,
     PeticionIndependencia,
     PeticionIndependenciaP4,
+    PeticionInversaP5,
     PeticionMatrices,
+    PeticionOperacionP5,
     PeticionProducto,
     PeticionResolver,
     PeticionTranspuesta,
     PeticionVectores,
+    PeticionVerificadorP5,
     RespuestaError,
 )
 from calculo.nucleo import ErrorDeEntrada
 from calculo.programa2 import resolver_sistema
 import calculo.programa3_web as p3web
 import calculo.programa4_web as p4web
+import calculo.programa5_web as p5web
 import calculo.transpuesta as transpuesta
 from app.serializacion import serializar
 
@@ -149,6 +154,41 @@ def p3_transpuesta(peticion: PeticionTranspuesta) -> dict:
           responses={422: {"model": RespuestaError}})
 def p4_independencia(peticion: PeticionIndependenciaP4) -> dict:
     return serializar(p4web.independencia_lineal(peticion.vectores))
+
+
+# ---------------------------------------------------------------------------
+# Programa 5 (el cálculo vive en "backend/programa_4/modulos/modulo_matrices.py")
+# ---------------------------------------------------------------------------
+@app.post("/api/p5/operacion", summary="Matrices: A + B, A − B, k·A, A·B o Aᵀ",
+          responses={422: {"model": RespuestaError}})
+def p5_operacion(peticion: PeticionOperacionP5) -> dict:
+    return serializar(
+        p5web.operar(peticion.operacion, peticion.A, peticion.B, peticion.k)
+    )
+
+
+@app.post("/api/p5/determinante", summary="det(A) por cofactores, Sarrus y reducción",
+          responses={422: {"model": RespuestaError}})
+def p5_determinante(peticion: PeticionDeterminanteP5) -> dict:
+    return serializar(p5web.calcular_determinante(peticion.A))
+
+
+@app.post("/api/p5/inversa", summary="A⁻¹ por Gauss-Jordan sobre [A | I] o por adjunta",
+          responses={422: {"model": RespuestaError}})
+def p5_inversa(peticion: PeticionInversaP5) -> dict:
+    return serializar(p5web.calcular_inversa(peticion.metodo, peticion.A))
+
+
+@app.post("/api/p5/verificador", summary="Verifica las propiedades de inversa y determinante",
+          responses={422: {"model": RespuestaError}})
+def p5_verificador(peticion: PeticionVerificadorP5) -> dict:
+    operaciones = peticion.model_dump(include={"intercambio", "reemplazo", "escalamiento"})
+    return serializar(p5web.verificar_propiedades(peticion.A, peticion.B, operaciones))
+
+
+@app.get("/api/p5/teoremas", summary="Teoremas clave del Módulo III")
+def p5_teoremas() -> dict:
+    return p5web.teoremas_clave()
 
 
 @app.exception_handler(ErrorDeEntrada)

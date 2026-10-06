@@ -131,3 +131,63 @@ class PeticionTranspuesta(BaseModel):
     A: List[List[str]]
     B: List[List[str]] = Field(default_factory=list)
     r: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+# Programa 5
+# ---------------------------------------------------------------------------
+class PeticionOperacionP5(BaseModel):
+    """POST /api/p5/operacion. operacion: suma | resta | escalar | producto | transpuesta."""
+
+    operacion: Literal["suma", "resta", "escalar", "producto", "transpuesta"]
+    A: List[List[str]]
+    B: List[List[str]] = Field(default_factory=list)
+    k: Optional[str] = None
+
+
+class PeticionDeterminanteP5(BaseModel):
+    """POST /api/p5/determinante. A debe ser cuadrada."""
+
+    A: List[List[str]]
+
+
+class PeticionInversaP5(BaseModel):
+    """POST /api/p5/inversa. metodo: gauss_jordan | adjunta. A debe ser cuadrada."""
+
+    metodo: Literal["gauss_jordan", "adjunta"]
+    A: List[List[str]]
+
+
+class IntercambioP5(BaseModel):
+    """Fᵢ ↔ Fⱼ. Las filas viajan en base 1, como las ve el usuario."""
+
+    fila_i: int
+    fila_j: int
+
+
+class ReemplazoP5(BaseModel):
+    """Fᵢ → Fᵢ + k·Fⱼ. El factor k viaja como texto para conservar fracciones."""
+
+    fila_i: int
+    fila_j: int
+    k: str
+
+
+class EscalamientoP5(BaseModel):
+    """Fᵢ → k·Fᵢ, con k ≠ 0."""
+
+    fila_i: int
+    k: str
+
+
+class PeticionVerificadorP5(BaseModel):
+    """POST /api/p5/verificador. A y B cuadradas, invertibles y del mismo orden.
+
+    Intercambio y reemplazo son opcionales porque una matriz 1×1 no tiene dos filas.
+    """
+
+    A: List[List[str]]
+    B: List[List[str]]
+    intercambio: Optional[IntercambioP5] = None
+    reemplazo: Optional[ReemplazoP5] = None
+    escalamiento: EscalamientoP5

@@ -40,6 +40,7 @@ export function celdasCambiadas(matrizPrevia, matrizActual) {
 export default function MatrizEstatica({
   matriz,
   aumentada = true, // false: matriz simple, sin barra de la columna b
+  columnasDerecha = 1, // columnas a la derecha de la barra: 1 en [A | b], n en [A | I]
   celdasResaltadas = new Set(),
   columnasPivote = [],
   filaDestacada = null, // Programa 3: fila i de A en el producto A·B
@@ -49,7 +50,7 @@ export default function MatrizEstatica({
 }) {
   const filas = matriz.length;
   const columnas = matriz[0].length;
-  const columnasCoef = aumentada ? columnas - 1 : columnas;
+  const columnasCoef = aumentada ? columnas - columnasDerecha : columnas;
 
   // Ancho de celda según el texto más largo (geometría de dibujo, no datos).
   const textoMasLargo = Math.max(
@@ -61,17 +62,17 @@ export default function MatrizEstatica({
   );
 
   const anchoContenido = aumentada
-    ? columnasCoef * ANCHO_CELDA + SEPARACION_AUMENTADA + ANCHO_CELDA
+    ? columnasCoef * ANCHO_CELDA + SEPARACION_AUMENTADA + columnasDerecha * ANCHO_CELDA
     : columnas * ANCHO_CELDA;
   const altoContenido = filas * ALTO_CELDA;
   const alturaCorchete = altoContenido + RELLENO_Y * 2;
 
-  // x del borde izquierdo de una columna (los coeficientes van pegados; la
-  // columna b va tras el hueco de la matriz aumentada).
+  // x del borde izquierdo de una columna (los coeficientes van pegados; el
+  // bloque derecho va tras el hueco de la matriz aumentada).
   const xBordeColumna = (columna) =>
     columna < columnasCoef
       ? columna * ANCHO_CELDA
-      : columnasCoef * ANCHO_CELDA + SEPARACION_AUMENTADA;
+      : columna * ANCHO_CELDA + SEPARACION_AUMENTADA;
 
   const propsCelda = (indiceFila, columna) => ({
     resaltada: celdasResaltadas.has(`${indiceFila},${columna}`),
@@ -106,7 +107,7 @@ export default function MatrizEstatica({
 
   const plantillaColumnas = aumentada
     ? `repeat(${columnasCoef}, ${ANCHO_CELDA}px) ` +
-      `${SEPARACION_AUMENTADA}px ${ANCHO_CELDA}px`
+      `${SEPARACION_AUMENTADA}px repeat(${columnasDerecha}, ${ANCHO_CELDA}px)`
     : `repeat(${columnas}, ${ANCHO_CELDA}px)`;
 
   return (
@@ -151,10 +152,13 @@ export default function MatrizEstatica({
               {aumentada && (
                 <>
                   <div aria-hidden="true" />
-                  <Celda
-                    valor={fila[columnasCoef]}
-                    {...propsCelda(indiceFila, columnasCoef)}
-                  />
+                  {fila.slice(columnasCoef).map((valor, desplazamiento) => (
+                    <Celda
+                      key={columnasCoef + desplazamiento}
+                      valor={valor}
+                      {...propsCelda(indiceFila, columnasCoef + desplazamiento)}
+                    />
+                  ))}
                 </>
               )}
             </div>

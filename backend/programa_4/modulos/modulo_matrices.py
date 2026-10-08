@@ -3,7 +3,7 @@
 Implementa suma, resta, producto por escalar, producto matricial, transposición,
 determinante (cofactores, Sarrus y reducción triangular) e inversa (Gauss-Jordan
 y adjunta) usando solo listas anidadas y fractions.Fraction (aritmética exacta).
-Integrantes: Grupo X — completar.
+Integrantes: Grupo 1 — SaraRuiz, VictorAlcocer, MoisesValle, AndreGuido.
 """
 
 from fractions import Fraction

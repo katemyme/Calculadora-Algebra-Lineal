@@ -211,6 +211,49 @@ class PruebasProgramaCinco(unittest.TestCase):
         self.assertEqual(triangular["derecha"]["valor"]["fraccion"], "1")
         self.assertTrue(triangular["cumple"])
 
+    def test_determinante_del_producto(self):
+        producto = self.verificar().json()["determinante_producto"]
+        self.assertEqual(textos(producto["AB"]), [["2", "3"], ["4", "7"]])
+        self.assertEqual((producto["det_A"]["fraccion"], producto["det_B"]["fraccion"]), ("-2", "-1"))
+        self.assertEqual(producto["enunciado"], "det(AB) = det(A)·det(B)")
+        self.assertEqual(producto["izquierda"]["valor"]["fraccion"], "2")
+        self.assertEqual(producto["derecha"]["valor"]["fraccion"], "2")
+        self.assertTrue(producto["cumple"])
+
+    def test_paso_a_paso(self):
+        datos = self.verificar().json()
+        procedimientos = datos["procedimientos"]
+        # Toda clave que cita una propiedad tiene su procedimiento.
+        listas = [propiedad["pasos"] for propiedad in datos["propiedades"]]
+        listas += [caso["pasos"] for caso in datos["operaciones_fila"]["casos"]]
+        listas += [datos["triangular"]["pasos"], datos["determinante_producto"]["pasos"]]
+        self.assertTrue(all(clave in procedimientos for lista in listas for clave in lista))
+
+        inversa_A = procedimientos["inversa_A"]
+        self.assertEqual(inversa_A["titulo"], "A⁻¹ por Gauss-Jordan: [A | I] → [I | A⁻¹]")
+        self.assertEqual(textos(inversa_A["inversa"]), [["-2", "1"], ["3/2", "-1/2"]])
+        producto = procedimientos["producto_de_inversas"]["resultado"]["matriz"]
+        self.assertEqual(textos(producto), [["7/2", "-3/2"], ["-2", "1"]])
+        transpuesta = procedimientos["transpuesta_A"]["destino"]["matriz"]
+        self.assertEqual(textos(transpuesta), [["1", "3"], ["2", "4"]])
+
+        reduccion = procedimientos["det_A"]["reduccion"]
+        self.assertEqual([paso["notacion"] for paso in reduccion["pasos_detalle"]], ["F₂ → F₂ - 3·F₁"])
+        self.assertEqual(textos(reduccion["pasos_detalle"][-1]["matriz"]), textos(reduccion["triangular"]))
+
+        terminos = procedimientos["cofactores_A"]["terminos"]
+        self.assertEqual([textos(termino["menor"]) for termino in terminos], [[["4"]], [["3"]]])
+        self.assertEqual(
+            [(termino["signo"], termino["cofactor"]["fraccion"]) for termino in terminos],
+            [("+", "4"), ("−", "-3")],
+        )
+
+        cuentas = {clave: p["cuenta"] for clave, p in procedimientos.items() if p["tipo"] == "cuenta"}
+        self.assertEqual(cuentas["cuenta_inverso_det"], "1/det(A) = 1/(-2) = -1/2")
+        self.assertEqual(cuentas["cuenta_producto_det"], "det(A)·det(B) = (-2)·(-1) = 2")
+        self.assertEqual(cuentas["cuenta_intercambio"], "−det(A) = −(-2) = 2")
+        self.assertEqual(cuentas["cuenta_escalamiento"], "k·det(A) = (3)·(-2) = -6")
+
     def test_verificador_rechaza_matriz_singular(self):
         respuesta = self.verificar(B=[["1", "2"], ["2", "4"]])
         self.assertEqual(respuesta.status_code, 422)

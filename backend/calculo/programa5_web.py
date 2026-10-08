@@ -139,13 +139,24 @@ def operar(
     return respuesta
 
 
+def _terminos_de_cofactores(A: Matriz) -> List[Dict]:
+    """Términos a₁ⱼ·C₁ⱼ de la expansión sobre la primera fila, cada uno con su menor M₁ⱼ."""
+    terminos = []
+    for columna in range(len(A)):
+        menor, det_menor, valor_cofactor = p5m.cofactor_con_menor(A, 0, columna)
+        terminos.append({
+            "entrada": A[0][columna],
+            "menor": menor,
+            "det_menor": det_menor,
+            "signo": "+" if columna % 2 == 0 else "−",
+            "cofactor": valor_cofactor,
+        })
+    return terminos
+
+
 def _expansion_por_cofactores(A: Matriz) -> Dict:
     """Términos a₁ⱼ·C₁ⱼ de la expansión sobre la primera fila y el determinante."""
-    terminos = [
-        {"entrada": A[0][columna], "cofactor": p5m.cofactor(A, 0, columna)}
-        for columna in range(len(A))
-    ]
-    return {"terminos": terminos, "valor": p5m.determinante_por_cofactores(A)}
+    return {"terminos": _terminos_de_cofactores(A), "valor": p5m.determinante_por_cofactores(A)}
 
 
 def _regla_de_sarrus(A: Matriz) -> Optional[Dict]:
@@ -160,11 +171,23 @@ def _regla_de_sarrus(A: Matriz) -> Optional[Dict]:
     }
 
 
+def _pasos_detalle(pasos: List[str], historial: list) -> List[Dict]:
+    """Cada operación de fila junto con la matriz que queda tras ella (para el paso a paso)."""
+    return [
+        {"notacion": notacion, "tipo": tipo, "columna_pivote": columna, "matriz": estado}
+        for notacion, (tipo, columna, estado) in zip(pasos, historial)
+    ]
+
+
 def _reduccion_triangular(A: Matriz) -> Dict:
     """Reducción a triangular con lo necesario para mostrar det = ± producto de la diagonal."""
-    triangular, intercambios, factores, operaciones = p5m.reducir_a_triangular(A)
+    historial: list = []
+    triangular, intercambios, factores, operaciones = p5m.reducir_a_triangular(A, historial)
     return {
+        "matriz_inicial": A,
         "operaciones": operaciones,
+        "pasos_detalle": _pasos_detalle(operaciones, historial),
+        "columnas_pivote": _columnas_pivote(triangular, len(A)),
         "triangular": triangular,
         "diagonal": [fila[indice] for indice, fila in enumerate(triangular)],
         "producto_diagonal": p5m.producto_diagonal(triangular),
@@ -213,11 +236,7 @@ def _por_gauss_jordan(A: Matriz) -> Dict:
         "aumentada_inicial": p5m.construir_aumentada_con_identidad(A),
         "aumentada_final": reducida,
         "pasos": pasos,
-        # Lo mismo que `pasos`, con la matriz que queda tras cada operación.
-        "pasos_detalle": [
-            {"notacion": notacion, "tipo": tipo, "columna_pivote": columna, "matriz": estado}
-            for notacion, (tipo, columna, estado) in zip(pasos, historial)
-        ],
+        "pasos_detalle": _pasos_detalle(pasos, historial),
         "columnas_pivote": _columnas_pivote(reducida, len(A)),
         "pivotes": pivotes,
         "inversa": inversa,
@@ -267,7 +286,12 @@ def _propiedades_de_la_inversa(A: Matriz, B: Matriz) -> List[Dict]:
         ("escalar", ("det(A⁻¹)", "1/det(A)"), p5m.miembros_determinante_de_la_inversa(A)),
     ]
     return [
-        {"numero": numero, "tipo": tipo, **_igualdad(nombres, miembros)}
+        {
+            "numero": numero,
+            "tipo": tipo,
+            **_igualdad(nombres, miembros),
+            "pasos": _PASOS_POR_PROPIEDAD[numero],
+        }
         for numero, (tipo, nombres, miembros) in enumerate(casos, start=1)
     ]
 
@@ -297,7 +321,12 @@ def _dos_filas(datos: Optional[Dict], orden: int, operacion: str) -> Tuple[int, 
 
 
 def _caso_de_fila(
-    operacion: str, notacion: str, efecto: str, esperado: str, resultado: Tuple
+    operacion: str,
+    notacion: str,
+    efecto: str,
+    esperado: str,
+    resultado: Tuple,
+    factor: Optional[Fraction] = None,
 ) -> Dict:
     """Arma un caso de la propiedad 5 a partir del efecto que calculó el módulo."""
     modificada, det_obtenido, det_esperado = resultado
@@ -306,7 +335,9 @@ def _caso_de_fila(
         "notacion": notacion,
         "efecto": efecto,
         "matriz": modificada,
+        "k": factor,
         **_igualdad(("det(A′)", esperado), (det_obtenido, det_esperado)),
+        "pasos": _pasos_de_fila(operacion),
     }
 
 
@@ -332,6 +363,7 @@ def _caso_reemplazo(A: Matriz, datos: Optional[Dict]) -> Dict:
         "Sumar a una fila un múltiplo de otra no altera el determinante.",
         "det(A)",
         p5m.efecto_de_reemplazo(A, fila_i, factor, fila_j),
+        factor,
     )
 
 
@@ -351,6 +383,7 @@ def _caso_escalamiento(A: Matriz, datos: Dict) -> Dict:
         "Multiplicar una fila por k multiplica el determinante por k.",
         "k·det(A)",
         p5m.efecto_de_escalamiento(A, fila_i, factor),
+        factor,
     )
 
 
@@ -370,13 +403,180 @@ def _propiedad_triangular(A: Matriz) -> Dict:
     reduccion = _reduccion_triangular(A)
     nombres = ("det(A) por reducción triangular", "det(A) por cofactores")
     miembros = (reduccion["valor"], p5m.determinante_por_cofactores(A))
-    return {"reduccion": reduccion, **_igualdad(nombres, miembros)}
+    return {
+        "reduccion": reduccion,
+        **_igualdad(nombres, miembros),
+        "pasos": _PASOS_POR_PROPIEDAD[6],
+    }
+
+
+def _propiedad_del_producto(A: Matriz, B: Matriz) -> Dict:
+    """Propiedad 7: det(AB) frente a det(A)·det(B); incluye AB, det(A) y det(B) para mostrarlos."""
+    nombres = ("det(AB)", "det(A)·det(B)")
+    return {
+        "AB": p5m.multiplicar_matrices(A, B),
+        "det_A": p5m.determinante_por_reduccion(A),
+        "det_B": p5m.determinante_por_reduccion(B),
+        **_igualdad(nombres, p5m.miembros_determinante_del_producto(A, B)),
+        "pasos": _PASOS_POR_PROPIEDAD[7],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Paso a paso del verificador: cada cálculo se arma una sola vez en
+# "procedimientos" y cada propiedad indica en "pasos" cuáles usó, en orden.
+# ---------------------------------------------------------------------------
+_PASOS_POR_PROPIEDAD = {
+    1: ["inversa_A", "inversa_de_inversa_A"],
+    2: ["producto_AB", "inversa_AB", "inversa_B", "inversa_A", "producto_de_inversas"],
+    3: ["transpuesta_A", "inversa_de_transpuesta", "inversa_A", "transpuesta_de_inversa"],
+    4: ["det_A", "inversa_A", "det_inversa_A", "cuenta_inverso_det"],
+    6: ["det_A", "cofactores_A"],
+    7: ["producto_AB", "det_AB", "det_A", "det_B", "cuenta_producto_det"],
+}
+
+
+def _pasos_de_fila(operacion: str) -> List[str]:
+    """Pasos de un caso de la propiedad 5: A′, det(A′), det(A) y el miembro derecho."""
+    return [f"fila_{operacion}", f"cofactores_{operacion}", "cofactores_A", f"cuenta_{operacion}"]
+
+
+def _paso_inversa(M: Matriz, nombre: str, nombre_inversa: str) -> Dict:
+    """M⁻¹ por Gauss-Jordan sobre [M | I], el mismo método con que el módulo invierte."""
+    return {
+        "tipo": "inversa",
+        "titulo": f"{nombre_inversa} por Gauss-Jordan: [{nombre} | I] → [I | {nombre_inversa}]",
+        "nombre_inversa": nombre_inversa,
+        **_por_gauss_jordan(M),
+    }
+
+
+def _paso_producto(titulo: str, izquierdo: Tuple, derecho: Tuple, nombre: str) -> Dict:
+    """Producto fila por columna; los nombres van en LaTeX porque los dibuja el Programa 3."""
+    (X, nombre_x), (Y, nombre_y) = izquierdo, derecho
+    return {
+        "tipo": "producto",
+        "titulo": titulo,
+        "factores": [{"nombre": nombre_x, "matriz": X}, {"nombre": nombre_y, "matriz": Y}],
+        "resultado": {"nombre": nombre, "matriz": p5m.multiplicar_matrices(X, Y)},
+    }
+
+
+def _paso_transpuesta(titulo: str, origen: Tuple, nombre: str) -> Dict:
+    """Transpuesta: la fila i pasa a ser la columna i (nombres en LaTeX, como el producto)."""
+    M, nombre_m = origen
+    return {
+        "tipo": "transpuesta",
+        "titulo": titulo,
+        "origen": {"nombre": nombre_m, "matriz": M},
+        "destino": {"nombre": nombre, "matriz": p5m.transponer(M)},
+    }
+
+
+def _paso_det_reduccion(M: Matriz, nombre: str) -> Dict:
+    """det(M) por reducción a forma triangular, con la matriz tras cada operación."""
+    return {
+        "tipo": "det_reduccion",
+        "titulo": f"det({nombre}) por reducción a forma triangular",
+        "nombre": nombre,
+        "reduccion": _reduccion_triangular(M),
+    }
+
+
+def _paso_det_cofactores(M: Matriz, nombre: str, valor: Fraction) -> Dict:
+    """det(M) por cofactores sobre la fila 1, con cada menor M₁ⱼ.
+
+    `valor` es el det(M) que ya calculó el verificador por cofactores: así no se repite
+    la expansión, que cuesta ≈ n! multiplicaciones.
+    """
+    return {
+        "tipo": "det_cofactores",
+        "titulo": f"det({nombre}) por cofactores sobre la fila 1",
+        "nombre": nombre,
+        "terminos": _terminos_de_cofactores(M),
+        "valor": valor,
+    }
+
+
+def _paso_cuenta(titulo: str, cuenta: str) -> Dict:
+    """Cuenta final escrita con valores que ya calculó el módulo."""
+    return {"tipo": "cuenta", "titulo": titulo, "cuenta": cuenta}
+
+
+def _cuenta_de_fila(caso: Dict, det_A: Fraction) -> str:
+    """Miembro derecho de un caso de la propiedad 5 con sus valores: −det(A), det(A) o k·det(A)."""
+    texto = p5m.formatear_fraccion
+    esperado = texto(caso["derecha"]["valor"])
+    if caso["id"] == "intercambio":
+        return f"−det(A) = −({texto(det_A)}) = {esperado}"
+    if caso["id"] == "reemplazo":
+        return f"det(A) = {esperado}: se espera el mismo valor"
+    return f"k·det(A) = ({texto(caso['k'])})·({texto(det_A)}) = {esperado}"
+
+
+def _procedimientos(A: Matriz, B: Matriz, operaciones_fila: Dict) -> Dict[str, Dict]:
+    """Todos los cálculos del verificador paso a paso, con la clave que citan las propiedades."""
+    texto = p5m.formatear_fraccion
+    inversa_A, inversa_B = p5m.calcular_inversa(A), p5m.calcular_inversa(B)
+    AB = p5m.multiplicar_matrices(A, B)
+    det_A, det_B = p5m.determinante_por_reduccion(A), p5m.determinante_por_reduccion(B)
+    inverso_det_A = p5m.miembros_determinante_de_la_inversa(A)[1]
+    producto_dets = p5m.miembros_determinante_del_producto(A, B)[1]
+    procedimientos = {
+        # Propiedades 1 a 3: inversas por Gauss-Jordan, productos y transpuestas.
+        "inversa_A": _paso_inversa(A, "A", "A⁻¹"),
+        "inversa_de_inversa_A": _paso_inversa(inversa_A, "A⁻¹", "(A⁻¹)⁻¹"),
+        "producto_AB": _paso_producto("AB = A·B", (A, "A"), (B, "B"), "AB"),
+        "inversa_AB": _paso_inversa(AB, "AB", "(AB)⁻¹"),
+        "inversa_B": _paso_inversa(B, "B", "B⁻¹"),
+        "producto_de_inversas": _paso_producto(
+            "B⁻¹A⁻¹ = B⁻¹·A⁻¹", (inversa_B, "B^{-1}"), (inversa_A, "A^{-1}"), "B^{-1}A^{-1}"
+        ),
+        "transpuesta_A": _paso_transpuesta(
+            "Aᵀ: las filas de A pasan a ser columnas", (A, "A"), "A^{T}"
+        ),
+        "inversa_de_transpuesta": _paso_inversa(p5m.transponer(A), "Aᵀ", "(Aᵀ)⁻¹"),
+        "transpuesta_de_inversa": _paso_transpuesta(
+            "(A⁻¹)ᵀ: las filas de A⁻¹ pasan a ser columnas", (inversa_A, "A^{-1}"), "(A^{-1})^{T}"
+        ),
+        # Propiedades 4, 6 y 7: determinantes y cuentas de los miembros derechos.
+        "det_A": _paso_det_reduccion(A, "A"),
+        "det_inversa_A": _paso_det_reduccion(inversa_A, "A⁻¹"),
+        "det_AB": _paso_det_reduccion(AB, "AB"),
+        "det_B": _paso_det_reduccion(B, "B"),
+        "cofactores_A": _paso_det_cofactores(A, "A", operaciones_fila["determinante"]),
+        "cuenta_inverso_det": _paso_cuenta(
+            "Miembro derecho: 1/det(A)",
+            f"1/det(A) = 1/({texto(det_A)}) = {texto(inverso_det_A)}",
+        ),
+        "cuenta_producto_det": _paso_cuenta(
+            "Miembro derecho: det(A)·det(B)",
+            f"det(A)·det(B) = ({texto(det_A)})·({texto(det_B)}) = {texto(producto_dets)}",
+        ),
+    }
+    # Propiedad 5: por cada operación, A′, su determinante y el miembro derecho esperado.
+    for caso in operaciones_fila["casos"]:
+        operacion = caso["id"]
+        procedimientos[f"fila_{operacion}"] = {
+            "tipo": "operacion_fila",
+            "titulo": f"A′ = A tras {caso['notacion']}",
+            "notacion": caso["notacion"],
+            "antes": A,
+            "despues": caso["matriz"],
+        }
+        procedimientos[f"cofactores_{operacion}"] = _paso_det_cofactores(
+            caso["matriz"], "A′", caso["izquierda"]["valor"]
+        )
+        procedimientos[f"cuenta_{operacion}"] = _paso_cuenta(
+            f"Miembro derecho: {caso['derecha']['nombre']}", _cuenta_de_fila(caso, det_A)
+        )
+    return procedimientos
 
 
 def verificar_propiedades(
     a_txt: List[List[str]], b_txt: List[List[str]], operaciones: Dict
 ) -> Dict:
-    """Opción 9: verifica las seis propiedades con A y B invertibles del mismo orden."""
+    """Opción 9: verifica las siete propiedades con A y B invertibles del mismo orden."""
     A = _leer_invertible(a_txt, "A")
     B = _leer_invertible(b_txt, "B")
     if len(A) != len(B):
@@ -384,13 +584,16 @@ def verificar_propiedades(
             f"A es de orden {len(A)} y B de orden {len(B)}: deben tener el mismo orden n.",
             campo="B",
         )
+    operaciones_fila = _operaciones_de_fila(A, operaciones)
     return {
         "n": len(A),
         "A": A,
         "B": B,
         "propiedades": _propiedades_de_la_inversa(A, B),
-        "operaciones_fila": _operaciones_de_fila(A, operaciones),
+        "operaciones_fila": operaciones_fila,
         "triangular": _propiedad_triangular(A),
+        "determinante_producto": _propiedad_del_producto(A, B),
+        "procedimientos": _procedimientos(A, B, operaciones_fila),
     }
 
 

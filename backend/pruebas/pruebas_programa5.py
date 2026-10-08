@@ -218,6 +218,35 @@ def probar_reduccion_con_intercambio():
     assert matrices.determinante_por_cofactores(con_pivote_nulo) == -6
 
 
+def probar_historial_de_la_reduccion_triangular():
+    """El historial opcional guarda la matriz tras cada operación y termina en la triangular."""
+    historial = []
+    triangular, _, _, operaciones = matrices.reducir_a_triangular(INVERTIBLE_3X3, historial)
+    assert [tipo for tipo, _, _ in historial] == ["eliminacion", "eliminacion"]
+    assert len(historial) == len(operaciones)
+    assert historial[-1][2] == triangular
+    historial = []
+    matrices.reducir_a_triangular(a_fracciones([[0, 2], [3, 4]]), historial)
+    assert historial == [("intercambio", 0, a_fracciones([[3, 4], [0, 2]]))]
+
+
+def probar_cofactor_con_menor():
+    """Devuelve el menor M₁₂, su determinante y el mismo cofactor que cofactor()."""
+    menor, det_menor, valor = matrices.cofactor_con_menor(INVERTIBLE_3X3, 0, 1)
+    assert menor == a_fracciones([[0, 4], [5, 0]])
+    assert (det_menor, valor) == (-20, 20)
+    assert valor == matrices.cofactor(INVERTIBLE_3X3, 0, 1)
+
+
+def probar_determinante_del_producto():
+    """Propiedad 7: det(AB) = det(A)·det(B), también cuando un factor es singular."""
+    # det(A) = -2 y det(B) = -1; AB = [[2,3],[4,7]] tiene det 2.
+    assert matrices.miembros_determinante_del_producto(INVERTIBLE_2X2, SEGUNDA_2X2) == (2, 2)
+    diagonal = a_fracciones([[1, 0, 0], [0, 2, 0], [0, 0, 3]])
+    assert matrices.miembros_determinante_del_producto(INVERTIBLE_3X3, diagonal) == (6, 6)
+    assert matrices.miembros_determinante_del_producto(SINGULAR_3X3, INVERTIBLE_3X3) == (0, 0)
+
+
 def probar_metodos_coinciden_en_otras_matrices():
     """Los métodos de determinante e inversa coinciden en matrices 1×1, 4×4 y con fracciones."""
     casos = [
@@ -279,6 +308,9 @@ PRUEBAS = [
     probar_historial_de_gauss_jordan,
     probar_reduccion_triangular,
     probar_reduccion_con_intercambio,
+    probar_historial_de_la_reduccion_triangular,
+    probar_cofactor_con_menor,
+    probar_determinante_del_producto,
     probar_metodos_coinciden_en_otras_matrices,
     probar_validacion_de_matriz_cuadrada,
     probar_formato_de_salida,

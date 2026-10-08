@@ -44,7 +44,7 @@ const SECCIONES = [
     simbolo: "✓ ✗",
     titulo: "Verificador",
     descripcion:
-      "Con A y B invertibles del mismo orden, calcula ambos miembros de seis " +
+      "Con A y B invertibles del mismo orden, calcula ambos miembros de siete " +
       "propiedades de la inversa y del determinante (opción 9).",
     Componente: SeccionVerificador,
   },

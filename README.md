@@ -357,7 +357,7 @@ Módulo III de la calculadora: **Álgebra de Matrices**. Todo el cálculo está 
 | 1–5 | A + B, A − B, k·A, A·B y Aᵀ | Operaciones |
 | 6 | Determinante: cofactores, Sarrus y reducción triangular | Determinante |
 | 7–8 | Inversa por Gauss-Jordan sobre [A \| I] y por adjunta | Inversa |
-| 9 | Verificador de seis propiedades de la inversa y del determinante | Verificador |
+| 9 | Verificador de siete propiedades de la inversa y del determinante (en la web, con paso a paso) | Verificador |
 
 ### Versión de consola
 

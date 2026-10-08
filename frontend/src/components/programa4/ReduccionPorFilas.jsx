@@ -16,6 +16,7 @@ export default function ReduccionPorFilas({
   pasos,
   columnasPivote,
   columnasDerecha = 1, // n para reducir [A | I] (Programa 5)
+  aumentada = true, // false: matriz sin barra (reducción a triangular del Programa 5)
 }) {
   const total = pasos.length;
   const [actual, setActual] = useState(1); // paso que se muestra (1..total)
@@ -92,7 +93,7 @@ export default function ReduccionPorFilas({
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3 overflow-x-auto">
           <div className="space-y-1">
             <p className="text-xs font-semibold text-grafito">Antes</p>
-            <MatrizEstatica matriz={previa} columnasDerecha={columnasDerecha} />
+            <MatrizEstatica matriz={previa} aumentada={aumentada} columnasDerecha={columnasDerecha} />
           </div>
           <div className="flex flex-col items-center text-pivote">
             <span className="font-display text-xs font-semibold">{paso.notacion}</span>
@@ -102,6 +103,7 @@ export default function ReduccionPorFilas({
             <p className="text-xs font-semibold text-grafito">Después</p>
             <MatrizEstatica
               matriz={paso.matriz}
+              aumentada={aumentada}
               columnasDerecha={columnasDerecha}
               celdasResaltadas={cambios}
               columnasPivote={pivotesHastaAqui}

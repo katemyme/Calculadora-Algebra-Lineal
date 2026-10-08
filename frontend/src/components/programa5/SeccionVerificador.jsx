@@ -4,14 +4,20 @@
 //   1. (A⁻¹)⁻¹ = A            4. det(A⁻¹) = 1/det(A)
 //   2. (AB)⁻¹ = B⁻¹A⁻¹        5. efecto de las operaciones de fila sobre det(A)
 //   3. (Aᵀ)⁻¹ = (A⁻¹)ᵀ        6. matriz triangular: det = ± producto de la diagonal
+//                             7. det(AB) = det(A)·det(B)
 //
 // El backend calcula ambos miembros de cada propiedad y decide el veredicto.
+// También arma el paso a paso de cada cálculo ("procedimientos"); aquí solo se dibuja.
 
 import { useState } from "react";
 import { ErrorDeCalculo, programa5 } from "../../lib/api.js";
-import { textoFraccion } from "../../lib/formato.js";
+import { subindice, textoFraccion } from "../../lib/formato.js";
 import Boton from "../ui/Boton.jsx";
 import SelectorDimension from "../ui/SelectorDimension.jsx";
+import { celdasCambiadas } from "../MatrizEstatica.jsx";
+import VisualProducto from "../programa3/VisualProducto.jsx";
+import VisualTranspuesta from "../programa3/VisualTranspuesta.jsx";
+import ReduccionPorFilas from "../programa4/ReduccionPorFilas.jsx";
 import {
   AvisoError,
   Cargando,
@@ -225,11 +231,18 @@ function GrupoDeFila({ titulo, notacion, conError, children }) {
 }
 
 function ResultadoVerificador({ resultado }) {
-  const { propiedades, operaciones_fila: operacionesFila, triangular } = resultado;
+  const {
+    propiedades,
+    operaciones_fila: operacionesFila,
+    triangular,
+    determinante_producto: detProducto,
+    procedimientos,
+  } = resultado;
   const veredictos = [
     ...propiedades.map((propiedad) => propiedad.cumple),
     operacionesFila.casos.every((caso) => caso.cumple),
     triangular.cumple,
+    detProducto.cumple,
   ];
   const cumplidas = veredictos.filter(Boolean).length;
   const todas = cumplidas === veredictos.length;
@@ -249,6 +262,7 @@ function ResultadoVerificador({ resultado }) {
                 <IgualdadEscalar igualdad={propiedad} />
               </>
             )}
+            <PasoAPaso claves={propiedad.pasos} procedimientos={procedimientos} />
           </TarjetaNumerada>
         ))}
 
@@ -258,13 +272,26 @@ function ResultadoVerificador({ resultado }) {
           nota={`det(A) = ${textoFraccion(operacionesFila.determinante)}`}
         >
           {operacionesFila.casos.map((caso) => (
-            <CasoDeFila key={caso.id} caso={caso} />
+            <CasoDeFila key={caso.id} caso={caso} procedimientos={procedimientos} />
           ))}
         </TarjetaNumerada>
 
         <TarjetaNumerada numero="6" titulo="Matriz triangular: det(A) = ± producto de la diagonal">
           <ReduccionTriangular reduccion={triangular.reduccion} />
           <IgualdadEscalar igualdad={triangular} />
+          <PasoAPaso claves={triangular.pasos} procedimientos={procedimientos} />
+        </TarjetaNumerada>
+
+        {/* Propiedad 7: AB, det(A), det(B) y ambos miembros llegan ya calculados del backend. */}
+        <TarjetaNumerada numero="7" titulo={detProducto.enunciado}>
+          <div className="flex overflow-x-auto">
+            <MatrizNombrada nombre="AB" matriz={detProducto.AB} />
+          </div>
+          <p className="font-mono text-sm">
+            det(A) = {textoFraccion(detProducto.det_A)}, det(B) = {textoFraccion(detProducto.det_B)}
+          </p>
+          <IgualdadEscalar igualdad={detProducto} />
+          <PasoAPaso claves={detProducto.pasos} procedimientos={procedimientos} />
         </TarjetaNumerada>
 
         <div className={`math-solution-banner ${todas ? "math-solution-ok" : "math-solution-error"}`}>
@@ -305,7 +332,7 @@ function IgualdadMatricial({ igualdad }) {
 }
 
 /** Una operación de fila: la matriz modificada A′ y cómo cambió el determinante. */
-function CasoDeFila({ caso }) {
+function CasoDeFila({ caso, procedimientos }) {
   return (
     <div className="space-y-3 border-t border-[var(--borde)] pt-4 first:border-t-0 first:pt-0">
       <div className="flex flex-wrap items-center gap-3">
@@ -318,6 +345,134 @@ function CasoDeFila({ caso }) {
         <MatrizNombrada nombre="A′" matriz={caso.matriz} />
       </div>
       <IgualdadEscalar igualdad={caso} />
+      <PasoAPaso claves={caso.pasos} procedimientos={procedimientos} />
+    </div>
+  );
+}
+
+/** Botón que despliega, en orden, los cálculos que dieron los dos miembros de una propiedad. */
+function PasoAPaso({ claves, procedimientos }) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="space-y-4">
+      <Boton
+        variante="secundario"
+        aria-expanded={visible}
+        onClick={() => setVisible((previo) => !previo)}
+      >
+        {visible ? "Ocultar el paso a paso" : "Ver el paso a paso"}
+      </Boton>
+      {visible && (
+        <ol className="space-y-4" style={{ animation: "aparecer-paso 0.3s ease both" }}>
+          {claves.map((clave, indice) => (
+            <Procedimiento key={clave} numero={indice + 1} procedimiento={procedimientos[clave]} />
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
+/** Un paso: su título y el dibujo que corresponde a su tipo de cálculo. */
+function Procedimiento({ numero, procedimiento }) {
+  const { tipo, titulo } = procedimiento;
+  return (
+    <li className="space-y-3 rounded-xl border border-[var(--borde)] bg-white p-4">
+      <p className="font-display text-sm font-bold text-tinta">
+        <span className="text-pivote">Paso {numero}.</span> {titulo}
+      </p>
+      {tipo === "inversa" && <InversaPasoAPaso procedimiento={procedimiento} />}
+      {tipo === "producto" && (
+        <VisualProducto factores={procedimiento.factores} resultado={procedimiento.resultado} />
+      )}
+      {tipo === "transpuesta" && (
+        <VisualTranspuesta origen={procedimiento.origen} destino={procedimiento.destino} />
+      )}
+      {tipo === "det_reduccion" && (
+        <ReduccionTriangular
+          reduccion={procedimiento.reduccion}
+          nombre={procedimiento.nombre}
+          pasoAPaso
+        />
+      )}
+      {tipo === "det_cofactores" && <ExpansionPorCofactores procedimiento={procedimiento} />}
+      {tipo === "operacion_fila" && <OperacionDeFila procedimiento={procedimiento} />}
+      {tipo === "cuenta" && <p className="font-mono text-sm text-tinta">{procedimiento.cuenta}</p>}
+    </li>
+  );
+}
+
+/** Gauss-Jordan sobre [M | I], una operación a la vez, y la inversa que queda a la derecha. */
+function InversaPasoAPaso({ procedimiento }) {
+  const { inversa, nombre_inversa: nombreInversa } = procedimiento;
+  return (
+    <>
+      <ReduccionPorFilas
+        matrizInicial={procedimiento.aumentada_inicial}
+        pasos={procedimiento.pasos_detalle}
+        columnasPivote={procedimiento.columnas_pivote}
+        columnasDerecha={inversa.length}
+      />
+      <div className="flex overflow-x-auto">
+        <MatrizNombrada nombre={nombreInversa} matriz={inversa} destacada />
+      </div>
+    </>
+  );
+}
+
+/** det(M) por cofactores sobre la fila 1: cada menor M₁ⱼ, su determinante y su cofactor C₁ⱼ. */
+function ExpansionPorCofactores({ procedimiento }) {
+  const { nombre, terminos, valor } = procedimiento;
+  // Una matriz 1×1 no tiene menores: su determinante es su único elemento.
+  if (terminos.length === 1) {
+    return (
+      <p className="font-mono text-sm text-tinta">
+        det({nombre}) = {textoFraccion(valor)} (matriz 1×1: su único elemento)
+      </p>
+    );
+  }
+  const suma = terminos
+    .map((termino) => `(${textoFraccion(termino.entrada)})·(${textoFraccion(termino.cofactor)})`)
+    .join(" + ");
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-3">
+        {terminos.map((termino, columna) => {
+          const j = subindice(columna + 1);
+          return (
+            <div key={columna} className="space-y-2 rounded-xl border border-[var(--borde)] p-3">
+              <MatrizNombrada nombre={`M₁${j}`} matriz={termino.menor} />
+              <p className="font-mono text-xs text-tinta">
+                C₁{j} = {termino.signo}det(M₁{j}) = {termino.signo}(
+                {textoFraccion(termino.det_menor)}) ={" "}
+                <span className="font-semibold text-pivote">{textoFraccion(termino.cofactor)}</span>
+              </p>
+            </div>
+          );
+        })}
+      </div>
+      <p className="font-mono text-sm leading-7 text-tinta">
+        det({nombre}) = Σ a₁ⱼ·C₁ⱼ = {suma} = <strong>{textoFraccion(valor)}</strong>
+      </p>
+    </div>
+  );
+}
+
+/** A antes y después de la operación de fila, con las celdas que cambian resaltadas. */
+function OperacionDeFila({ procedimiento }) {
+  const { notacion, antes, despues } = procedimiento;
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-3 overflow-x-auto">
+      <MatrizNombrada nombre="A" matriz={antes} />
+      <div className="flex flex-col items-center text-pivote">
+        <span className="font-display text-xs font-semibold">{notacion}</span>
+        <span className="text-2xl leading-none">⟶</span>
+      </div>
+      <MatrizNombrada
+        nombre="A′"
+        matriz={despues}
+        celdasResaltadas={celdasCambiadas(antes, despues)}
+      />
     </div>
   );
 }

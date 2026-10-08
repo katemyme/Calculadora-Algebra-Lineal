@@ -8,6 +8,7 @@ import { textoFraccion } from "../../lib/formato.js";
 import Boton from "../ui/Boton.jsx";
 import SelectorDimension from "../ui/SelectorDimension.jsx";
 import MatrizEstatica from "../MatrizEstatica.jsx";
+import ReduccionPorFilas from "../programa4/ReduccionPorFilas.jsx";
 import {
   BloqueMatriz,
   DIMENSION_MAXIMA,
@@ -202,9 +203,10 @@ export function ListaDeOperaciones({ operaciones }) {
 
 /**
  * Reducción a forma triangular: operaciones, matriz triangular con la diagonal
- * resaltada y la cuenta det(A) = (signo)·(producto de la diagonal).
+ * resaltada y la cuenta det(A) = (signo)·(producto de la diagonal). Con
+ * `pasoAPaso`, las operaciones se recorren una a una (matriz de antes y de después).
  */
-export function ReduccionTriangular({ reduccion }) {
+export function ReduccionTriangular({ reduccion, nombre = "A", pasoAPaso = false }) {
   const { triangular, diagonal, intercambios, signo, factores } = reduccion;
   const celdasDiagonal = new Set(triangular.map((_, indice) => `${indice},${indice}`));
   const textoDiagonal = diagonal.map((valor) => `(${textoFraccion(valor)})`).join("·");
@@ -213,7 +215,16 @@ export function ReduccionTriangular({ reduccion }) {
 
   return (
     <div className="space-y-4">
-      <ListaDeOperaciones operaciones={reduccion.operaciones} />
+      {pasoAPaso && reduccion.pasos_detalle.length > 0 ? (
+        <ReduccionPorFilas
+          matrizInicial={reduccion.matriz_inicial}
+          pasos={reduccion.pasos_detalle}
+          columnasPivote={reduccion.columnas_pivote}
+          aumentada={false}
+        />
+      ) : (
+        <ListaDeOperaciones operaciones={reduccion.operaciones} />
+      )}
       <div className="flex overflow-x-auto">
         <MatrizNombrada
           nombre="Matriz triangular"
@@ -233,7 +244,7 @@ export function ReduccionTriangular({ reduccion }) {
           <span className="text-grafito">(un reemplazo no altera el determinante)</span>
         </p>
         <p className="font-semibold text-pivote">
-          det(A) = ({signo})·({textoProducto}) = {textoFraccion(reduccion.valor)}
+          det({nombre}) = ({signo})·({textoProducto}) = {textoFraccion(reduccion.valor)}
         </p>
       </div>
     </div>

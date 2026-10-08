@@ -200,13 +200,20 @@ def submatriz_menor(matriz: Matriz, fila_eliminada: int, columna_eliminada: int)
     return menor
 
 
-def cofactor(matriz: Matriz, fila: int, columna: int) -> Fraction:
-    """Devuelve el cofactor Cᵢⱼ = (−1)^(i+j)·det(Mᵢⱼ) de la posición indicada."""
+def cofactor_con_menor(
+    matriz: Matriz, fila: int, columna: int
+) -> Tuple[Matriz, Fraction, Fraction]:
+    """Devuelve (Mᵢⱼ, det(Mᵢⱼ), Cᵢⱼ): el menor, su determinante y el cofactor de la posición."""
     menor = submatriz_menor(matriz, fila, columna)
     # El menor de una matriz 1×1 queda vacío; su determinante vale 1 para que adj([a]) = [1].
     determinante_menor = determinante_por_cofactores(menor) if menor else Fraction(1)
     # El signo (-1)**(fila + columna) sigue el patrón de cofactores: alterna como un tablero.
-    return (-1) ** (fila + columna) * determinante_menor
+    return menor, determinante_menor, (-1) ** (fila + columna) * determinante_menor
+
+
+def cofactor(matriz: Matriz, fila: int, columna: int) -> Fraction:
+    """Devuelve el cofactor Cᵢⱼ = (−1)^(i+j)·det(Mᵢⱼ) de la posición indicada."""
+    return cofactor_con_menor(matriz, fila, columna)[2]
 
 
 def determinante_por_cofactores(matriz: Matriz) -> Fraction:
@@ -261,12 +268,13 @@ def buscar_fila_con_pivote(matriz: Matriz, columna: int) -> Optional[int]:
 
 
 def eliminar_debajo_del_pivote(
-    matriz: Matriz, fila_pivote: int
+    matriz: Matriz, fila_pivote: int, historial: Optional[list] = None
 ) -> Tuple[Matriz, List[Fraction], List[str]]:
     """Anula la columna del pivote por debajo de él con reemplazos Fᵢ → Fᵢ − k·Fₚ.
 
     Recibe la matriz y la posición diagonal del pivote; devuelve
-    (matriz, factores k usados, operaciones en texto).
+    (matriz, factores k usados, operaciones en texto). Si se da `historial`,
+    guarda en él la matriz tras cada reemplazo.
     """
     resultado = copiar_matriz(matriz)
     factores: List[Fraction] = []
@@ -279,14 +287,20 @@ def eliminar_debajo_del_pivote(
         resultado = reemplazar_fila(resultado, fila, -factor, fila_pivote)
         factores.append(factor)
         operaciones.append(describir_reemplazo(fila, -factor, fila_pivote))
+        if historial is not None:
+            historial.append(("eliminacion", fila_pivote, resultado))
     return resultado, factores, operaciones
 
 
-def reducir_a_triangular(matriz: Matriz) -> Tuple[Matriz, int, List[Fraction], List[str]]:
+def reducir_a_triangular(
+    matriz: Matriz, historial: Optional[list] = None
+) -> Tuple[Matriz, int, List[Fraction], List[str]]:
     """Reduce una matriz cuadrada a triangular superior con intercambios y reemplazos.
 
     Devuelve (triangular, num_intercambios, factores, operaciones): los factores k de
     cada reemplazo Fᵢ → Fᵢ − k·Fⱼ y el registro en texto de las operaciones aplicadas.
+    Si se da `historial`, guarda (tipo, columna, matriz) tras cada operación, igual que
+    escalonar(); lo usa el paso a paso de la web.
     """
     validar_cuadrada(matriz)
     triangular = copiar_matriz(matriz)
@@ -303,7 +317,11 @@ def reducir_a_triangular(matriz: Matriz) -> Tuple[Matriz, int, List[Fraction], L
             triangular = intercambiar_filas(triangular, columna, fila_pivote)
             num_intercambios += 1
             operaciones.append(describir_intercambio(columna, fila_pivote))
-        triangular, factores_nuevos, pasos_nuevos = eliminar_debajo_del_pivote(triangular, columna)
+            if historial is not None:
+                historial.append(("intercambio", columna, triangular))
+        triangular, factores_nuevos, pasos_nuevos = eliminar_debajo_del_pivote(
+            triangular, columna, historial
+        )
         factores.extend(factores_nuevos)
         operaciones.extend(pasos_nuevos)
     return triangular, num_intercambios, factores, operaciones
@@ -443,6 +461,16 @@ def miembros_determinante_de_la_inversa(matriz_a: Matriz) -> Tuple[Fraction, Fra
     """Devuelve los dos miembros de det(A⁻¹) = 1/det(A) para una matriz invertible."""
     determinante = determinante_por_reduccion(matriz_a)
     return determinante_por_reduccion(calcular_inversa(matriz_a)), Fraction(1) / determinante
+
+
+def miembros_determinante_del_producto(
+    matriz_a: Matriz, matriz_b: Matriz
+) -> Tuple[Fraction, Fraction]:
+    """Devuelve los dos miembros de det(AB) = det(A)·det(B) para A y B de orden n."""
+    # Vale para cualquier par n×n: si A o B es singular, ambos miembros dan 0.
+    miembro_izquierdo = determinante_por_reduccion(multiplicar_matrices(matriz_a, matriz_b))
+    miembro_derecho = determinante_por_reduccion(matriz_a) * determinante_por_reduccion(matriz_b)
+    return miembro_izquierdo, miembro_derecho
 
 
 def efecto_de_intercambio(
@@ -779,6 +807,17 @@ def verificar_matriz_triangular(matriz: Matriz) -> None:
     )
 
 
+def verificar_determinante_del_producto(matriz_a: Matriz, matriz_b: Matriz) -> None:
+    """Propiedad 7: muestra AB, det(A) y det(B), y compara det(AB) con det(A)·det(B)."""
+    print("\n7. det(AB) = det(A)·det(B)")
+    imprimir_matriz("AB", multiplicar_matrices(matriz_a, matriz_b))
+    print(f"   det(A) = {formatear_fraccion(determinante_por_reduccion(matriz_a))}")
+    print(f"   det(B) = {formatear_fraccion(determinante_por_reduccion(matriz_b))}")
+    mostrar_igualdad_escalar(
+        "det(AB)", "det(A)·det(B)", miembros_determinante_del_producto(matriz_a, matriz_b)
+    )
+
+
 def mostrar_teoremas() -> None:
     """Opción 0: imprime los teoremas clave del módulo."""
     print("\n── TEOREMAS CLAVE ──")
@@ -881,7 +920,7 @@ def opcion_inversa_adjunta() -> None:
 
 
 def opcion_verificador() -> None:
-    """Opción 9: verifica las seis propiedades con A y B invertibles del mismo orden."""
+    """Opción 9: verifica las siete propiedades con A y B invertibles del mismo orden."""
     print("\n── VERIFICADOR DE PROPIEDADES ──")
     print("Se piden A y B cuadradas e invertibles del mismo orden n.")
     orden = leer_entero("Orden de A y B (n): ")
@@ -890,6 +929,7 @@ def opcion_verificador() -> None:
     verificar_propiedades_de_la_inversa(matriz_a, matriz_b)
     verificar_operaciones_de_fila(matriz_a)
     verificar_matriz_triangular(matriz_a)
+    verificar_determinante_del_producto(matriz_a, matriz_b)
 
 
 def mostrar_menu() -> None:

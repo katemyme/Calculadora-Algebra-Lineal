@@ -8,7 +8,7 @@
 
 Es la opción 3 del menú principal de la calculadora. Ofrece suma, resta, producto por
 escalar, producto matricial, transposición, determinante (tres métodos), inversa (dos
-métodos) y un verificador de seis propiedades. Todo se calcula con listas anidadas y
+métodos) y un verificador de siete propiedades. Todo se calcula con listas anidadas y
 `fractions.Fraction`, sin bibliotecas de álgebra, de modo que los resultados son exactos:
 `3/2` se guarda como 3/2 y no como 1.5, y la comprobación `A·A⁻¹ = I` es una igualdad
 exacta, sin tolerancias de redondeo.
@@ -100,7 +100,10 @@ Por eso los mensajes y los valores coinciden en ambas interfaces: el error
 `No se puede multiplicar: Columnas de A [3] ≠ Filas de B [2]`, el diagnóstico de
 invertibilidad y los veredictos «Se cumple» / «No se cumple» salen del mismo módulo.
 En la inversa por Gauss-Jordan la web añade un paso a paso que muestra la matriz
-[A | I] antes y después de cada operación de fila.
+[A | I] antes y después de cada operación de fila. En el verificador, cada propiedad
+tiene un botón «Ver el paso a paso» con los cálculos de sus dos miembros: inversas por
+Gauss-Jordan, productos fila por columna, transpuestas, determinantes por reducción
+triangular y por cofactores (con cada menor M₁ⱼ) y la cuenta final. También los arma el backend.
 
 ## 6. Casos de prueba verificados
 
@@ -118,6 +121,7 @@ Se ejecutan desde `backend/` con `python -m pruebas.pruebas_programa5` y
 | Verificador con A = [[1,2],[3,4]], B = [[0,1],[1,1]] | det(A) = -2; det(A⁻¹) = -1/2; (AB)⁻¹ = [[7/2,-3/2],[-2,1]]; (Aᵀ)⁻¹ = [[-2,3/2],[1,-1/2]] |
 | Propiedad 5 con la misma A | intercambio → 2; F₂ → F₂ − 3F₁ → -2; F₁ por 3 → -6 |
 | Propiedad 6 con A = [[1,2,3],[0,1,4],[5,6,0]] | F₃ → F₃ − 5F₁ y F₃ → F₃ + 4F₂; diagonal 1, 1, 1; det = 1 |
+| Propiedad 7 con A = [[1,2],[3,4]], B = [[0,1],[1,1]] | AB = [[2,3],[4,7]]; det(AB) = 2 = (-2)·(-1) = det(A)·det(B) |
 
 ## 7. Capturas de pantalla que hay que tomar
 
@@ -141,6 +145,7 @@ Ejecutar `python main.py` desde `backend/programa_4/` y entrar a la opción 3.
 - [ ] Opción 9: verificador con A = [[1,2],[3,4]] y B = [[0,1],[1,1]] (propiedades 1 a 4).
 - [ ] Opción 9: propiedad 5 con las tres operaciones de fila (filas 1 y 2; i = 2, j = 1, k = -3; fila 1, k = 3).
 - [ ] Opción 9: propiedad 6 con A = [[1,2,3],[0,1,4],[5,6,0]] (requiere otra corrida del verificador con n = 3).
+- [ ] Opción 9: propiedad 7, det(AB) = det(A)·det(B), que sale al final de la corrida 2×2 (det(AB) = 2 = (-2)·(-1)).
 - [ ] Un dato inválido que se vuelve a pedir sin cerrar el programa (p. ej. `abc` como dimensión o `1/0` como elemento).
 - [ ] Salida de `python -m pruebas.pruebas_programa5` con todas las pruebas en `ok`.
 
@@ -151,7 +156,9 @@ trae botones que cargan estos mismos casos.
 
 Ya hay una captura de cada caso en [`capturas_web/`](capturas_web/). Son de página
 completa (1280 px de ancho) y se generaron con un navegador automatizado sobre la
-aplicación real; conviene recortarlas al pegarlas en el informe.
+aplicación real; conviene recortarlas al pegarlas en el informe. Las capturas 14 y 15
+son anteriores a la propiedad 7 (det(AB) = det(A)·det(B)) y al paso a paso del verificador:
+hay que volver a tomarlas, y conviene añadir una con un paso a paso abierto.
 
 | Captura | Qué muestra |
 |---|---|
@@ -169,7 +176,7 @@ aplicación real; conviene recortarlas al pegarlas en el informe.
 | `11-adjunta.png` | Inversa por adjunta: «Invertible 2×2» (C, adj(A), A⁻¹ y comprobación) |
 | `12-adjunta-singular.png` | Inversa por adjunta: «Singular 3×3», sin inversa |
 | `13-verificador-entrada.png` | Verificador: matrices A y B y selectores de las operaciones de fila |
-| `14-verificador-2x2.png` | Verificador: «Caso 2×2» con las seis propiedades en «Se cumple» |
+| `14-verificador-2x2.png` | Verificador: «Caso 2×2» con las siete propiedades en «Se cumple» |
 | `15-verificador-3x3.png` | Verificador: «Caso 3×3 (propiedad 6)» con la reducción triangular |
 | `16-verificador-error.png` | Verificador: «B singular (error)» con el aviso de matriz no invertible |
 | `17-teoremas.png` | Teoremas clave |

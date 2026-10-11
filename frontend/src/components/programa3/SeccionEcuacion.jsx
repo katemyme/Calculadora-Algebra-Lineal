@@ -17,6 +17,7 @@ import {
   redimensionarVector,
   useOperacion,
 } from "./comunes.jsx";
+import { BotonPegarMatriz } from "../programa6/portapapeles.jsx";
 
 const CASOS = [
   {
@@ -105,6 +106,15 @@ export default function SeccionEcuacion() {
           limpiar();
         }}
         celdaError={celdaError}
+      />
+
+      <BotonPegarMatriz
+        destino="A"
+        onPegar={(pegada) => {
+          setA(pegada);
+          setB(redimensionarVector(b, pegada.length));
+          limpiar();
+        }}
       />
 
       <Boton

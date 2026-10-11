@@ -14,6 +14,11 @@ import PanelResultados from "./components/PanelResultados.jsx";
 import Programa3 from "./components/programa3/Programa3.jsx";
 import Programa4 from "./components/programa4/Programa4.jsx";
 import Programa5 from "./components/programa5/Programa5.jsx";
+// PROGRAMA 6: copiar / pegar matrices entre las pestañas de la calculadora.
+import {
+  BotonPegarMatriz,
+  ProveedorPortapapeles,
+} from "./components/programa6/portapapeles.jsx";
 
 const DIMENSION_MINIMA = 1;
 const DIMENSION_MAXIMA = 8;
@@ -140,6 +145,17 @@ export default function App() {
     limpiarSalida();
   }
 
+  // Pega una matriz copiada como coeficientes A; b conserva lo que siga cabiendo.
+  function pegarCoeficientes(pegada) {
+    setConfig((previo) => ({
+      m: pegada.length,
+      n: pegada[0].length,
+      coeficientes: pegada,
+      terminos: Array.from({ length: pegada.length }, (_, i) => previo.terminos[i] ?? ""),
+    }));
+    limpiarSalida();
+  }
+
   function matrizActual() {
     return coeficientes.map((fila, i) => [...fila, terminos[i]]);
   }
@@ -193,6 +209,7 @@ export default function App() {
   const columnasAumentada = [...coeficientes[0], terminos[0]].length;
 
   return (
+    <ProveedorPortapapeles>
     <div className="math-shell min-h-screen pb-16">
       <header className="math-hero relative overflow-hidden border-b border-white/60">
         <div className="math-symbol math-symbol-a" aria-hidden="true">Σ</div>
@@ -295,6 +312,8 @@ export default function App() {
               celdaError={celdaError}
             />
 
+            <BotonPegarMatriz destino="A (coeficientes)" onPegar={pegarCoeficientes} />
+
             <div className="flex flex-wrap items-center gap-3">
               <Boton onClick={resolver} disabled={cargando}>
                 {cargando ? "Resolviendo…" : "Resolver sistema"}
@@ -318,6 +337,7 @@ export default function App() {
         )}
       </main>
     </div>
+    </ProveedorPortapapeles>
   );
 }
 

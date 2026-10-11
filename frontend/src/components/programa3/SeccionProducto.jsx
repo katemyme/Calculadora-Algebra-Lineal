@@ -21,6 +21,7 @@ import {
   redimensionarRejilla,
   useOperacion,
 } from "./comunes.jsx";
+import { BotonPegarMatriz } from "../programa6/portapapeles.jsx";
 
 const CASOS = [
   {
@@ -84,18 +85,27 @@ export default function SeccionProducto() {
         {[["A", A, setA], ["B", B, setB]].map(([nombre, matriz, fijar], indice) => (
           <div key={nombre} className="flex items-center gap-3">
             {indice === 1 && <Operador>·</Operador>}
-            <BloqueMatriz nombre={nombre} orden={`${matriz.length}×${matriz[0].length}`}>
-              <EditorMatriz
-                etiqueta={nombre}
-                valores={matriz}
-                onCambiar={(i, j, texto) => {
-                  fijar(cambiarCelda(matriz, i, j, texto));
+            <div className="flex flex-col items-center gap-2">
+              <BloqueMatriz nombre={nombre} orden={`${matriz.length}×${matriz[0].length}`}>
+                <EditorMatriz
+                  etiqueta={nombre}
+                  valores={matriz}
+                  onCambiar={(i, j, texto) => {
+                    fijar(cambiarCelda(matriz, i, j, texto));
+                    limpiar();
+                  }}
+                  celdaError={celdaConError(error, nombre)}
+                  compacta
+                />
+              </BloqueMatriz>
+              <BotonPegarMatriz
+                destino={nombre}
+                onPegar={(pegada) => {
+                  fijar(pegada);
                   limpiar();
                 }}
-                celdaError={celdaConError(error, nombre)}
-                compacta
               />
-            </BloqueMatriz>
+            </div>
           </div>
         ))}
       </div>

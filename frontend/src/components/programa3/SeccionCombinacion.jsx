@@ -17,6 +17,7 @@ import {
   redimensionarRejilla,
   useOperacion,
 } from "./comunes.jsx";
+import { BotonPegarMatriz } from "../programa6/portapapeles.jsx";
 
 // Cada caso se da como lista de vectores (columnas) y b.
 const CASOS = [
@@ -137,6 +138,15 @@ export default function SeccionCombinacion() {
           columna es b. Celda vacía = 0.
         </p>
       </div>
+
+      <BotonPegarMatriz
+        destino="los vectores (columnas)"
+        onPegar={(pegada) => {
+          // Las columnas pegadas pasan a ser v₁…vₖ; b se conserva como última columna.
+          setRejilla(pegada.map((fila, i) => [...fila, rejilla[i]?.[k] ?? ""]));
+          limpiar();
+        }}
+      />
 
       <Boton onClick={calcular} disabled={cargando}>
         {cargando ? "Resolviendo…" : "¿Es combinación lineal?"}

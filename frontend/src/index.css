@@ -733,3 +733,64 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   PROGRAMA 6: factorización LU y portapapeles de matrices
+--------------------------------------------------------------------------- */
+.boton-portapapeles {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px dashed rgba(109, 59, 235, 0.45);
+  border-radius: 999px;
+  background: rgba(109, 59, 235, 0.06);
+  padding: 0.3rem 0.8rem;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--pivote);
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.boton-portapapeles:hover:not(:disabled) {
+  border-style: solid;
+  background: rgba(109, 59, 235, 0.14);
+}
+
+.boton-portapapeles:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.lu-subpaso {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-left: 3px solid rgba(109, 59, 235, 0.25);
+  padding-left: 0.75rem;
+}
+
+.lu-subpaso-letra {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: rgba(109, 59, 235, 0.12);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--pivote);
+}
+
+.lu-ecuacion {
+  overflow-x: auto;
+  border-radius: 0.6rem;
+  background: rgba(109, 59, 235, 0.05);
+  padding: 0.45rem 0.75rem;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.86rem;
+  color: #59657a;
+  white-space: nowrap;
+}

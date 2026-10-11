@@ -6,6 +6,7 @@ Ejecución (desde la carpeta programa_4):
 
 from modulos import (
     modulo_determinantes,
+    modulo_lu,
     modulo_matrices,
     modulo_sistemas,
     modulo_vectores,
@@ -17,6 +18,8 @@ MODULOS = {
     "2": modulo_vectores,
     "3": modulo_matrices,
     "4": modulo_determinantes,
+    # PROGRAMA 6: Factorización LU y solución Ax = b.
+    "5": modulo_lu,
 }
 
 
@@ -30,6 +33,7 @@ def mostrar_menu_principal() -> None:
     print("║  2. Vectores e Independencia Lineal      ║")
     print("║  3. Álgebra de Matrices                  ║")
     print("║  4. Determinantes                        ║")
+    print("║  5. Factorización LU y solución Ax = b   ║")
     print("║  0. Salir                                ║")
     print("╚══════════════════════════════════════════╝")
 

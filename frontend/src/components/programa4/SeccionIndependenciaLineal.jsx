@@ -19,6 +19,7 @@ import {
   redimensionarRejilla,
   useOperacion,
 } from "../programa3/comunes.jsx";
+import { BotonPegarMatriz } from "../programa6/portapapeles.jsx";
 
 // Cada caso es la lista de vectores (se colocan como columnas).
 const CASOS = [
@@ -155,6 +156,14 @@ export default function SeccionIndependenciaLineal() {
           Celda vacía = 0.
         </p>
       </div>
+
+      <BotonPegarMatriz
+        destino="los vectores (columnas)"
+        onPegar={(pegada) => {
+          setRejilla(pegada);
+          limpiar();
+        }}
+      />
 
       <Boton onClick={calcular} disabled={cargando}>
         {cargando ? "Reduciendo…" : "Evaluar independencia lineal"}

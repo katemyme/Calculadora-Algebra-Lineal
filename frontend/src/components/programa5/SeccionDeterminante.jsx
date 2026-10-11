@@ -68,7 +68,7 @@ export default function SeccionDeterminante() {
 
       <div className="p3-lienzo">
         <Operador>det</Operador>
-        <EditorNombrado nombre="A" matriz={A} onCambiar={fijarA} error={error} />
+        <EditorNombrado nombre="A" matriz={A} onCambiar={fijarA} error={error} soloCuadrada />
         <Operador>=</Operador>
         <span className="font-display text-3xl text-grafito/50">?</span>
       </div>

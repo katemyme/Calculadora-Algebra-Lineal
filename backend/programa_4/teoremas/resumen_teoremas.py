@@ -1,7 +1,8 @@
 """Resumen de los teoremas clave de cada módulo de la calculadora.
 
 Cada módulo muestra su entrada con la opción 0 «Ver Teoremas Clave». La clave 3
-reúne los teoremas del Módulo III: transpuesta, inversa y determinante.
+reúne los teoremas del Módulo III: transpuesta, inversa y determinante; la clave 5,
+los de la Factorización LU (Programa 6).
 Integrantes: Grupo X — completar.
 """
 
@@ -28,4 +29,20 @@ TEOREMAS: dict = {
         "    A⁻¹ = (1/det A)·adj(A)"
     ),
     4: "En construcción",
+    # PROGRAMA 6. Misma sangría que la clave 3: títulos con 2 espacios, enunciados con 4.
+    5: (
+        "FACTORIZACIÓN LU (Programa 6). Si A (m×n) se reduce a una forma escalonada U "
+        "solo con reemplazos Fᵢ → Fᵢ − ℓᵢⱼ·Fⱼ (sin intercambiar filas), entonces A = LU:\n"
+        "    L es triangular inferior m×m con unos en la diagonal y guarda los "
+        "multiplicadores ℓᵢⱼ = (entrada a eliminar)/(pivote)\n"
+        "    U es la forma escalonada de A (m×n)\n"
+        "  SOLUCIÓN DE Ax = b CON A = LU. Como Ax = L(Ux) = b, con y = Ux se resuelve "
+        "en dos etapas:\n"
+        "    (1) Ly = b  por sustitución hacia adelante  →  vector intermedio y\n"
+        "    (2) Ux = y  por sustitución hacia atrás     →  solución x\n"
+        "  EXISTENCIA Y DETERMINANTE.\n"
+        "    Si un pivote vale 0 y hay que intercambiar filas, A no admite LU sin "
+        "permutación: se requiere pivoteo parcial PA = LU\n"
+        "    Si A es n×n, det(A) = det(L)·det(U) = u₁₁·u₂₂·…·uₙₙ, porque det(L) = 1"
+    ),
 }

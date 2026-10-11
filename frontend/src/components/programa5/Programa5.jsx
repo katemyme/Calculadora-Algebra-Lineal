@@ -53,8 +53,8 @@ const SECCIONES = [
     simbolo: "⇔",
     titulo: "Teoremas clave",
     descripcion:
-      "Transpuesta, teorema de la inversa, Teorema de la Matriz Invertible y " +
-      "relación entre determinante e inversa (opción 0).",
+      "Transpuesta, teorema de la inversa, Teorema de la Matriz Invertible, " +
+      "relación entre determinante e inversa y Factorización LU (opción 0).",
     Componente: SeccionTeoremas,
   },
 ];

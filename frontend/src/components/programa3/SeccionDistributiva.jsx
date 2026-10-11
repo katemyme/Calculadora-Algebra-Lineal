@@ -22,6 +22,7 @@ import {
   textoVector,
   useOperacion,
 } from "./comunes.jsx";
+import { BotonPegarMatriz } from "../programa6/portapapeles.jsx";
 
 const CASOS = [
   {
@@ -103,18 +104,21 @@ export default function SeccionDistributiva() {
       </div>
 
       <div className="p3-lienzo">
-        <BloqueMatriz nombre="A" orden={`${m}×${n}`}>
-          <EditorMatriz
-            etiqueta="A"
-            valores={A}
-            onCambiar={(i, j, texto) => {
-              setA(cambiarCelda(A, i, j, texto));
-              limpiar();
-            }}
-            celdaError={celdaConError(error, "A")}
-            compacta
-          />
-        </BloqueMatriz>
+        <div className="flex flex-col items-center gap-2">
+          <BloqueMatriz nombre="A" orden={`${m}×${n}`}>
+            <EditorMatriz
+              etiqueta="A"
+              valores={A}
+              onCambiar={(i, j, texto) => {
+                setA(cambiarCelda(A, i, j, texto));
+                limpiar();
+              }}
+              celdaError={celdaConError(error, "A")}
+              compacta
+            />
+          </BloqueMatriz>
+          <BotonPegarMatriz destino="A" onPegar={cambiarOrden} />
+        </div>
         {editorVector("u", u, setU)}
         {editorVector("v", v, setV)}
       </div>

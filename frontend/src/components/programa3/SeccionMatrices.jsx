@@ -20,6 +20,7 @@ import {
   redimensionarRejilla,
   useOperacion,
 } from "./comunes.jsx";
+import { BotonPegarMatriz } from "../programa6/portapapeles.jsx";
 
 const OPERACIONES = [
   { id: "suma", etiqueta: "A + B", simbolo: "+" },
@@ -101,18 +102,27 @@ export default function SeccionMatrices() {
   }
 
   const editor = (nombre, matriz, fijar) => (
-    <BloqueMatriz nombre={nombre} orden={orden(matriz)}>
-      <EditorMatriz
-        etiqueta={nombre}
-        valores={matriz}
-        onCambiar={(i, j, texto) => {
-          fijar(cambiarCelda(matriz, i, j, texto));
+    <div className="flex flex-col items-center gap-2">
+      <BloqueMatriz nombre={nombre} orden={orden(matriz)}>
+        <EditorMatriz
+          etiqueta={nombre}
+          valores={matriz}
+          onCambiar={(i, j, texto) => {
+            fijar(cambiarCelda(matriz, i, j, texto));
+            limpiar();
+          }}
+          celdaError={celdaConError(error, nombre)}
+          compacta
+        />
+      </BloqueMatriz>
+      <BotonPegarMatriz
+        destino={nombre}
+        onPegar={(pegada) => {
+          fijar(pegada);
           limpiar();
         }}
-        celdaError={celdaConError(error, nombre)}
-        compacta
       />
-    </BloqueMatriz>
+    </div>
   );
 
   return (

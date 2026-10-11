@@ -9,6 +9,7 @@ import Boton from "../ui/Boton.jsx";
 import SelectorDimension from "../ui/SelectorDimension.jsx";
 import MatrizEstatica from "../MatrizEstatica.jsx";
 import ReduccionPorFilas from "../programa4/ReduccionPorFilas.jsx";
+import { BotonCopiarMatriz, BotonPegarMatriz } from "../programa6/portapapeles.jsx";
 import {
   BloqueMatriz,
   DIMENSION_MAXIMA,
@@ -59,18 +60,25 @@ export function BotonesDeCasos({ casos, onCargar, onLimpiar }) {
   );
 }
 
-/** Rejilla editable con su nombre y su dimensión; resalta la celda con error. */
-export function EditorNombrado({ nombre, matriz, onCambiar, error }) {
+/**
+ * Rejilla editable con su nombre y su dimensión; resalta la celda con error.
+ * Si hay una matriz copiada (Programa 6) ofrece pegarla: `onCambiar` recibe la
+ * rejilla pegada con sus propias dimensiones. `soloCuadrada` limita el pegado.
+ */
+export function EditorNombrado({ nombre, matriz, onCambiar, error, soloCuadrada = false }) {
   return (
-    <BloqueMatriz nombre={nombre} orden={ordenDe(matriz)}>
-      <EditorMatriz
-        etiqueta={nombre}
-        valores={matriz}
-        onCambiar={(i, j, texto) => onCambiar(cambiarCelda(matriz, i, j, texto))}
-        celdaError={celdaConError(error, nombre)}
-        compacta
-      />
-    </BloqueMatriz>
+    <div className="flex flex-col items-center gap-2">
+      <BloqueMatriz nombre={nombre} orden={ordenDe(matriz)}>
+        <EditorMatriz
+          etiqueta={nombre}
+          valores={matriz}
+          onCambiar={(i, j, texto) => onCambiar(cambiarCelda(matriz, i, j, texto))}
+          celdaError={celdaConError(error, nombre)}
+          compacta
+        />
+      </BloqueMatriz>
+      <BotonPegarMatriz destino={nombre} onPegar={onCambiar} soloCuadrada={soloCuadrada} />
+    </div>
   );
 }
 
@@ -98,13 +106,23 @@ export function CampoTexto({ etiqueta, descripcion, valor, onCambiar, conError =
   );
 }
 
-/** Matriz calculada con su nombre y dimensión debajo; `destacada` marca el resultado. */
-export function MatrizNombrada({ nombre, matriz, destacada = false, ...props }) {
+/**
+ * Matriz calculada con su nombre y dimensión debajo; `destacada` marca el resultado
+ * y `copiable` le añade el botón «Copiar matriz» del Programa 6.
+ */
+export function MatrizNombrada({ nombre, matriz, destacada = false, copiable = false, ...props }) {
   const dibujo = <MatrizEstatica matriz={matriz} aumentada={false} {...props} />;
-  return (
+  const bloque = (
     <BloqueMatriz orden={`${nombre} (${ordenDe(matriz)})`}>
       {destacada ? <div className="rounded-xl bg-determinado/10 p-1">{dibujo}</div> : dibujo}
     </BloqueMatriz>
+  );
+  if (!copiable) return bloque;
+  return (
+    <div className="flex flex-col items-center gap-2">
+      {bloque}
+      <BotonCopiarMatriz matriz={matriz} nombre={nombre} />
+    </div>
   );
 }
 

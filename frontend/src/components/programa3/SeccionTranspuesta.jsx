@@ -28,6 +28,7 @@ import {
   redimensionarRejilla,
   useOperacion,
 } from "./comunes.jsx";
+import { BotonPegarMatriz } from "../programa6/portapapeles.jsx";
 
 const TEOREMAS = [
   { id: "doble", tex: "(A^{T})^{T} = A" },
@@ -131,18 +132,21 @@ export default function SeccionTranspuesta() {
 
       <div className="p3-lienzo">
         {[["A", A, setA], ["B", B, setB]].map(([nombre, matriz, fijar]) => (
-          <BloqueMatriz key={nombre} nombre={nombre} orden={`${matriz.length}×${matriz[0].length}`}>
-            <EditorMatriz
-              etiqueta={nombre}
-              valores={matriz}
-              onCambiar={(i, j, texto) => {
-                fijar(cambiarCelda(matriz, i, j, texto));
-                limpiar();
-              }}
-              celdaError={celdaConError(error, nombre)}
-              compacta
-            />
-          </BloqueMatriz>
+          <div key={nombre} className="flex flex-col items-center gap-2">
+            <BloqueMatriz nombre={nombre} orden={`${matriz.length}×${matriz[0].length}`}>
+              <EditorMatriz
+                etiqueta={nombre}
+                valores={matriz}
+                onCambiar={(i, j, texto) => {
+                  fijar(cambiarCelda(matriz, i, j, texto));
+                  limpiar();
+                }}
+                celdaError={celdaConError(error, nombre)}
+                compacta
+              />
+            </BloqueMatriz>
+            <BotonPegarMatriz destino={nombre} onPegar={cambiar(fijar)} />
+          </div>
         ))}
 
         <label className="flex items-center gap-2">

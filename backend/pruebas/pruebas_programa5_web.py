@@ -287,7 +287,8 @@ class PruebasProgramaCinco(unittest.TestCase):
         respuesta = self.cliente.get("/api/p5/teoremas")
         self.assertEqual(respuesta.status_code, 200)
         bloques = respuesta.json()["bloques"]
-        self.assertEqual(len(bloques), 4)
+        # 4 bloques del Módulo III y 3 de la Factorización LU (Programa 6).
+        self.assertEqual(len(bloques), 7)
         inversa = bloques[1]
         self.assertTrue(inversa["titulo"].startswith("TEOREMA DE LA INVERSA"))
         self.assertEqual(inversa["enunciados"][0], "(a) (A⁻¹)⁻¹ = A")

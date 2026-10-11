@@ -597,13 +597,26 @@ def verificar_propiedades(
     }
 
 
-def teoremas_clave() -> Dict:
-    """Opción 0: teoremas del Módulo III agrupados en bloques {titulo, enunciados}."""
+# Módulos cuyos teoremas muestra la pestaña «Teoremas clave»: el III y, desde el
+# PROGRAMA 6, el de Factorización LU (clave 5 de TEOREMAS).
+_MODULOS_CON_TEOREMAS = (p5m.NUMERO_MODULO, 5)
+
+
+def bloques_de_teoremas(numero_modulo: int) -> List[Dict]:
+    """Teoremas de un módulo agrupados en bloques {titulo, enunciados}."""
     bloques: List[Dict] = []
-    for linea in p5m.TEOREMAS[p5m.NUMERO_MODULO].split("\n"):
+    for linea in p5m.TEOREMAS[numero_modulo].split("\n"):
         # En el texto de consola los enunciados llevan 4 espacios de sangría; los títulos, menos.
         if linea.startswith("    ") and bloques:
             bloques[-1]["enunciados"].append(linea.strip())
         else:
             bloques.append({"titulo": linea.strip(), "enunciados": []})
+    return bloques
+
+
+def teoremas_clave() -> Dict:
+    """Opción 0: teoremas del Módulo III seguidos de los de la Factorización LU."""
+    bloques: List[Dict] = []
+    for numero_modulo in _MODULOS_CON_TEOREMAS:
+        bloques.extend(bloques_de_teoremas(numero_modulo))
     return {"bloques": bloques}

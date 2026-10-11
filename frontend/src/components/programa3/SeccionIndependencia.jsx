@@ -18,6 +18,7 @@ import {
   redimensionarRejilla,
   useOperacion,
 } from "./comunes.jsx";
+import { BotonPegarMatriz } from "../programa6/portapapeles.jsx";
 
 // Cada caso es la lista de vectores puestos como columnas.
 const CASOS = [
@@ -324,6 +325,14 @@ export default function SeccionIndependencia() {
         </p>
 
       </div>
+
+      <BotonPegarMatriz
+        destino="los vectores (columnas)"
+        onPegar={(pegada) => {
+          setRejilla(pegada);
+          limpiar();
+        }}
+      />
 
       {/* =====================================================
           BOTÓN CALCULAR

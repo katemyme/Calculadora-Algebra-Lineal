@@ -16,6 +16,7 @@ export class ErrorDeCalculo extends Error {
     this.columna = columna;
     // Programa 3: "A", "B", "u", "v", "b", "c", "vectores" o "reaccion".
     // Programa 5: "A", "B", "k", "intercambio", "reemplazo" o "escalamiento".
+    // Programa 6: "A" o "b".
     this.campo = campo;
   }
 }
@@ -110,4 +111,10 @@ export const programa5 = {
   inversa: (cuerpo) => enviar("/api/p5/inversa", cuerpo),
   verificador: (cuerpo) => enviar("/api/p5/verificador", cuerpo),
   teoremas: () => consultar("/api/p5/teoremas"),
+};
+
+// Programa 6 (sección "Factorización LU y solución Ax = b" de la pestaña
+// Matrices): el cálculo lo hace "backend/programa_4/modulos/modulo_lu.py".
+export const programa6 = {
+  lu: (cuerpo) => enviar("/api/p6/lu", cuerpo),
 };

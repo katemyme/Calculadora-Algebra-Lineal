@@ -85,6 +85,16 @@ export default function SeccionVerificador() {
     limpiar();
   };
 
+  // A y B comparten el orden n: al pegar una matriz de otro tamaño en una, la
+  // otra se redimensiona para seguir siendo del mismo orden.
+  const alPegarOEditar = (fijar, fijarOtra, otra) => (valor) => {
+    fijar(valor);
+    if (valor.length !== otra.length) {
+      fijarOtra(redimensionarRejilla(otra, valor.length, valor.length));
+    }
+    limpiar();
+  };
+
   function cambiarOrden(orden) {
     setA(redimensionarRejilla(A, orden, orden));
     setB(redimensionarRejilla(B, orden, orden));
@@ -164,8 +174,20 @@ export default function SeccionVerificador() {
       </div>
 
       <div className="p3-lienzo">
-        <EditorNombrado nombre="A" matriz={A} onCambiar={alCambiar(setA)} error={error} />
-        <EditorNombrado nombre="B" matriz={B} onCambiar={alCambiar(setB)} error={error} />
+        <EditorNombrado
+          nombre="A"
+          matriz={A}
+          onCambiar={alPegarOEditar(setA, setB, B)}
+          error={error}
+          soloCuadrada
+        />
+        <EditorNombrado
+          nombre="B"
+          matriz={B}
+          onCambiar={alPegarOEditar(setB, setA, A)}
+          error={error}
+          soloCuadrada
+        />
         <p className="max-w-xs text-xs text-grafito">
           A y B deben ser <strong>cuadradas e invertibles</strong> del mismo orden. Si alguna
           es singular, el backend lo indica y no verifica nada.

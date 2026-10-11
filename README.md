@@ -387,6 +387,40 @@ python -m pruebas.pruebas_programa5_web    # los mismos casos a través de la AP
 
 ---
 
+## Programa 6
+
+**Factorización LU (A = LU) y solución de Ax = b.** En la web está en la pestaña
+**Matrices → «Factorización LU y solución Ax = b»**; en consola es la opción 5
+del menú principal (`backend/programa_4/main.py`).
+
+- Reduce A (m×n) a su forma escalonada U usando **solo reemplazos**
+  `Fᵢ → Fᵢ − ℓᵢⱼ·Fⱼ` y guarda cada multiplicador ℓᵢⱼ en L (triangular inferior
+  m×m con unos en la diagonal).
+- Si un pivote vale 0 y haría falta intercambiar filas, se detiene e informa:
+  *«La matriz no admite Factorización LU sin permutación (requiere pivoteo
+  parcial PA = LU)»*.
+- Verifica `L · U == A` con el producto matricial de la Calculadora.
+- Si A es n×n, resuelve `Ly = b` (sustitución hacia adelante, sobre `[L | b]`)
+  y `Ux = y` (sustitución hacia atrás, sobre `[U | y]`) y comprueba `A · x == b`.
+- La web muestra el paso a paso: cálculo de cada multiplicador, la matriz antes
+  y después de cada reemplazo, dónde queda en L y las ecuaciones de cada
+  sustitución.
+
+**Copiar / pegar matriz.** Los resultados (L, U, x, A⁻¹ y el resultado de las
+operaciones de Álgebra de Matrices) tienen un botón «Copiar matriz». Mientras
+haya una matriz copiada, las demás secciones muestran «Pegar matriz», que
+ajusta las dimensiones de la rejilla a la matriz pegada.
+
+| Qué | Archivo |
+| --- | --- |
+| Cálculo (funciones puras) y consola | `backend/programa_4/modulos/modulo_lu.py` |
+| Teoremas (clave 5) | `backend/programa_4/teoremas/resumen_teoremas.py` |
+| Adaptador web y ruta `POST /api/p6/lu` | `backend/calculo/programa6_web.py`, `backend/app/api.py` |
+| Pruebas | `backend/pruebas/pruebas_programa6.py` |
+| Interfaz | `frontend/src/components/programa6/` |
+
+---
+
 ## Requisitos
 
 | Herramienta | Versión | Uso |

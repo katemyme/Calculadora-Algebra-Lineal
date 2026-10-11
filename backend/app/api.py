@@ -1,4 +1,4 @@
-"""API HTTP de la calculadora de Álgebra Lineal - Programas 2, 3, 4 y 5."""
+"""API HTTP de la calculadora de Álgebra Lineal - Programas 2, 3, 4, 5 y 6."""
 
 import logging
 import traceback
@@ -17,6 +17,7 @@ from app.modelos import (
     PeticionIndependencia,
     PeticionIndependenciaP4,
     PeticionInversaP5,
+    PeticionLUP6,
     PeticionMatrices,
     PeticionOperacionP5,
     PeticionProducto,
@@ -31,6 +32,7 @@ from calculo.programa2 import resolver_sistema
 import calculo.programa3_web as p3web
 import calculo.programa4_web as p4web
 import calculo.programa5_web as p5web
+import calculo.programa6_web as p6web
 import calculo.transpuesta as transpuesta
 from app.serializacion import serializar
 
@@ -189,6 +191,15 @@ def p5_verificador(peticion: PeticionVerificadorP5) -> dict:
 @app.get("/api/p5/teoremas", summary="Teoremas clave del Módulo III")
 def p5_teoremas() -> dict:
     return p5web.teoremas_clave()
+
+
+# ---------------------------------------------------------------------------
+# Programa 6 (el cálculo vive en "backend/programa_4/modulos/modulo_lu.py")
+# ---------------------------------------------------------------------------
+@app.post("/api/p6/lu", summary="Factorización A = LU y solución de Ax = b",
+          responses={422: {"model": RespuestaError}})
+def p6_lu(peticion: PeticionLUP6) -> dict:
+    return serializar(p6web.factorizar_y_resolver(peticion.A, peticion.b))
 
 
 @app.exception_handler(ErrorDeEntrada)

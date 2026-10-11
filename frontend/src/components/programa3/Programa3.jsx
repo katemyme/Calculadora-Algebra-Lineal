@@ -13,6 +13,8 @@ import SeccionEcuacion from "./SeccionEcuacion.jsx";
 import SeccionDistributiva from "./SeccionDistributiva.jsx";
 import SeccionBalanceo from "./SeccionBalanceo.jsx";
 import SeccionTranspuesta from "./SeccionTranspuesta.jsx";
+// PROGRAMA 6: su sección vive en la carpeta programa6/.
+import SeccionLU from "../programa6/SeccionLU.jsx";
 
 const SECCIONES = [
   {
@@ -65,6 +67,16 @@ const SECCIONES = [
     titulo: "Ecuación matricial",
     descripcion: "Resolver y clasificar A·x = b y verificar con A·x (opción 9).",
     Componente: SeccionEcuacion,
+  },
+  {
+    // PROGRAMA 6
+    id: "lu",
+    simbolo: "A = LU",
+    titulo: "Factorización LU y solución Ax = b",
+    descripcion:
+      "Obtiene L y U con reemplazos de fila, verifica L·U = A y resuelve Ax = b en dos " +
+      "etapas: Ly = b (hacia adelante) y Ux = y (hacia atrás), mostrando cada paso.",
+    Componente: SeccionLU,
   },
   {
     id: "distributiva",

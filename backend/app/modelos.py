@@ -191,3 +191,13 @@ class PeticionVerificadorP5(BaseModel):
     intercambio: Optional[IntercambioP5] = None
     reemplazo: Optional[ReemplazoP5] = None
     escalamiento: EscalamientoP5
+
+
+# ---------------------------------------------------------------------------
+# Programa 6
+# ---------------------------------------------------------------------------
+class PeticionLUP6(BaseModel):
+    """POST /api/p6/lu. A es m×n; b (m componentes) solo se usa si A es cuadrada."""
+
+    A: List[List[str]]
+    b: Optional[List[str]] = None

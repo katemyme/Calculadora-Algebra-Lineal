@@ -92,7 +92,7 @@ export default function SeccionInversa() {
       </div>
 
       <div className="p3-lienzo">
-        <EditorNombrado nombre="A" matriz={A} onCambiar={fijarA} error={error} />
+        <EditorNombrado nombre="A" matriz={A} onCambiar={fijarA} error={error} soloCuadrada />
         <Operador>⁻¹</Operador>
         <Operador>=</Operador>
         <span className="font-display text-3xl text-grafito/50">?</span>
@@ -225,7 +225,7 @@ function InversaComprobada({ numero, resultado }) {
     <TarjetaNumerada numero={numero} titulo="Inversa y comprobación">
       <div className="flex flex-wrap items-center gap-3 overflow-x-auto">
         <span className="font-display text-lg font-bold text-tinta">A⁻¹ =</span>
-        <MatrizNombrada nombre="A⁻¹" matriz={inversa} destacada />
+        <MatrizNombrada nombre="A⁻¹" matriz={inversa} destacada copiable />
       </div>
       <div className="flex flex-wrap items-center gap-3 overflow-x-auto">
         <MatrizNombrada nombre="A" matriz={A} />

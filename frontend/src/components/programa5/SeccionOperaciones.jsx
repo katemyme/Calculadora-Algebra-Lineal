@@ -212,6 +212,7 @@ function ResultadoOperacion({ resultado }) {
             nombre={nombreDelResultado(resultado)}
             matriz={resultado.resultado}
             destacada
+            copiable
           />
         </div>
 

@@ -22,6 +22,9 @@ import {
 /** Copia de una rejilla de texto, para cargar un caso sin compartir referencias. */
 export const copiarRejilla = (rejilla) => rejilla.map((fila) => [...fila]);
 
+/** Número serializado entre paréntesis, "(−3/2)", para escribirlo dentro de una cuenta. */
+export const entreParentesis = (numero) => `(${textoFraccion(numero)})`;
+
 /** Dimensión "m×n" de una rejilla (de texto o ya serializada por el backend). */
 export const ordenDe = (matriz) => `${matriz.length}×${matriz[0].length}`;
 
@@ -136,6 +139,29 @@ export function TarjetaNumerada({ numero, titulo, nota, children }) {
         {nota && <span className="math-param-chip">{nota}</span>}
       </div>
       {children}
+    </div>
+  );
+}
+
+/** Mapa del procedimiento: las etapas numeradas, para saber qué se va a ver y en qué orden. */
+export function PlanDePasos({ etapas }) {
+  return (
+    <ol className="flex flex-wrap items-center gap-2" aria-label="Pasos del procedimiento">
+      {etapas.map((etapa, indice) => (
+        <li key={etapa} className="math-param-chip">
+          {indice + 1}. {etapa}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** Flecha «antes ⟶ después» con el texto de lo que se hace encima. */
+export function FlechaDePaso({ children }) {
+  return (
+    <div className="flex flex-col items-center text-pivote">
+      <span className="font-display text-xs font-semibold">{children}</span>
+      <span className="text-2xl leading-none">⟶</span>
     </div>
   );
 }

@@ -1,12 +1,13 @@
 // Contenedor del botón "Álgebra de Matrices" (Programa 5, Módulo III): las
-// operaciones básicas, el determinante, la inversa, el verificador de
+// operaciones básicas, el determinante (una pestaña por método: cofactores,
+// Sarrus y triangular), la Regla de Cramer, la inversa, el verificador de
 // propiedades y los teoremas clave. Cada sección conserva su estado al cambiar
 // de una a otra (se ocultan en lugar de desmontarse).
 
 import { useState } from "react";
 import Panel from "../ui/Panel.jsx";
 import SeccionCramer from "./SeccionCramer.jsx";
-import SeccionDeterminante from "./SeccionDeterminante.jsx";
+import SeccionDeterminante, { ProveedorDeterminante } from "./SeccionDeterminante.jsx";
 import SeccionInversa from "./SeccionInversa.jsx";
 import SeccionOperaciones from "./SeccionOperaciones.jsx";
 import SeccionTeoremas from "./SeccionTeoremas.jsx";
@@ -22,14 +23,36 @@ const SECCIONES = [
       "con la validación de dimensiones (opciones 1–5).",
     Componente: SeccionOperaciones,
   },
+  // Opción 6: det(A) por tres métodos. Comparten la matriz (ProveedorDeterminante).
   {
-    id: "determinante",
-    simbolo: "det A",
-    titulo: "Determinante",
+    id: "cofactores",
+    simbolo: "det · C₁ⱼ",
+    titulo: "Cofactores",
     descripcion:
-      "Expansión por cofactores, regla de Sarrus y reducción a forma triangular; " +
-      "se comprueba que los métodos coinciden (opción 6).",
+      "Determinante por expansión por cofactores sobre la fila 1, paso a paso: cada " +
+      "menor M₁ⱼ, su cofactor C₁ⱼ y la suma de los productos a₁ⱼ·C₁ⱼ (opción 6).",
     Componente: SeccionDeterminante,
+    props: { metodo: "cofactores" },
+  },
+  {
+    id: "sarrus",
+    simbolo: "det · ↘↗",
+    titulo: "Regla de Sarrus",
+    descripcion:
+      "Determinante de una matriz 3×3, paso a paso: los tres productos de las diagonales " +
+      "descendentes menos los tres de las ascendentes (opción 6).",
+    Componente: SeccionDeterminante,
+    props: { metodo: "sarrus" },
+  },
+  {
+    id: "triangular",
+    simbolo: "det · ◥",
+    titulo: "Triangular",
+    descripcion:
+      "Determinante por reducción a forma triangular, paso a paso: cada operación de " +
+      "fila, el producto de la diagonal y el signo por los intercambios (opción 6).",
+    Componente: SeccionDeterminante,
+    props: { metodo: "triangular" },
   },
   {
     id: "cramer",
@@ -91,11 +114,13 @@ export default function Programa5() {
       </nav>
 
       <Panel className="math-panel overflow-hidden" titulo={seccion.titulo} descripcion={seccion.descripcion}>
-        {SECCIONES.map(({ id, Componente }) => (
-          <div key={id} hidden={id !== activa}>
-            <Componente />
-          </div>
-        ))}
+        <ProveedorDeterminante>
+          {SECCIONES.map(({ id, Componente, props }) => (
+            <div key={id} hidden={id !== activa}>
+              <Componente {...props} />
+            </div>
+          ))}
+        </ProveedorDeterminante>
       </Panel>
     </div>
   );

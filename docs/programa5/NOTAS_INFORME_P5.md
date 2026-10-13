@@ -85,7 +85,8 @@ pivote, columnas L.I. y columnas que generan ℝⁿ son afirmaciones equivalente
 ## 5. Versión web
 
 El botón **Álgebra de Matrices** de la calculadora web ofrece lo mismo que la consola,
-repartido en cinco secciones: Operaciones (opciones 1–5), Determinante (6), Inversa (7 y 8),
+repartido en secciones: Operaciones (opciones 1–5), Cofactores, Regla de Sarrus y Triangular
+(los tres métodos de la opción 6, cada uno en su pestaña y con su paso a paso), Inversa (7 y 8),
 Verificador (9) y Teoremas clave (0).
 
 La web no repite ningún cálculo. El recorrido de un dato es:
@@ -105,11 +106,29 @@ tiene un botón «Ver el paso a paso» con los cálculos de sus dos miembros: in
 Gauss-Jordan, productos fila por columna, transpuestas, determinantes por reducción
 triangular y por cofactores (con cada menor M₁ⱼ) y la cuenta final. También los arma el backend.
 
+Las pestañas **Cofactores**, **Regla de Sarrus** y **Triangular** comparten la matriz: se
+calcula una vez (`POST /api/p5/determinante` devuelve los tres métodos) y cada una muestra
+el desarrollo del suyo en tarjetas numeradas, igual que la Regla de Cramer.
+
+- **Cofactores**: la fila 1 resaltada, cada menor M₁ⱼ junto a la matriz con la fila y la
+  columna tachadas, su determinante (la cuenta `(a)·(d) − (b)·(c)` si es 2×2), el signo
+  (−1)¹⁺ʲ, el cofactor y la suma de los productos a₁ⱼ·C₁ⱼ. Hasta 5×5 cada menor de orden ≥ 3
+  se puede desplegar con su propia expansión (`expansion_por_cofactores`).
+- **Regla de Sarrus**: la matriz 3×5 con las dos primeras columnas repetidas y, para cada
+  una de las seis diagonales, sus celdas resaltadas y su producto (`diagonales_de_sarrus`).
+  Con otro orden avisa de que la regla no se aplica.
+- **Triangular**: la matriz antes y después de cada operación de fila, la diagonal
+  resaltada con su producto y el signo por los intercambios.
+
+Al final de cada pestaña se comprueba que los métodos coinciden y se da el diagnóstico.
+
 ## 6. Casos de prueba verificados
 
 Todos están en `pruebas_programa5.py` (cálculo) y `pruebas_programa5_web.py` (API) y pasan.
 Se ejecutan desde `backend/` con `python -m pruebas.pruebas_programa5` y
-`python -m pruebas.pruebas_programa5_web`.
+`python -m pruebas.pruebas_programa5_web`. El determinante y la inversa tienen además
+`pruebas_determinante_inversa.py` (módulo, adaptador web y consola), que se ejecuta con
+`python -m pruebas.pruebas_determinante_inversa`.
 
 | Entrada | Resultado |
 |---|---|
@@ -158,7 +177,9 @@ Ya hay una captura de cada caso en [`capturas_web/`](capturas_web/). Son de pág
 completa (1280 px de ancho) y se generaron con un navegador automatizado sobre la
 aplicación real; conviene recortarlas al pegarlas en el informe. Las capturas 14 y 15
 son anteriores a la propiedad 7 (det(AB) = det(A)·det(B)) y al paso a paso del verificador:
-hay que volver a tomarlas, y conviene añadir una con un paso a paso abierto.
+hay que volver a tomarlas, y conviene añadir una con un paso a paso abierto. Las capturas
+00 y 06 a 08 son anteriores a las pestañas Cofactores, Regla de Sarrus y Triangular (antes
+era una sola sección «Determinante»): también hay que repetirlas, una por pestaña.
 
 | Captura | Qué muestra |
 |---|---|

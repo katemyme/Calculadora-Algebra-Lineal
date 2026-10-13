@@ -355,7 +355,7 @@ Módulo III de la calculadora: **Álgebra de Matrices**. Todo el cálculo está 
 |---|---|---|
 | 0 | Teoremas clave del módulo | Teoremas clave |
 | 1–5 | A + B, A − B, k·A, A·B y Aᵀ | Operaciones |
-| 6 | Determinante: cofactores, Sarrus y reducción triangular | Determinante |
+| 6 | Determinante: cofactores, Sarrus y reducción triangular (en la web, cada método con su paso a paso) | Cofactores · Regla de Sarrus · Triangular |
 | 7–8 | Inversa por Gauss-Jordan sobre [A \| I] y por adjunta | Inversa |
 | 9 | Verificador de siete propiedades de la inversa y del determinante (en la web, con paso a paso) | Verificador |
 
@@ -381,6 +381,7 @@ Desde `backend/`:
 ```powershell
 python -m pruebas.pruebas_programa5        # funciones de cálculo, solo con assert
 python -m pruebas.pruebas_programa5_web    # los mismos casos a través de la API
+python -m pruebas.pruebas_determinante_inversa   # determinante e inversa: módulo, web y consola
 ```
 
 - [Notas para el informe](docs/programa5/NOTAS_INFORME_P5.md)

@@ -1,12 +1,15 @@
-// Opción 6 del Programa 5: det(A) por tres métodos que deben coincidir.
+// Opción 6 del Programa 5: det(A) por tres métodos, cada uno en su propia pestaña de
+// «Álgebra de Matrices» y con su solución paso a paso:
 //
-//   a) expansión por cofactores (vale para cualquier n, cuesta ≈ n!),
-//   b) regla de Sarrus (solo 3×3),
-//   c) reducción a forma triangular (el método eficiente, ≈ n³).
+//   · Cofactores: expansión sobre la fila 1 (vale para cualquier n, cuesta ≈ n!),
+//   · Regla de Sarrus: solo 3×3,
+//   · Triangular: reducción a forma triangular (el método eficiente, ≈ n³).
 //
-// Los tres valores y el diagnóstico los calcula el backend; aquí se presentan.
+// Las tres pestañas comparten la matriz y el resultado: el backend calcula los tres
+// métodos en una sola llamada y cada pestaña presenta el desarrollo del suyo. Al final
+// de cada una se comprueba que los métodos coinciden.
 
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { programa5 } from "../../lib/api.js";
 import { textoFraccion } from "../../lib/formato.js";
 import Boton from "../ui/Boton.jsx";
@@ -18,38 +21,100 @@ import {
   redimensionarRejilla,
   useOperacion,
 } from "../programa3/comunes.jsx";
+import PasosPorCofactores, { ETAPAS_COFACTORES } from "./DeterminantePorCofactores.jsx";
+import PasosPorReduccion, { ETAPAS_REDUCCION } from "./DeterminantePorReduccion.jsx";
+import PasosPorSarrus, { ETAPAS_SARRUS } from "./DeterminantePorSarrus.jsx";
 import {
   BotonesDeCasos,
   Diagnostico,
   EditorNombrado,
-  ReduccionTriangular,
+  PlanDePasos,
   SelectorOrdenN,
-  TarjetaNumerada,
   copiarRejilla,
 } from "./comunes.jsx";
 
 const CASOS = [
   { nombre: "Invertible 3×3", A: [["1", "2", "3"], ["0", "1", "4"], ["5", "6", "0"]] },
   { nombre: "Singular 3×3", A: [["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"]] },
+  { nombre: "Pivote 0 (3×3)", A: [["0", "2", "1"], ["1", "1", "0"], ["2", "0", "1"]] },
   { nombre: "Pivote 0 (2×2)", A: [["0", "2"], ["3", "4"]] },
   { nombre: "Con fracciones", A: [["1/2", "-0.5"], ["3/4", "2"]] },
+  {
+    nombre: "Matriz 4×4",
+    A: [
+      ["1", "2", "0", "1"],
+      ["2", "5", "1", "3"],
+      ["0", "1", "3", "2"],
+      ["1", "3", "2", "5"],
+    ],
+  },
 ];
 
-export default function SeccionDeterminante() {
+const ORDEN_DE_SARRUS = 3;
+
+// Lo propio de cada pestaña: textos, etapas y el componente que pinta su paso a paso.
+const METODOS = {
+  cofactores: {
+    nombre: "Cofactores",
+    titulo: "Determinante por cofactores",
+    pistas: ["det A = Σ a₁ⱼ·C₁ⱼ", "Cᵢⱼ = (−1)ⁱ⁺ʲ·det Mᵢⱼ", "Mᵢⱼ = A sin la fila i ni la columna j"],
+    cargando: "Calculando cada menor y su cofactor…",
+    etapas: ETAPAS_COFACTORES,
+    Pasos: PasosPorCofactores,
+  },
+  sarrus: {
+    nombre: "Sarrus",
+    titulo: "Determinante por la regla de Sarrus",
+    pistas: ["solo matrices 3×3", "det A = (suma de diagonales ↘) − (suma de diagonales ↗)"],
+    cargando: "Calculando los productos de las diagonales…",
+    etapas: ETAPAS_SARRUS,
+    Pasos: PasosPorSarrus,
+  },
+  triangular: {
+    nombre: "Triangular",
+    titulo: "Determinante por reducción a forma triangular",
+    pistas: [
+      "triangular ⇒ det = producto de la diagonal",
+      "Fᵢ ↔ Fⱼ cambia el signo",
+      "Fᵢ → Fᵢ − k·Fⱼ no altera det",
+    ],
+    cargando: "Reduciendo A a forma triangular…",
+    etapas: ETAPAS_REDUCCION,
+    Pasos: PasosPorReduccion,
+  },
+};
+
+const ContextoDeterminante = createContext(null);
+
+/** Guarda la matriz y el resultado que comparten las tres pestañas del determinante. */
+export function ProveedorDeterminante({ children }) {
   const [A, setA] = useState(() => copiarRejilla(CASOS[0].A));
-  const { resultado, error, cargando, ejecutar, limpiar } = useOperacion();
-  const n = A.length;
+  const operacion = useOperacion();
 
   function fijarA(nueva) {
     setA(nueva);
-    limpiar();
+    operacion.limpiar();
   }
+
+  const calcular = () => operacion.ejecutar(() => programa5.determinante({ A }));
+
+  return (
+    <ContextoDeterminante.Provider value={{ A, fijarA, calcular, ...operacion }}>
+      {children}
+    </ContextoDeterminante.Provider>
+  );
+}
+
+export default function SeccionDeterminante({ metodo }) {
+  const { A, fijarA, calcular, resultado, error, cargando } = useContext(ContextoDeterminante);
+  const definicion = METODOS[metodo];
+  const n = A.length;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <SelectorOrdenN
-          id="p5-det-n"
+          id={`p5-det-${metodo}-n`}
           valor={n}
           onCambiar={(orden) => fijarA(redimensionarRejilla(A, orden, orden))}
         />
@@ -61,9 +126,9 @@ export default function SeccionDeterminante() {
       </div>
 
       <div className="math-formula-strip" aria-hidden="true">
-        <span>det A = Σ a₁ⱼ·C₁ⱼ</span>
-        <span>Cᵢⱼ = (−1)ⁱ⁺ʲ·det Mᵢⱼ</span>
-        <span>triangular ⇒ det = producto de la diagonal</span>
+        {definicion.pistas.map((pista) => (
+          <span key={pista}>{pista}</span>
+        ))}
       </div>
 
       <div className="p3-lienzo">
@@ -73,100 +138,93 @@ export default function SeccionDeterminante() {
         <span className="font-display text-3xl text-grafito/50">?</span>
       </div>
 
-      <Boton onClick={() => ejecutar(() => programa5.determinante({ A }))} disabled={cargando}>
+      <p className="text-xs text-grafito">
+        La matriz es la misma en las pestañas «Cofactores», «Regla de Sarrus» y «Triangular»:
+        se calcula una vez y cada pestaña muestra el paso a paso de su método.
+      </p>
+
+      {metodo === "sarrus" && n !== ORDEN_DE_SARRUS && (
+        <p className="math-note">
+          La regla de Sarrus solo vale para matrices 3×3 y esta es {n}×{n}. Cambie el orden a
+          3 o use las pestañas «Cofactores» o «Triangular».
+        </p>
+      )}
+
+      <Boton onClick={calcular} disabled={cargando}>
         {cargando ? "Calculando…" : "Calcular determinante"}
       </Boton>
 
-      {cargando && <Cargando texto="Calculando det(A) por los tres métodos…" />}
+      {cargando && <Cargando texto={definicion.cargando} />}
       <AvisoError error={error} />
-      {resultado && <ResultadoDeterminante resultado={resultado} />}
+      {resultado && (
+        <ResultadoDeterminante
+          key={JSON.stringify(resultado.A)}
+          resultado={resultado}
+          metodo={metodo}
+        />
+      )}
     </div>
   );
 }
 
-function ResultadoDeterminante({ resultado }) {
-  const { cofactores, sarrus, reduccion, coinciden } = resultado;
-  const determinante = textoFraccion(resultado.determinante);
+function ResultadoDeterminante({ resultado, metodo }) {
+  const { titulo, etapas, Pasos } = METODOS[metodo];
+  const aplicable = metodo !== "sarrus" || Boolean(resultado.sarrus);
 
   return (
-    <TarjetaResultado titulo="Determinante" formula={`det(A) = ${determinante}`}>
+    <TarjetaResultado
+      titulo={titulo}
+      formula={aplicable ? `det(A) = ${textoFraccion(resultado.determinante)}` : "solo para matrices 3×3"}
+    >
       <div className="space-y-5">
-        <TarjetaNumerada numero="a" titulo="Expansión por cofactores" nota="≈ n! multiplicaciones">
-          <p className="text-sm text-grafito">
-            Cada entrada de la fila 1 por su cofactor{" "}
-            <span className="font-semibold text-pivote">C₁ⱼ</span>.
-          </p>
-          <p className="font-mono text-sm leading-7">
-            det(A) ={" "}
-            {cofactores.terminos.map((termino, columna) => (
-              <span key={columna}>
-                {columna > 0 && " + "}({textoFraccion(termino.entrada)})·
-                <span className="font-semibold text-pivote">
-                  ({textoFraccion(termino.cofactor)})
-                </span>
-              </span>
-            ))}{" "}
-            = <strong>{textoFraccion(cofactores.valor)}</strong>
-          </p>
-        </TarjetaNumerada>
-
-        <TarjetaNumerada numero="b" titulo="Regla de Sarrus" nota="solo 3×3">
-          {sarrus ? (
-            <div className="space-y-1 font-mono text-sm">
-              <p>Diagonales descendentes (↘): {textoFraccion(sarrus.descendentes)}</p>
-              <p>Diagonales ascendentes (↗): {textoFraccion(sarrus.ascendentes)}</p>
-              <p>
-                det(A) = ({textoFraccion(sarrus.descendentes)}) − (
-                {textoFraccion(sarrus.ascendentes)}) ={" "}
-                <strong>{textoFraccion(sarrus.valor)}</strong>
-              </p>
-            </div>
-          ) : (
-            <p className="text-sm text-grafito">
-              No se aplica: la regla de Sarrus solo vale para matrices 3×3 y esta es{" "}
-              {resultado.n}×{resultado.n}.
-            </p>
-          )}
-        </TarjetaNumerada>
-
-        <TarjetaNumerada
-          numero="c"
-          titulo="Reducción a forma triangular"
-          nota="método eficiente · ≈ n³ operaciones"
-        >
-          <ReduccionTriangular reduccion={reduccion} />
-        </TarjetaNumerada>
-
-        <div
-          className={`math-solution-banner ${
-            coinciden ? "math-solution-ok" : "math-solution-error"
-          }`}
-        >
-          <div
-            className="math-solution-icon"
-            style={{ color: `var(--${coinciden ? "determinado" : "inconsistente"})` }}
-          >
-            {coinciden ? "=" : "≠"}
-          </div>
-          <div>
-            <p
-              className={`font-display text-lg font-bold ${
-                coinciden ? "text-determinado" : "text-inconsistente"
-              }`}
-            >
-              {coinciden
-                ? `Los métodos coinciden: det(A) = ${determinante}`
-                : "Los métodos no coinciden"}
-            </p>
-            <p className="mt-1 text-sm text-tinta">
-              Cofactores{sarrus ? ", Sarrus" : ""} y reducción triangular se calcularon por
-              separado, con fracciones exactas.
-            </p>
-          </div>
-        </div>
-
+        {aplicable && <PlanDePasos etapas={etapas} />}
+        <Pasos resultado={resultado} />
+        <ComparacionDeMetodos resultado={resultado} />
         <Diagnostico diagnostico={resultado.diagnostico} />
       </div>
     </TarjetaResultado>
+  );
+}
+
+/** El valor que dio cada método y si coinciden (lo decide el backend). */
+function ComparacionDeMetodos({ resultado }) {
+  const { cofactores, sarrus, reduccion, coinciden } = resultado;
+  const valores = [
+    { nombre: "Cofactores", valor: textoFraccion(cofactores.valor) },
+    { nombre: "Sarrus", valor: sarrus ? textoFraccion(sarrus.valor) : "no se aplica" },
+    { nombre: "Triangular", valor: textoFraccion(reduccion.valor) },
+  ];
+
+  return (
+    <div className={`math-solution-banner ${coinciden ? "math-solution-ok" : "math-solution-error"}`}>
+      <div
+        className="math-solution-icon"
+        style={{ color: `var(--${coinciden ? "determinado" : "inconsistente"})` }}
+      >
+        {coinciden ? "=" : "≠"}
+      </div>
+      <div className="min-w-0 space-y-2">
+        <p
+          className={`font-display text-lg font-bold ${
+            coinciden ? "text-determinado" : "text-inconsistente"
+          }`}
+        >
+          {coinciden
+            ? `Los métodos coinciden: det(A) = ${textoFraccion(resultado.determinante)}`
+            : "Los métodos no coinciden"}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {valores.map(({ nombre, valor }) => (
+            <span key={nombre} className="math-param-chip">
+              {nombre}: {valor}
+            </span>
+          ))}
+        </div>
+        <p className="text-sm text-tinta">
+          Cada método se calculó por separado, con fracciones exactas. El desarrollo de los
+          otros está en sus pestañas.
+        </p>
+      </div>
+    </div>
   );
 }

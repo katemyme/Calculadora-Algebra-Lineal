@@ -25,6 +25,10 @@ from modulos import modulo_matrices as p5m  # noqa: E402
 
 Matriz = List[List[Fraction]]
 
+# Hasta este orden el paso a paso por cofactores se anida: cada menor de orden ≥ 3 trae
+# su propia expansión. Desde 6×6 serían cientos de determinantes y solo se da su valor.
+ORDEN_MAXIMO_ANIDADO = 5
+
 _OPERACIONES_BINARIAS = {
     "suma": p5m.sumar_matrices,
     "resta": p5m.restar_matrices,
@@ -154,17 +158,83 @@ def _terminos_de_cofactores(A: Matriz) -> List[Dict]:
     return terminos
 
 
+def _cuenta_2x2(M: Matriz, valor: Fraction) -> str:
+    """Cuenta (a)·(d) − (b)·(c) = det de una matriz 2×2, con el valor que calculó el módulo."""
+    texto = p5m.formatear_fraccion
+    (a, b), (c, d) = M
+    return f"({texto(a)})·({texto(d)}) − ({texto(b)})·({texto(c)}) = {texto(valor)}"
+
+
+def _desarrollo_del_menor(
+    menor: Matriz, det_menor: Fraction, anidar: bool, profundidad: int
+) -> Optional[Dict]:
+    """Cómo se obtiene det(menor): la cuenta si es 2×2 o su propia expansión si es mayor."""
+    if len(menor) == 2:
+        return {"tipo": "cuenta", "cuenta": _cuenta_2x2(menor, det_menor)}
+    # Un menor 1×1 es su único elemento; uno vacío es el de una matriz 1×1.
+    if len(menor) < 2 or not anidar:
+        return None
+    return {"tipo": "cofactores", **_desarrollo_por_cofactores(menor, anidar, profundidad)}
+
+
+def _desarrollo_por_cofactores(M: Matriz, anidar: bool, profundidad: int = 0) -> Dict:
+    """Expansión de det(M) sobre la fila 1: cada menor, su cofactor y el producto a₁ⱼ·C₁ⱼ.
+
+    Con `anidar`, cada menor trae cómo se calcula su determinante. Los nombres llevan una
+    prima por nivel (M₁ⱼ, M′₁ⱼ, M″₁ⱼ) para distinguir los menores de A de los de un menor.
+    """
+    terminos_del_modulo, valor = p5m.expansion_por_cofactores(M)
+    primas = "′" * profundidad
+    terminos = []
+    for columna, (menor, det_menor, valor_cofactor, producto) in enumerate(terminos_del_modulo):
+        indices = f"{p5m.subindice(0)}{p5m.subindice(columna)}"
+        terminos.append({
+            "entrada": M[0][columna],
+            "menor": menor,
+            "det_menor": det_menor,
+            "signo": "+" if columna % 2 == 0 else "−",
+            "cofactor": valor_cofactor,
+            "producto": producto,
+            "nombre_menor": f"M{primas}{indices}",
+            "nombre_cofactor": f"C{primas}{indices}",
+            "regla_signo": p5m.describir_signo(0, columna),
+            "desarrollo_menor": _desarrollo_del_menor(menor, det_menor, anidar, profundidad + 1),
+        })
+    return {"terminos": terminos, "valor": valor}
+
+
 def _expansion_por_cofactores(A: Matriz) -> Dict:
-    """Términos a₁ⱼ·C₁ⱼ de la expansión sobre la primera fila y el determinante."""
-    return {"terminos": _terminos_de_cofactores(A), "valor": p5m.determinante_por_cofactores(A)}
+    """Paso a paso de det(A) por cofactores sobre la primera fila."""
+    orden = len(A)
+    anidar = orden <= ORDEN_MAXIMO_ANIDADO
+    nota = None
+    if not anidar:
+        nota = (
+            f"Cada det(M₁ⱼ) se calcula igual, por cofactores sobre su fila 1. Con una matriz "
+            f"{orden}×{orden} son {orden} determinantes {orden - 1}×{orden - 1}: su desarrollo "
+            "completo no se despliega."
+        )
+    return {**_desarrollo_por_cofactores(A, anidar), "nota_menores": nota}
+
+
+def _diagonales(diagonales: List) -> List[Dict]:
+    """Diagonales de Sarrus del módulo como diccionarios {celdas, entradas, producto}."""
+    return [
+        {"celdas": [list(celda) for celda in celdas], "entradas": entradas, "producto": producto}
+        for celdas, entradas, producto in diagonales
+    ]
 
 
 def _regla_de_sarrus(A: Matriz) -> Optional[Dict]:
-    """Sumas de diagonales de la regla de Sarrus; None si la matriz no es 3×3."""
+    """Paso a paso de la regla de Sarrus; None si la matriz no es 3×3."""
     if len(A) != 3:
         return None
+    diagonales_descendentes, diagonales_ascendentes = p5m.diagonales_de_sarrus(A)
     descendentes, ascendentes = p5m.sumas_de_sarrus(A)
     return {
+        "ampliada": p5m.ampliar_para_sarrus(A),
+        "diagonales_descendentes": _diagonales(diagonales_descendentes),
+        "diagonales_ascendentes": _diagonales(diagonales_ascendentes),
         "descendentes": descendentes,
         "ascendentes": ascendentes,
         "valor": p5m.determinante_por_sarrus(A),
@@ -179,6 +249,20 @@ def _pasos_detalle(pasos: List[str], historial: list) -> List[Dict]:
     ]
 
 
+def _pivotes_en_la_diagonal(triangular: Matriz) -> List[int]:
+    """Columnas con pivote en la diagonal, hasta la primera entrada diagonal nula.
+
+    La escalera de pivotes de la web pone el pivote i en la fila i: tras una diagonal
+    nula ya no hay escalera que dibujar, aunque queden entradas no nulas más abajo.
+    """
+    columnas = []
+    for indice, fila in enumerate(triangular):
+        if fila[indice] == 0:
+            break
+        columnas.append(indice)
+    return columnas
+
+
 def _reduccion_triangular(A: Matriz) -> Dict:
     """Reducción a triangular con lo necesario para mostrar det = ± producto de la diagonal."""
     historial: list = []
@@ -187,7 +271,7 @@ def _reduccion_triangular(A: Matriz) -> Dict:
         "matriz_inicial": A,
         "operaciones": operaciones,
         "pasos_detalle": _pasos_detalle(operaciones, historial),
-        "columnas_pivote": _columnas_pivote(triangular, len(A)),
+        "columnas_pivote": _pivotes_en_la_diagonal(triangular),
         "triangular": triangular,
         "diagonal": [fila[indice] for indice, fila in enumerate(triangular)],
         "producto_diagonal": p5m.producto_diagonal(triangular),

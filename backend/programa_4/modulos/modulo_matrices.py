@@ -23,6 +23,10 @@ from teoremas.resumen_teoremas import TEOREMAS
 
 Matriz = List[List[Fraction]]
 Dimension = Tuple[int, int]
+# Término de la expansión por cofactores: (Mᵢⱼ, det(Mᵢⱼ), Cᵢⱼ, aᵢⱼ·Cᵢⱼ).
+Termino = Tuple[Matriz, Fraction, Fraction, Fraction]
+# Diagonal de la regla de Sarrus: (celdas (fila, columna), entradas, producto).
+Diagonal = Tuple[List[Tuple[int, int]], List[Fraction], Fraction]
 
 NUMERO_MODULO: int = 3
 OPCION_VOLVER: str = "10"
@@ -77,7 +81,16 @@ def validar_producto(dimension_a: Dimension, dimension_b: Dimension) -> None:
 
 def validar_cuadrada(matriz: Matriz) -> None:
     """Lanza ValueError si la matriz no es cuadrada (requisito de determinante e inversa)."""
+    if not matriz:
+        raise ValueError("Se requiere una matriz cuadrada: se recibió una matriz vacía.")
     filas, columnas = dimension(matriz)
+    # Una rejilla con filas de distinto largo no es una matriz: se revisa cada fila.
+    for numero_fila, fila in enumerate(matriz, start=1):
+        if len(fila) != columnas:
+            raise ValueError(
+                f"Se requiere una matriz cuadrada: la fila {numero_fila} tiene {len(fila)} "
+                f"valores y la fila 1 tiene {columnas}."
+            )
     if filas != columnas:
         raise ValueError(
             f"Se requiere una matriz cuadrada: se recibió una de {filas}×{columnas}."
@@ -231,22 +244,75 @@ def determinante_por_cofactores(matriz: Matriz) -> Fraction:
     return determinante
 
 
+def expansion_por_cofactores(matriz: Matriz) -> Tuple[List[Termino], Fraction]:
+    """Devuelve (términos, det(A)) de la expansión por cofactores sobre la primera fila.
+
+    Cada término es (M₁ⱼ, det(M₁ⱼ), C₁ⱼ, a₁ⱼ·C₁ⱼ) y det(A) es la suma de los productos
+    a₁ⱼ·C₁ⱼ: es el desarrollo de determinante_por_cofactores con sus valores intermedios.
+    """
+    validar_cuadrada(matriz)
+    terminos: List[Termino] = []
+    determinante = Fraction(0)
+    for columna in range(len(matriz)):
+        menor, determinante_menor, valor_cofactor = cofactor_con_menor(matriz, 0, columna)
+        producto = matriz[0][columna] * valor_cofactor
+        terminos.append((menor, determinante_menor, valor_cofactor, producto))
+        determinante += producto
+    return terminos, determinante
+
+
+def describir_signo(fila: int, columna: int) -> str:
+    """Devuelve el texto '(−1)ⁱ⁺ʲ = ±1' del signo de un cofactor (posición en base 0)."""
+    exponente = (
+        f"{str(fila + 1).translate(_SUPERINDICES)}⁺{str(columna + 1).translate(_SUPERINDICES)}"
+    )
+    signo = "+1" if (fila + columna) % 2 == 0 else "−1"
+    return f"(−1){exponente} = {signo}"
+
+
+def ampliar_para_sarrus(matriz: Matriz) -> Matriz:
+    """Devuelve la matriz 3×5 de la regla de Sarrus: A con sus dos primeras columnas repetidas."""
+    if len(matriz) != 3 or any(len(fila) != 3 for fila in matriz):
+        raise ValueError("La regla de Sarrus solo se aplica a matrices 3×3.")
+    return [fila + fila[:2] for fila in matriz]
+
+
+def diagonal_con_producto(ampliada: Matriz, celdas: List[Tuple[int, int]]) -> Diagonal:
+    """Devuelve (celdas, entradas, producto) de una diagonal de la matriz ampliada."""
+    entradas = [ampliada[fila][columna] for fila, columna in celdas]
+    producto = Fraction(1)
+    for entrada in entradas:
+        producto *= entrada
+    return celdas, entradas, producto
+
+
+def diagonales_de_sarrus(matriz: Matriz) -> Tuple[List[Diagonal], List[Diagonal]]:
+    """Devuelve (descendentes, ascendentes): las tres diagonales ↘ y las tres ↗ de una 3×3.
+
+    Cada diagonal es (celdas, entradas, producto). Las celdas son posiciones (fila, columna)
+    en base 0 sobre la matriz de ampliar_para_sarrus(), cuyas columnas van de 0 a 4.
+    """
+    # Repetir las dos primeras columnas a la derecha deja las seis diagonales en línea recta.
+    ampliada = ampliar_para_sarrus(matriz)
+    descendentes: List[Diagonal] = []
+    ascendentes: List[Diagonal] = []
+    for desplazamiento in range(3):
+        celdas_descendentes = [(fila, fila + desplazamiento) for fila in range(3)]
+        celdas_ascendentes = [(2 - fila, fila + desplazamiento) for fila in range(3)]
+        descendentes.append(diagonal_con_producto(ampliada, celdas_descendentes))
+        ascendentes.append(diagonal_con_producto(ampliada, celdas_ascendentes))
+    return descendentes, ascendentes
+
+
 def sumas_de_sarrus(matriz: Matriz) -> Tuple[Fraction, Fraction]:
     """Devuelve (suma de diagonales descendentes, suma de ascendentes) de una matriz 3×3."""
-    if dimension(matriz) != (3, 3):
-        raise ValueError("La regla de Sarrus solo se aplica a matrices 3×3.")
+    descendentes, ascendentes = diagonales_de_sarrus(matriz)
     suma_descendentes = Fraction(0)
     suma_ascendentes = Fraction(0)
-    for desplazamiento in range(3):
-        producto_descendente = Fraction(1)
-        producto_ascendente = Fraction(1)
-        for fila in range(3):
-            # El índice módulo 3 equivale a copiar las dos primeras columnas a la derecha.
-            columna = (fila + desplazamiento) % 3
-            producto_descendente *= matriz[fila][columna]
-            producto_ascendente *= matriz[2 - fila][columna]
-        suma_descendentes += producto_descendente
-        suma_ascendentes += producto_ascendente
+    for _, _, producto in descendentes:
+        suma_descendentes += producto
+    for _, _, producto in ascendentes:
+        suma_ascendentes += producto
     return suma_descendentes, suma_ascendentes
 
 

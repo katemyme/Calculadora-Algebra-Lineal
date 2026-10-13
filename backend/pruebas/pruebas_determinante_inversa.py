@@ -368,6 +368,49 @@ class PruebasAdaptadorWeb(unittest.TestCase):
         self.assertIsNone(cofactores["terminos"][0]["desarrollo_menor"])
         self.assertEqual(cofactores["valor"], 1)
 
+    def test_adjunta_trae_el_menor_y_el_cofactor_de_cada_elemento(self):
+        datos = web.calcular_inversa("adjunta", textos(CASO_1[0]))
+        menores = datos["menores"]
+        self.assertEqual([len(fila) for fila in menores], [3, 3, 3])
+        elemento = menores[1][2]  # a₂₃ = 4
+        self.assertEqual((elemento["fila"], elemento["columna"], elemento["entrada"]), (1, 2, 4))
+        self.assertEqual(elemento["menor"], fracciones([[1, 2], [5, 6]]))
+        self.assertEqual((elemento["nombre_menor"], elemento["nombre_cofactor"]), ("M₂₃", "C₂₃"))
+        self.assertEqual(elemento["desarrollo_menor"]["cuenta"], "(1)·(6) − (2)·(5) = -4")
+        self.assertEqual(elemento["regla_signo"], "(−1)²⁺³ = −1")
+        self.assertEqual((elemento["signo"], elemento["cofactor"]), ("−", 4))
+        # Los cofactores del paso a paso son los de la matriz C, y adj(A) es su transpuesta.
+        cofactores = [[termino["cofactor"] for termino in fila] for fila in menores]
+        self.assertEqual(cofactores, datos["cofactores"])
+        self.assertEqual(datos["adjunta"], matrices.transponer(cofactores))
+        self.assertIsNone(datos["nota_menores"])
+
+    def test_adjunta_muestra_el_determinante_por_la_fila_1(self):
+        expansion = web.calcular_inversa("adjunta", textos(CASO_1[0]))["expansion_determinante"]
+        self.assertEqual([termino["producto"] for termino in expansion["terminos"]], [-24, 40, -15])
+        self.assertEqual(expansion["valor"], 1)
+
+    def test_adjunta_de_la_singular_conserva_menores_y_cofactores(self):
+        datos = web.calcular_inversa("adjunta", textos(SINGULAR))
+        self.assertIsNone(datos["inversa"])
+        self.assertEqual(datos["determinante"], 0)
+        self.assertEqual(datos["menores"][0][0]["desarrollo_menor"]["cuenta"], "(3)·(1) − (2)·(1) = 1")
+
+    def test_adjunta_no_despliega_menores_en_1x1_ni_desde_6x6(self):
+        datos = web.calcular_inversa("adjunta", [["5"]])
+        self.assertIsNone(datos["menores"])
+        self.assertIn("no tiene menores", datos["nota_menores"])
+        self.assertEqual(datos["inversa"], fracciones([["1/5"]]))
+        datos = web.calcular_inversa("adjunta", textos(matrices.matriz_identidad(6)))
+        self.assertIsNone(datos["menores"])
+        self.assertIn("36 menores 5×5", datos["nota_menores"])
+
+    def test_adjunta_de_4x4_anida_el_determinante_de_cada_menor(self):
+        elemento = web.calcular_inversa("adjunta", textos(TRIANGULAR_4X4))["menores"][3][3]
+        self.assertEqual(elemento["nombre_menor"], "M₄₄")
+        self.assertEqual(elemento["desarrollo_menor"]["tipo"], "cofactores")
+        self.assertEqual(elemento["desarrollo_menor"]["valor"], elemento["det_menor"])
+
     def test_paso_a_paso_de_la_reduccion_triangular(self):
         reduccion = web.calcular_determinante(textos(CASO_5[0]))["reduccion"]
         notaciones = [paso["notacion"] for paso in reduccion["pasos_detalle"]]

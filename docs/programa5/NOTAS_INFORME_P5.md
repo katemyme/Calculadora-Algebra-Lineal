@@ -122,6 +122,13 @@ el desarrollo del suyo en tarjetas numeradas, igual que la Regla de Cramer.
 
 Al final de cada pestaña se comprueba que los métodos coinciden y se da el diagnóstico.
 
+La **inversa por matriz adjunta** sigue el mismo estilo, en el orden del procedimiento:
+(1) det(A) por la fila 1 y si es distinto de 0; (2) el menor Mᵢⱼ y el cofactor Cᵢⱼ de **cada**
+elemento, con la fila y la columna tachadas y la cuenta de su determinante (hasta 5×5);
+(3) la matriz de cofactores C; (4) adj(A) = Cᵀ; (5) A⁻¹ = (1/det A)·adj(A) y la comprobación
+A·A⁻¹ = I. Si det(A) = 0 el paso 1 explica por qué no hay inversa y el método se detiene
+antes del paso 5.
+
 ## 6. Casos de prueba verificados
 
 Todos están en `pruebas_programa5.py` (cálculo) y `pruebas_programa5_web.py` (API) y pasan.

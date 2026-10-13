@@ -184,23 +184,71 @@ def _desarrollo_por_cofactores(M: Matriz, anidar: bool, profundidad: int = 0) ->
     prima por nivel (M₁ⱼ, M′₁ⱼ, M″₁ⱼ) para distinguir los menores de A de los de un menor.
     """
     terminos_del_modulo, valor = p5m.expansion_por_cofactores(M)
-    primas = "′" * profundidad
     terminos = []
     for columna, (menor, det_menor, valor_cofactor, producto) in enumerate(terminos_del_modulo):
-        indices = f"{p5m.subindice(0)}{p5m.subindice(columna)}"
-        terminos.append({
-            "entrada": M[0][columna],
-            "menor": menor,
-            "det_menor": det_menor,
-            "signo": "+" if columna % 2 == 0 else "−",
-            "cofactor": valor_cofactor,
-            "producto": producto,
-            "nombre_menor": f"M{primas}{indices}",
-            "nombre_cofactor": f"C{primas}{indices}",
-            "regla_signo": p5m.describir_signo(0, columna),
-            "desarrollo_menor": _desarrollo_del_menor(menor, det_menor, anidar, profundidad + 1),
-        })
+        termino = _menor_con_cofactor(
+            M, (0, columna), (menor, det_menor, valor_cofactor), anidar, profundidad
+        )
+        terminos.append({**termino, "producto": producto})
     return {"terminos": terminos, "valor": valor}
+
+
+def _menor_con_cofactor(
+    M: Matriz, posicion: Tuple[int, int], valores: Tuple, anidar: bool, profundidad: int = 0
+) -> Dict:
+    """Lo que se muestra de una posición (i, j) de M: entrada, menor, signo y cofactor.
+
+    `valores` es la terna (Mᵢⱼ, det(Mᵢⱼ), Cᵢⱼ) que devuelve cofactor_con_menor del módulo.
+    """
+    fila, columna = posicion
+    menor, det_menor, valor_cofactor = valores
+    nombre = f"{'′' * profundidad}{p5m.subindice(fila)}{p5m.subindice(columna)}"
+    return {
+        "fila": fila,
+        "columna": columna,
+        "entrada": M[fila][columna],
+        "menor": menor,
+        "det_menor": det_menor,
+        "signo": "+" if (fila + columna) % 2 == 0 else "−",
+        "cofactor": valor_cofactor,
+        "nombre_menor": f"M{nombre}",
+        "nombre_cofactor": f"C{nombre}",
+        "regla_signo": p5m.describir_signo(fila, columna),
+        "desarrollo_menor": _desarrollo_del_menor(menor, det_menor, anidar, profundidad + 1),
+    }
+
+
+def _menores_y_cofactores(A: Matriz) -> Optional[List[List[Dict]]]:
+    """Menor, signo y cofactor de cada elemento de A, fila por fila.
+
+    None en una matriz 1×1 (no tiene menores) y desde 6×6 (serían 36 menores 5×5 o más).
+    """
+    orden = len(A)
+    if orden == 1 or orden > ORDEN_MAXIMO_ANIDADO:
+        return None
+    return [
+        [
+            _menor_con_cofactor(A, (fila, columna), p5m.cofactor_con_menor(A, fila, columna), True)
+            for columna in range(orden)
+        ]
+        for fila in range(orden)
+    ]
+
+
+def _nota_de_menores(orden: int) -> Optional[str]:
+    """Por qué no se despliega cada menor en la inversa por adjunta, cuando no se hace."""
+    if orden == 1:
+        return (
+            "Una matriz 1×1 no tiene menores: su único cofactor es C₁₁ = 1, así que "
+            "adj(A) = [1] y A⁻¹ = [1/a₁₁]."
+        )
+    if orden > ORDEN_MAXIMO_ANIDADO:
+        return (
+            f"Con una matriz {orden}×{orden} son {orden * orden} menores "
+            f"{orden - 1}×{orden - 1}: no se despliegan uno a uno. Cada cofactor "
+            "Cᵢⱼ = (−1)ⁱ⁺ʲ·det(Mᵢⱼ) está en la matriz de cofactores del paso siguiente."
+        )
+    return None
 
 
 def _expansion_por_cofactores(A: Matriz) -> Dict:
@@ -328,9 +376,13 @@ def _por_gauss_jordan(A: Matriz) -> Dict:
 
 
 def _por_adjunta(A: Matriz) -> Dict:
-    """Desarrollo de la opción 8: cofactores, adjunta, determinante e inversa."""
+    """Desarrollo de la opción 8: determinante, menores, cofactores, adjunta e inversa."""
     inversa, adjunta, valor_determinante = p5m.invertir_por_adjunta(A)
     return {
+        # det(A) = Σ a₁ⱼ·C₁ⱼ con sus productos, para mostrar de dónde sale el determinante.
+        "expansion_determinante": _desarrollo_por_cofactores(A, anidar=False),
+        "menores": _menores_y_cofactores(A),
+        "nota_menores": _nota_de_menores(len(A)),
         # C = (adj A)ᵀ porque (Cᵀ)ᵀ = C: así no se recalculan los n² cofactores.
         "cofactores": p5m.transponer(adjunta),
         "adjunta": adjunta,

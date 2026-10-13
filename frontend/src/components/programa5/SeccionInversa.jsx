@@ -1,6 +1,9 @@
 // Opciones 7 y 8 del Programa 5: A⁻¹ por Gauss-Jordan sobre [A | I] o por la
 // matriz adjunta. Con cualquiera de los dos métodos el backend comprueba
 // después que A·A⁻¹ = I y devuelve el diagnóstico de invertibilidad.
+//
+// La adjunta se muestra paso a paso: det(A), el menor y el cofactor de cada
+// elemento, la matriz de cofactores C, adj(A) = Cᵀ y A⁻¹ = (1/det A)·adj(A).
 
 import { useState } from "react";
 import { programa5 } from "../../lib/api.js";
@@ -18,12 +21,15 @@ import {
   redimensionarRejilla,
   useOperacion,
 } from "../programa3/comunes.jsx";
+import { MenorDeEntrada, SumaDeTerminos } from "./MenoresYCofactores.jsx";
 import {
   BotonesDeCasos,
   Diagnostico,
   EditorNombrado,
+  FlechaDePaso,
   ListaDeOperaciones,
   MatrizNombrada,
+  PlanDePasos,
   SelectorOrdenN,
   TarjetaNumerada,
   Veredicto,
@@ -182,6 +188,18 @@ function ResultadoGaussJordan({ resultado }) {
   );
 }
 
+const ETAPAS_ADJUNTA = [
+  "Calcular det(A) y ver si es ≠ 0",
+  "Menor y cofactor de cada elemento",
+  "Armar la matriz de cofactores C",
+  "Transponer: adj(A) = Cᵀ",
+  "Dividir entre det(A) y comprobar",
+];
+
+// Hasta este orden los menores de todas las filas se muestran abiertos; con matrices
+// mayores ocupan mucho y cada fila se abre a petición.
+const ORDEN_MAXIMO_DESPLEGADO = 3;
+
 function ResultadoAdjunta({ resultado }) {
   const { inversa } = resultado;
   const determinante = textoFraccion(resultado.determinante);
@@ -189,40 +207,158 @@ function ResultadoAdjunta({ resultado }) {
   return (
     <TarjetaResultado titulo="Inversa por matriz adjunta" formula="A⁻¹ = (1/det A)·adj(A)">
       <div className="space-y-5">
-        <TarjetaNumerada numero="1" titulo="Matriz de cofactores y adjunta" nota="adj(A) = Cᵀ">
-          <div className="flex flex-wrap items-center gap-3 overflow-x-auto">
+        <PlanDePasos etapas={ETAPAS_ADJUNTA} />
+        <DeterminanteYDecision resultado={resultado} />
+        <MenoresDeCadaElemento resultado={resultado} />
+
+        <TarjetaNumerada numero="3" titulo="Armar la matriz de cofactores C">
+          <div className="flex overflow-x-auto">
             <MatrizNombrada nombre="C" matriz={resultado.cofactores} />
-            <Operador>ᵀ</Operador>
-            <Operador>=</Operador>
-            <MatrizNombrada nombre="adj(A)" matriz={resultado.adjunta} />
           </div>
           <p className="text-sm text-grafito">
-            Cada cofactor es Cᵢⱼ = (−1)ⁱ⁺ʲ·det(Mᵢⱼ); la adjunta es la transpuesta de C.
+            Cada cofactor Cᵢⱼ = (−1)ⁱ⁺ʲ·det(Mᵢⱼ) del paso 2 ocupa la fila i y la columna j.
           </p>
         </TarjetaNumerada>
 
-        <TarjetaNumerada numero="2" titulo="Determinante" nota={`det(A) = ${determinante}`}>
-          <p className="font-mono text-sm">
-            {inversa
-              ? `det(A) = ${determinante} ≠ 0  ⇒  A⁻¹ = (1/(${determinante}))·adj(A)`
-              : "det(A) = 0: no se puede dividir entre det(A), así que no existe A⁻¹."}
-          </p>
+        <TarjetaNumerada numero="4" titulo="Transponer: la matriz adjunta" nota="adj(A) = Cᵀ">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3 overflow-x-auto">
+            <MatrizNombrada nombre="C" matriz={resultado.cofactores} />
+            <FlechaDePaso>las filas pasan a ser columnas</FlechaDePaso>
+            <MatrizNombrada nombre="adj(A)" matriz={resultado.adjunta} copiable />
+          </div>
         </TarjetaNumerada>
 
-        {inversa && <InversaComprobada numero="3" resultado={resultado} />}
+        {inversa ? (
+          <InversaComprobada
+            numero="5"
+            titulo="Dividir la adjunta entre det(A) y comprobar"
+            resultado={resultado}
+          >
+            <p className="lu-ecuacion">
+              A⁻¹ = (1/det A)·adj(A) = (1/({determinante}))·adj(A)
+            </p>
+          </InversaComprobada>
+        ) : (
+          <p className="math-note">
+            El método se detiene aquí: el paso 5 pediría dividir adj(A) entre det(A) = 0.
+          </p>
+        )}
         <Diagnostico diagnostico={resultado.diagnostico} />
       </div>
     </TarjetaResultado>
   );
 }
 
+/** Paso 1: det(A) por la fila 1 y si la matriz tiene inversa. */
+function DeterminanteYDecision({ resultado }) {
+  const { inversa, n } = resultado;
+  const { terminos } = resultado.expansion_determinante;
+  const determinante = textoFraccion(resultado.determinante);
+
+  return (
+    <TarjetaNumerada numero="1" titulo="Calcular det(A)" nota={`det(A) = ${determinante}`}>
+      <p className="lu-ecuacion">
+        det(A) ={" "}
+        {n > 1 && (
+          <>
+            <SumaDeTerminos terminos={terminos} /> ={" "}
+          </>
+        )}
+        <span className="font-semibold text-tinta">{determinante}</span>
+      </p>
+      <p className="text-sm text-grafito">
+        {n > 1
+          ? "Se desarrolla por la fila 1: cada entrada a₁ⱼ por su cofactor C₁ⱼ, que se " +
+            "calcula en el paso 2. El desarrollo completo está en las pestañas «Cofactores» " +
+            "y «Regla de Sarrus»."
+          : "El determinante de una matriz 1×1 es su único elemento."}
+      </p>
+      <Veredicto cumple={Boolean(inversa)}>
+        {inversa
+          ? `det(A) = ${determinante} ≠ 0: A tiene inversa`
+          : "det(A) = 0: A no tiene inversa"}
+      </Veredicto>
+      {!inversa && (
+        <p className="text-sm text-tinta">
+          La fórmula A⁻¹ = (1/det A)·adj(A) pediría dividir entre 0. Que det(A) = 0 significa
+          que las filas de A son linealmente dependientes: A no llega a tener {n} pivotes y
+          ninguna matriz B cumple A·B = I.
+        </p>
+      )}
+    </TarjetaNumerada>
+  );
+}
+
+/** Paso 2: el menor y el cofactor de cada elemento de A, agrupados por fila. */
+function MenoresDeCadaElemento({ resultado }) {
+  const { A, n, menores, nota_menores: nota } = resultado;
+
+  return (
+    <TarjetaNumerada
+      numero="2"
+      titulo="Calcular el menor y el cofactor de cada elemento"
+      nota={menores ? `${n * n} menores, uno por elemento` : undefined}
+    >
+      {menores && (
+        <p className="text-sm text-grafito">
+          Para el elemento aᵢⱼ se tachan la fila i y la columna j de A (en azul): lo que queda
+          es el menor Mᵢⱼ. Su determinante, con el signo (−1)ⁱ⁺ʲ, es el cofactor Cᵢⱼ.
+        </p>
+      )}
+      {menores?.map((terminos, fila) => (
+        <MenoresDeFila
+          key={fila}
+          A={A}
+          terminos={terminos}
+          fila={fila}
+          abierto={n <= ORDEN_MAXIMO_DESPLEGADO}
+        />
+      ))}
+      {nota && <p className="math-note">{nota}</p>}
+    </TarjetaNumerada>
+  );
+}
+
+/** Los menores de los elementos de una fila; `abierto` fija cómo empieza el bloque. */
+function MenoresDeFila({ A, terminos, fila, abierto }) {
+  const [visible, setVisible] = useState(abierto);
+  const cofactores = terminos
+    .map((termino) => `${termino.nombre_cofactor} = ${textoFraccion(termino.cofactor)}`)
+    .join(",  ");
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <p className="font-display text-sm font-bold text-tinta">Fila {fila + 1}</p>
+        <span className="font-mono text-xs text-grafito">{cofactores}</span>
+        <Boton
+          variante="secundario"
+          className="text-xs"
+          aria-expanded={visible}
+          onClick={() => setVisible((previo) => !previo)}
+        >
+          {visible ? "Ocultar los menores" : "Ver los menores de esta fila"}
+        </Boton>
+      </div>
+      {visible && (
+        <ol className="space-y-4" style={{ animation: "aparecer-paso 0.3s ease both" }}>
+          {terminos.map((termino) => (
+            <MenorDeEntrada key={termino.columna} A={A} termino={termino} />
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
 /** A⁻¹ y la comprobación A·A⁻¹ = I que hizo el backend con su propio producto. */
-function InversaComprobada({ numero, resultado }) {
+function InversaComprobada({ numero, resultado, titulo = "Inversa y comprobación", children }) {
   const { A, inversa, comprobacion } = resultado;
   const esIdentidad = comprobacion.es_identidad;
 
   return (
-    <TarjetaNumerada numero={numero} titulo="Inversa y comprobación">
+    <TarjetaNumerada numero={numero} titulo={titulo}>
+      {children}
       <div className="flex flex-wrap items-center gap-3 overflow-x-auto">
         <span className="font-display text-lg font-bold text-tinta">A⁻¹ =</span>
         <MatrizNombrada nombre="A⁻¹" matriz={inversa} destacada copiable />

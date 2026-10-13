@@ -28,7 +28,15 @@ TEOREMAS: dict = {
         "  DETERMINANTE E INVERSA. A es invertible ⇔ det(A) ≠ 0, y entonces\n"
         "    A⁻¹ = (1/det A)·adj(A)"
     ),
-    4: "En construcción",
+    # Regla de Cramer. Misma sangría que la clave 3: títulos con 2 espacios, enunciados con 4.
+    4: (
+        "REGLA DE CRAMER. Si A es de orden n e invertible (det A ≠ 0), para todo b en ℝⁿ "
+        "la única solución x de Ax = b tiene entradas:\n"
+        "    xᵢ = det Aᵢ(b) / det A,   i = 1, 2, …, n\n"
+        "    Aᵢ(b) es la matriz A con su columna i reemplazada por el vector b\n"
+        "  CUÁNDO NO SE APLICA.\n"
+        "    Si det A = 0, A no es invertible y Ax = b no tiene solución única"
+    ),
     # PROGRAMA 6. Misma sangría que la clave 3: títulos con 2 espacios, enunciados con 4.
     5: (
         "FACTORIZACIÓN LU (Programa 6). Si A (m×n) se reduce a una forma escalonada U "

@@ -16,7 +16,7 @@ export class ErrorDeCalculo extends Error {
     this.columna = columna;
     // Programa 3: "A", "B", "u", "v", "b", "c", "vectores" o "reaccion".
     // Programa 5: "A", "B", "k", "intercambio", "reemplazo" o "escalamiento".
-    // Programa 6: "A" o "b".
+    // Programa 6 y Regla de Cramer: "A" o "b".
     this.campo = campo;
   }
 }
@@ -117,4 +117,10 @@ export const programa5 = {
 // Matrices): el cálculo lo hace "backend/programa_4/modulos/modulo_lu.py".
 export const programa6 = {
   lu: (cuerpo) => enviar("/api/p6/lu", cuerpo),
+};
+
+// Regla de Cramer (sección de la pestaña Álgebra de Matrices): el cálculo lo
+// hace "backend/programa_4/modulos/modulo_determinantes.py".
+export const determinantes = {
+  cramer: (cuerpo) => enviar("/api/determinantes/cramer", cuerpo),
 };

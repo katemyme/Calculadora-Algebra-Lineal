@@ -4,7 +4,7 @@
 // backend ya calculó con "backend/programa_4/modulos/modulo_matrices.py".
 // No hay álgebra: lo único que se compara son textos y contadores de la rejilla.
 
-import { textoFraccion } from "../../lib/formato.js";
+import { subindice, textoFraccion } from "../../lib/formato.js";
 import Boton from "../ui/Boton.jsx";
 import SelectorDimension from "../ui/SelectorDimension.jsx";
 import MatrizEstatica from "../MatrizEstatica.jsx";
@@ -216,6 +216,44 @@ export function ListaDeOperaciones({ operaciones }) {
         </li>
       ))}
     </ol>
+  );
+}
+
+/** det(M) por cofactores sobre la fila 1: cada menor M₁ⱼ, su determinante y su cofactor C₁ⱼ. */
+export function ExpansionPorCofactores({ procedimiento }) {
+  const { nombre, terminos, valor } = procedimiento;
+  // Una matriz 1×1 no tiene menores: su determinante es su único elemento.
+  if (terminos.length === 1) {
+    return (
+      <p className="font-mono text-sm text-tinta">
+        det({nombre}) = {textoFraccion(valor)} (matriz 1×1: su único elemento)
+      </p>
+    );
+  }
+  const suma = terminos
+    .map((termino) => `(${textoFraccion(termino.entrada)})·(${textoFraccion(termino.cofactor)})`)
+    .join(" + ");
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-3">
+        {terminos.map((termino, columna) => {
+          const j = subindice(columna + 1);
+          return (
+            <div key={columna} className="space-y-2 rounded-xl border border-[var(--borde)] p-3">
+              <MatrizNombrada nombre={`M₁${j}`} matriz={termino.menor} />
+              <p className="font-mono text-xs text-tinta">
+                C₁{j} = {termino.signo}det(M₁{j}) = {termino.signo}(
+                {textoFraccion(termino.det_menor)}) ={" "}
+                <span className="font-semibold text-pivote">{textoFraccion(termino.cofactor)}</span>
+              </p>
+            </div>
+          );
+        })}
+      </div>
+      <p className="font-mono text-sm leading-7 text-tinta">
+        det({nombre}) = Σ a₁ⱼ·C₁ⱼ = {suma} = <strong>{textoFraccion(valor)}</strong>
+      </p>
+    </div>
   );
 }
 

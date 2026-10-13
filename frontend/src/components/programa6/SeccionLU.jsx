@@ -306,7 +306,7 @@ function VerificacionLU({ resultado }) {
 }
 
 /** Lista de igualdades «variable = fórmula = cuenta = valor» de una sustitución. */
-function EcuacionesDeSustitucion({ ecuaciones }) {
+export function EcuacionesDeSustitucion({ ecuaciones }) {
   return (
     <ol className="space-y-1.5">
       {ecuaciones.map((ecuacion) => {

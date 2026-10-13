@@ -421,6 +421,29 @@ ajusta las dimensiones de la rejilla a la matriz pegada.
 
 ---
 
+## Regla de Cramer
+
+**Solución de Ax = b con `xᵢ = det Aᵢ(b) / det A`, i = 1, 2, …, n.** En la web está
+en la pestaña **Álgebra de Matrices → «Regla de Cramer»**; en consola es la opción 4
+del menú principal (Determinantes).
+
+- `Aᵢ(b)` es la matriz A con su columna i reemplazada por el vector b.
+- La web muestra el paso a paso: det A, cada `Aᵢ(b)` con la columna cambiada
+  resaltada y su determinante (por cofactores hasta 3×3, por reducción triangular
+  desde 4×4), los cocientes `xᵢ` y la comprobación `A · x == b`.
+- Si `det A = 0` la regla no se aplica: se informa si el sistema es inconsistente
+  (algún `det Aᵢ(b) ≠ 0`) o si la regla no decide (todos valen 0).
+
+| Qué | Archivo |
+| --- | --- |
+| Cálculo (funciones puras) y consola | `backend/programa_4/modulos/modulo_determinantes.py` |
+| Teoremas (clave 4) | `backend/programa_4/teoremas/resumen_teoremas.py` |
+| Adaptador web y ruta `POST /api/determinantes/cramer` | `backend/calculo/cramer_web.py`, `backend/app/api.py` |
+| Pruebas | `backend/pruebas/pruebas_cramer.py` |
+| Interfaz | `frontend/src/components/programa5/SeccionCramer.jsx` |
+
+---
+
 ## Requisitos
 
 | Herramienta | Versión | Uso |

@@ -5,6 +5,7 @@
 
 import { useState } from "react";
 import Panel from "../ui/Panel.jsx";
+import SeccionCramer from "./SeccionCramer.jsx";
 import SeccionDeterminante from "./SeccionDeterminante.jsx";
 import SeccionInversa from "./SeccionInversa.jsx";
 import SeccionOperaciones from "./SeccionOperaciones.jsx";
@@ -29,6 +30,15 @@ const SECCIONES = [
       "Expansión por cofactores, regla de Sarrus y reducción a forma triangular; " +
       "se comprueba que los métodos coinciden (opción 6).",
     Componente: SeccionDeterminante,
+  },
+  {
+    id: "cramer",
+    simbolo: "Aᵢ(b)",
+    titulo: "Regla de Cramer",
+    descripcion:
+      "Resuelve el sistema Ax = b con xᵢ = det Aᵢ(b) / det A, i = 1, 2, …, n, " +
+      "mostrando cada matriz Aᵢ(b), su determinante y la comprobación A·x = b.",
+    Componente: SeccionCramer,
   },
   {
     id: "inversa",

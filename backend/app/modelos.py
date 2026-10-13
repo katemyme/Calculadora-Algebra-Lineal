@@ -201,3 +201,13 @@ class PeticionLUP6(BaseModel):
 
     A: List[List[str]]
     b: Optional[List[str]] = None
+
+
+# ---------------------------------------------------------------------------
+# Regla de Cramer
+# ---------------------------------------------------------------------------
+class PeticionCramer(BaseModel):
+    """POST /api/determinantes/cramer. A debe ser cuadrada (n×n) y b tener n componentes."""
+
+    A: List[List[str]]
+    b: List[str]

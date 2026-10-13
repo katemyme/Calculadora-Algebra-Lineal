@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from app.modelos import (
     PeticionBalanceo,
     PeticionCombinacion,
+    PeticionCramer,
     PeticionDeterminanteP5,
     PeticionDistributiva,
     PeticionEcuacion,
@@ -33,6 +34,7 @@ import calculo.programa3_web as p3web
 import calculo.programa4_web as p4web
 import calculo.programa5_web as p5web
 import calculo.programa6_web as p6web
+import calculo.cramer_web as cramerweb
 import calculo.transpuesta as transpuesta
 from app.serializacion import serializar
 
@@ -200,6 +202,16 @@ def p5_teoremas() -> dict:
           responses={422: {"model": RespuestaError}})
 def p6_lu(peticion: PeticionLUP6) -> dict:
     return serializar(p6web.factorizar_y_resolver(peticion.A, peticion.b))
+
+
+# ---------------------------------------------------------------------------
+# Regla de Cramer (el cálculo vive en
+# "backend/programa_4/modulos/modulo_determinantes.py")
+# ---------------------------------------------------------------------------
+@app.post("/api/determinantes/cramer", summary="Regla de Cramer: xᵢ = det Aᵢ(b) / det A",
+          responses={422: {"model": RespuestaError}})
+def determinantes_cramer(peticion: PeticionCramer) -> dict:
+    return serializar(cramerweb.resolver_por_cramer(peticion.A, peticion.b))
 
 
 @app.exception_handler(ErrorDeEntrada)

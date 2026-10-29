@@ -91,7 +91,8 @@ def factorizar_lu(
             break
         pivote = matriz_u[fila_pivote][columna]
         if pivote == 0:
-            # Pivote nulo con entradas debajo: solo un intercambio lo arreglaría, y un
+            # Pivote nulo
+            #  con entradas debajo: solo un intercambio lo arreglaría, y un
             # intercambio rompe la forma triangular de L (haría falta PA = LU).
             if columna_requiere_intercambio(matriz_u, fila_pivote, columna):
                 raise FactorizacionLUNoAdmitida(fila_pivote, columna, matriz_u)

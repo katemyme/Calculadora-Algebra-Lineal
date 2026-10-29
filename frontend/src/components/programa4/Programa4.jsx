@@ -1,10 +1,11 @@
-// Contenedor del botón "Vectores" (Programa 4). Por ahora tiene una única
-// opción: Independencia Lineal. Cada sección conserva su estado al cambiar de
+// Contenedor del botón "Vectores" (Programa 4): Independencia Lineal y
+// Demostración de subespacio. Cada sección conserva su estado al cambiar de
 // una a otra (se ocultan en lugar de desmontarse).
 
 import { useState } from "react";
 import Panel from "../ui/Panel.jsx";
 import SeccionIndependenciaLineal from "./SeccionIndependenciaLineal.jsx";
+import SeccionSubespacio from "./SeccionSubespacio.jsx";
 
 const SECCIONES = [
   {
@@ -15,6 +16,16 @@ const SECCIONES = [
       "Indique la cantidad de vectores k y su dimensión n. Se construye el sistema " +
       "homogéneo Ax = 0, se reduce por filas y se cuentan pivotes y variables libres.",
     Componente: SeccionIndependenciaLineal,
+  },
+  {
+    id: "subespacio",
+    simbolo: "H ≤ V",
+    titulo: "Demostración de subespacio",
+    descripcion:
+      "Escriba el conjunto y su hipótesis. Se demuestran las cuatro condiciones " +
+      "(i) H ⊂ V, (ii) 0 ∈ H, (iii) cerradura bajo la suma y (iv) bajo el escalar, " +
+      "y se obtienen los generadores, la base y la combinación lineal.",
+    Componente: SeccionSubespacio,
   },
 ];
 

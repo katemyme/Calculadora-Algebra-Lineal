@@ -124,6 +124,13 @@ class PeticionIndependenciaP4(BaseModel):
     vectores: List[List[str]]
 
 
+class PeticionSubespacioP4(BaseModel):
+    """POST /api/p4/subespacio. Conjunto 'H = (x, y, z)' y su hipótesis 'x - y + z = 0'."""
+
+    conjunto: str = Field(..., max_length=300)
+    hipotesis: str = Field("", max_length=300)
+
+
 class PeticionTranspuesta(BaseModel):
     """POST /api/p3/transpuesta. Demuestra un teorema de la transpuesta."""
 

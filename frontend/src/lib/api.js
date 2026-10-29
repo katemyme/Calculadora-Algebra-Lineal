@@ -101,6 +101,8 @@ export async function comprobarSalud() {
 // "backend/programa_4/modulos/modulo_vectores.py", a través del backend.
 export const programa4 = {
   independencia: (cuerpo) => enviar("/api/p4/independencia", cuerpo),
+  // Demostración de subespacio: "backend/programa_4/modulos/modulo_subespacios.py".
+  subespacio: (cuerpo) => enviar("/api/p4/subespacio", cuerpo),
 };
 
 // Programa 5 (botón "Álgebra de Matrices"): el cálculo lo hace

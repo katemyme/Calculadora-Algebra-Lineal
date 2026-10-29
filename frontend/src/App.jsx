@@ -50,7 +50,8 @@ const PROGRAMAS = {
     descripcion:
       "Evalúa si un conjunto de vectores de ℝⁿ es linealmente independiente " +
       "(L.I.) o dependiente (L.D.) reduciendo la matriz de columnas [A | 0] " +
-      "y contando sus pivotes.",
+      "y contando sus pivotes, y demuestra si un conjunto es un subespacio " +
+      "vectorial, con su base y vectores generadores.",
   },
   p5: {
     etiqueta: "Álgebra de Matrices",

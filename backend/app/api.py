@@ -23,6 +23,7 @@ from app.modelos import (
     PeticionOperacionP5,
     PeticionProducto,
     PeticionResolver,
+    PeticionSubespacioP4,
     PeticionTranspuesta,
     PeticionVectores,
     PeticionVerificadorP5,
@@ -35,6 +36,7 @@ import calculo.programa4_web as p4web
 import calculo.programa5_web as p5web
 import calculo.programa6_web as p6web
 import calculo.cramer_web as cramerweb
+import calculo.subespacio_web as subespacioweb
 import calculo.transpuesta as transpuesta
 from app.serializacion import serializar
 
@@ -158,6 +160,13 @@ def p3_transpuesta(peticion: PeticionTranspuesta) -> dict:
           responses={422: {"model": RespuestaError}})
 def p4_independencia(peticion: PeticionIndependenciaP4) -> dict:
     return serializar(p4web.independencia_lineal(peticion.vectores))
+
+
+# El cálculo vive en "backend/programa_4/modulos/modulo_subespacios.py".
+@app.post("/api/p4/subespacio", summary="Vectores: ¿H es un subespacio vectorial de ℝⁿ?",
+          responses={422: {"model": RespuestaError}})
+def p4_subespacio(peticion: PeticionSubespacioP4) -> dict:
+    return serializar(subespacioweb.demostrar_subespacio(peticion.conjunto, peticion.hipotesis))
 
 
 # ---------------------------------------------------------------------------

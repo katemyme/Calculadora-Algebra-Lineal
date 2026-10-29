@@ -24,6 +24,8 @@ from app.modelos import (
     PeticionProducto,
     PeticionResolver,
     PeticionSubespacioP4,
+    PeticionTLFormula,
+    PeticionTLVectores,
     PeticionTranspuesta,
     PeticionVectores,
     PeticionVerificadorP5,
@@ -37,6 +39,7 @@ import calculo.programa5_web as p5web
 import calculo.programa6_web as p6web
 import calculo.cramer_web as cramerweb
 import calculo.subespacio_web as subespacioweb
+import calculo.transformaciones_web as tlweb
 import calculo.transpuesta as transpuesta
 from app.serializacion import serializar
 
@@ -167,6 +170,23 @@ def p4_independencia(peticion: PeticionIndependenciaP4) -> dict:
           responses={422: {"model": RespuestaError}})
 def p4_subespacio(peticion: PeticionSubespacioP4) -> dict:
     return serializar(subespacioweb.demostrar_subespacio(peticion.conjunto, peticion.hipotesis))
+
+
+# ---------------------------------------------------------------------------
+# Transformaciones Lineales (el cálculo vive en
+# "backend/programa_4/modulos/modulo_transformaciones.py")
+# ---------------------------------------------------------------------------
+@app.post("/api/tl/formula", summary="T por fórmula general: linealidad, núcleo, imagen, ν y ρ",
+          responses={422: {"model": RespuestaError}})
+def tl_formula(peticion: PeticionTLFormula) -> dict:
+    return serializar(tlweb.analizar_formula(peticion.formula, peticion.vector))
+
+
+@app.post("/api/tl/vectores", summary="T por imágenes de una base: T(v), núcleo, imagen, ν y ρ",
+          responses={422: {"model": RespuestaError}})
+def tl_vectores(peticion: PeticionTLVectores) -> dict:
+    pares = [par.model_dump() for par in peticion.pares]
+    return serializar(tlweb.analizar_vectores(pares, peticion.vector))
 
 
 # ---------------------------------------------------------------------------

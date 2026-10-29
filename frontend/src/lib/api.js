@@ -121,6 +121,13 @@ export const programa6 = {
   lu: (cuerpo) => enviar("/api/p6/lu", cuerpo),
 };
 
+// Transformaciones Lineales (fórmula general y vectores dados): el cálculo lo
+// hace "backend/programa_4/modulos/modulo_transformaciones.py".
+export const transformaciones = {
+  formula: (cuerpo) => enviar("/api/tl/formula", cuerpo),
+  vectores: (cuerpo) => enviar("/api/tl/vectores", cuerpo),
+};
+
 // Regla de Cramer (sección de la pestaña Álgebra de Matrices): el cálculo lo
 // hace "backend/programa_4/modulos/modulo_determinantes.py".
 export const determinantes = {

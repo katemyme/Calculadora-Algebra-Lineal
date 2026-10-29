@@ -131,6 +131,27 @@ class PeticionSubespacioP4(BaseModel):
     hipotesis: str = Field("", max_length=300)
 
 
+class PeticionTLFormula(BaseModel):
+    """POST /api/tl/formula. 'T(x, y) = (x + y, 3y)' y, opcionalmente, un vector '(2, 4)'."""
+
+    formula: str = Field(..., max_length=300)
+    vector: str = Field("", max_length=100)
+
+
+class ParTL(BaseModel):
+    """Un vector de la base y su imagen: T(vector) = imagen."""
+
+    vector: str = Field(..., max_length=100)
+    imagen: str = Field(..., max_length=100)
+
+
+class PeticionTLVectores(BaseModel):
+    """POST /api/tl/vectores. Imágenes de una base de ℝⁿ y, opcionalmente, un vector."""
+
+    pares: List[ParTL] = Field(..., min_length=1, max_length=DIMENSION_MAXIMA)
+    vector: str = Field("", max_length=100)
+
+
 class PeticionTranspuesta(BaseModel):
     """POST /api/p3/transpuesta. Demuestra un teorema de la transpuesta."""
 

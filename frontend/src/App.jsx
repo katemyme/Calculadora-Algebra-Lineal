@@ -14,6 +14,7 @@ import PanelResultados from "./components/PanelResultados.jsx";
 import Programa3 from "./components/programa3/Programa3.jsx";
 import Programa4 from "./components/programa4/Programa4.jsx";
 import Programa5 from "./components/programa5/Programa5.jsx";
+import ProgramaTransformaciones from "./components/transformaciones/ProgramaTransformaciones.jsx";
 // PROGRAMA 6: copiar / pegar matrices entre las pestañas de la calculadora.
 import {
   BotonPegarMatriz,
@@ -60,6 +61,13 @@ const PROGRAMAS = {
       "Opera matrices, calcula el determinante por cofactores, Sarrus y " +
       "reducción triangular, obtiene la inversa por Gauss-Jordan o por la " +
       "adjunta y verifica sus propiedades con fracciones exactas.",
+  },
+  tl: {
+    etiqueta: "Transformaciones Lineales",
+    resaltado: "Transformaciones Lineales",
+    descripcion:
+      "Prueba si T es lineal, evalúa T(v) por su fórmula o por las imágenes de una " +
+      "base y halla su núcleo, nulidad, imagen y rango paso a paso.",
   },
 };
 
@@ -263,6 +271,8 @@ export default function App() {
         {programa === "p4" && <Programa4 />}
 
         {programa === "p5" && <Programa5 />}
+
+        {programa === "tl" && <ProgramaTransformaciones />}
 
         {programa === "p2" && (
         <>

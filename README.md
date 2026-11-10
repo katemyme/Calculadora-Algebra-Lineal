@@ -1,4 +1,4 @@
-# Calculadora de Álgebra Lineal — Programas 2 y 3
+# Calculadora de Álgebra Lineal — Programas 2 a 7
 
 Aplicación web que resuelve sistemas de ecuaciones lineales **Ax = b** mediante
 **eliminación por filas (Gauss-Jordan)** con aritmética exacta usando
@@ -17,6 +17,10 @@ El **Programa 3** agrega operaciones en ℝⁿ, combinación lineal, independenc
 lineal, ecuaciones matriciales y la propiedad distributiva A(u + v) = A·u + A·v.
 Funciona como programa de consola (`programas/Programa 3_GrupoX.py`) y también
 desde la calculadora web. Ver [Programa 3](#programa-3).
+
+El **Programa 7** agrega el módulo de **Métodos Numéricos**: método de Bisección,
+graficador de funciones, notación posicional (base 10 ↔ base 2) y errores
+numéricos de punto flotante. Ver [Programa 7](#programa-7--métodos-numéricos).
 
 - **Backend:** Python estándar + `fractions.Fraction`.
 - **API:** FastAPI como capa HTTP.
@@ -445,6 +449,63 @@ del menú principal (Determinantes).
 
 ---
 
+## Programa 7 — Métodos Numéricos
+
+Botón **Métodos Numéricos** en la web (4 pestañas) y opción **6** del menú de
+consola. **Todos los algoritmos y la matemática están en
+`programas/Programa7_GrupoX.py`**, ordenados para leerlos de arriba hacia abajo
+(A. Bisección → B. Graficador → C. Notación posicional → D. Errores). La consola y
+la web usan ese mismo archivo.
+
+| Pestaña / opción | Qué hace |
+| --- | --- |
+| 1 · Bisección | Programada desde cero. Valida a < b, E > 0, Nmax ≥ 1, f(a) y f(b) finitas, raíz en el extremo, cambio de signo y continuidad en [a, b] con SymPy (Bolzano). Tabla k, a, b, xr, f(a), f(b), f(xr), Eb, Ea, εa; raíz, cota del error, motivo de parada, n_min = ⌈log₂((b − a)/E)⌉ y contraste con `scipy.optimize.bisect`. Botón «Graficar esta función». |
+| 2 · Graficador | ≥ 1000 puntos, descarta valores no reales/no definidos/no finitos y parte la curva en asíntotas (no une ramas de funciones racionales). Web: Plotly. Consola: Matplotlib. |
+| 3 · Notación posicional | Descomposición dígito × potencia con superíndices y conversión base 10 ↔ base 2 (divisiones sucesivas / suma de potencias), con verificación. |
+| 4 · Errores numéricos | 0.1 + 0.2 == 0.3, épsilon de máquina, overflow/underflow ejecutados en el equipo, tipos de error, calculadora Ea/Er/Er% y propagación Δy ≈ f′(x)·Δx. |
+
+**Seguridad:** la función f(x) que escribe el usuario **no** se ejecuta con
+`eval()`/`exec()`. Se analiza con `ast.parse` y una lista blanca (x, números,
+`+ - * / **`, `pi`, `e`, `sin cos tan asin acos atan sinh cosh tanh exp log ln log10 sqrt abs`).
+Si se escribe `^`, se convierte en `**` y se avisa.
+
+### Versión de consola
+
+Necesita las librerías de `backend/requirements.txt` (NumPy, SciPy, SymPy y
+Matplotlib). Desde la raíz del repositorio:
+
+```powershell
+python programas/Programa7_GrupoX.py            # menú principal completo → opción 6
+python programas/Programa7_GrupoX.py --directo  # entra directo a Métodos Numéricos
+```
+
+La gráfica de consola abre una ventana de Matplotlib; si no hay pantalla
+disponible, se guarda como `grafica_metodos_numericos.png`.
+
+### Versión web
+
+Con el backend y el frontend en marcha (ver [Ejecución](#ejecución)), abrir el
+botón **Métodos Numéricos**. El frontend usa `plotly.js-basic-dist-min` (se
+instala con `npm install`).
+
+| Qué | Archivo |
+| --- | --- |
+| **Algoritmos y matemática (A–D)** | **`programas/Programa7_GrupoX.py`** |
+| Herramienta: lector seguro de f(x) (sin eval) | `backend/programa_4/modulos/numericos/parser_seguro.py` |
+| Herramienta: continuidad con SymPy (Bolzano) | `backend/programa_4/modulos/numericos/continuidad.py` |
+| Menús de consola y gráficas Matplotlib | `backend/programa_4/modulos/modulo_metodos_numericos.py` |
+| Adaptador web y rutas `/api/p7/*` | `backend/calculo/programa7_web.py`, `backend/app/api.py` |
+| Pruebas (pytest) | `backend/pruebas/pruebas_programa7.py` |
+| Interfaz | `frontend/src/components/programa7/` |
+
+### Documentación del Programa 7
+
+- **[La lógica matemática, explicada de forma sencilla (para el profesor)](docs/Programa7_LOGICA_MATEMATICA.md)**
+- [Detalle técnico completo: arquitectura, endpoints, validaciones y pruebas](docs/Programa7_logica_metodos_numericos.md)
+- [Apoyo para el informe: algoritmo, capturas, interpretación y defensa](docs/Programa7_apoyo_informe.md)
+
+---
+
 ## Requisitos
 
 | Herramienta | Versión | Uso |
@@ -469,8 +530,11 @@ npm --version
 > En Windows, si `python` no se reconoce pero sí `py`, usa `py` en todos los
 > comandos (por ejemplo `py -m venv .venv`).
 
-No se utiliza base de datos ni NumPy, SciPy o cualquier otra librería de
-álgebra lineal.
+No se utiliza base de datos. Los Programas 2 a 6 no usan NumPy, SciPy ni
+ninguna otra librería de álgebra lineal. El Programa 7 (Métodos Numéricos) usa
+**NumPy, SciPy, SymPy y Matplotlib** como apoyo (evaluación vectorial,
+continuidad, derivada simbólica, contraste y gráficas de consola); ninguna
+reemplaza los algoritmos pedidos.
 
 ---
 
@@ -546,16 +610,17 @@ Se instalan:
 - **FastAPI**: capa HTTP;
 - **Uvicorn**: servidor que ejecuta la API;
 - **Pydantic**: validación de la forma de las peticiones;
-- **httpx**: solo para las pruebas de la API.
+- **NumPy, SciPy, SymPy y Matplotlib**: solo el Programa 7 (Métodos Numéricos);
+- **httpx** y **pytest**: solo para las pruebas.
 
 El cálculo matricial no depende de ninguna de ellas: se hace con Python
 estándar y `fractions.Fraction`.
 
 Para comprobar que todo quedó bien instalado, corre las pruebas (deben terminar
-en `OK`):
+en `passed`, sin fallos):
 
 ```powershell
-python -m unittest discover -s pruebas -t . -p "pruebas_*.py"
+python -m pytest
 ```
 
 ---
@@ -956,6 +1021,13 @@ http://localhost:8000
 | `POST` | `/api/p5/inversa` | Programa 5: A⁻¹ por Gauss-Jordan o por adjunta |
 | `POST` | `/api/p5/verificador` | Programa 5: verificador de propiedades con A y B invertibles |
 | `GET` | `/api/p5/teoremas` | Programa 5: teoremas clave del módulo |
+| `POST` | `/api/p7/biseccion` | Programa 7: método de Bisección (tabla, n_min, contraste con SciPy) |
+| `POST` | `/api/p7/graficar` | Programa 7: puntos de f(x) en segmentos continuos |
+| `POST` | `/api/p7/posicional` | Programa 7: notación posicional y conversión base 10 ↔ base 2 |
+| `GET` | `/api/p7/flotante` | Programa 7: 0.1 + 0.2, épsilon, overflow/underflow y tipos de error |
+| `POST` | `/api/p7/errores` | Programa 7: error absoluto, relativo y porcentual |
+| `POST` | `/api/p7/propagacion` | Programa 7: propagación del error Δy ≈ f′(x)·Δx |
+| `GET` | `/api/p7/ejemplos` | Programa 7: casos precargados |
 | `GET` | `/docs` | Documentación interactiva de FastAPI |
 
 ---
@@ -1242,11 +1314,21 @@ Con el entorno virtual activo, desde la raíz del repositorio:
 
 ```powershell
 cd backend
+python -m pytest
+```
+
+`backend/pytest.ini` hace que pytest recoja **todas** las pruebas: las de
+unittest (Programas 2–6), las funciones `probar_*` del Programa 5 y las del
+Programa 7. El comando anterior con unittest sigue funcionando para los
+Programas 2–6:
+
+```powershell
 python -m unittest discover -s pruebas -t . -p "pruebas_*.py"
 ```
 
-Para correr un solo archivo: `python -m pruebas.pruebas_nucleo` o
-`python -m pruebas.pruebas_programa3`.
+Para correr un solo archivo: `python -m pruebas.pruebas_nucleo`,
+`python -m pruebas.pruebas_programa3` o
+`python -m pytest pruebas/pruebas_programa7.py -v`.
 
 `pruebas_programa3.py` prueba las rutas `/api/p3/...` (incluida la propiedad
 distributiva) con el `TestClient` de FastAPI, sin levantar el servidor.
@@ -1420,4 +1502,10 @@ http://localhost:5173
 
 ```powershell
 python "programas/Programa 3_GrupoX.py"
+```
+
+### Programa 7 (calculadora de consola con Métodos Numéricos)
+
+```powershell
+python programas/Programa7_GrupoX.py
 ```

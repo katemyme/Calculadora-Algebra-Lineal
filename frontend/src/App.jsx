@@ -15,6 +15,7 @@ import Programa3 from "./components/programa3/Programa3.jsx";
 import Programa4 from "./components/programa4/Programa4.jsx";
 import Programa5 from "./components/programa5/Programa5.jsx";
 import ProgramaTransformaciones from "./components/transformaciones/ProgramaTransformaciones.jsx";
+import ProgramaMetodosNumericos from "./components/programa7/ProgramaMetodosNumericos.jsx";
 // PROGRAMA 6: copiar / pegar matrices entre las pestañas de la calculadora.
 import {
   BotonPegarMatriz,
@@ -68,6 +69,14 @@ const PROGRAMAS = {
     descripcion:
       "Prueba si T es lineal, evalúa T(v) por su fórmula o por las imágenes de una " +
       "base y halla su núcleo, nulidad, imagen y rango paso a paso.",
+  },
+  p7: {
+    etiqueta: "Métodos Numéricos",
+    resaltado: "Métodos Numéricos",
+    descripcion:
+      "Aproxima raíces con el método de Bisección, grafica funciones sin unir sus " +
+      "asíntotas, descompone números en notación posicional (base 10 ↔ base 2) y " +
+      "muestra los errores de la aritmética de punto flotante.",
   },
 };
 
@@ -273,6 +282,8 @@ export default function App() {
         {programa === "p5" && <Programa5 />}
 
         {programa === "tl" && <ProgramaTransformaciones />}
+
+        {programa === "p7" && <ProgramaMetodosNumericos />}
 
         {programa === "p2" && (
         <>

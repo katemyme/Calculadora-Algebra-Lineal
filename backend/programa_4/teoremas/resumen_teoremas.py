@@ -53,4 +53,17 @@ TEOREMAS: dict = {
         "permutación: se requiere pivoteo parcial PA = LU\n"
         "    Si A es n×n, det(A) = det(L)·det(U) = u₁₁·u₂₂·…·uₙₙ, porque det(L) = 1"
     ),
+    # PROGRAMA 7. Misma sangría que la clave 3: títulos con 2 espacios, enunciados con 4.
+    6: (
+        "TEOREMA DE BOLZANO (valor intermedio). Si f es continua en [a, b] y "
+        "f(a)·f(b) < 0, existe al menos un c ∈ (a, b) con f(c) = 0.\n"
+        "    Sin continuidad no aplica: 1/x cambia de signo en [−1, 1] y no tiene raíz\n"
+        "    Sin cambio de signo no se concluye nada: puede haber 0, 2, 4… raíces\n"
+        "  MÉTODO DE BISECCIÓN.\n"
+        "    xr = (a + b)/2 y cota del error Eb = (b − a)/2; se conserva la mitad con cambio de signo\n"
+        "    Tras n iteraciones Eb = (b₀ − a₀)/2ⁿ, así que n_min = ⌈log₂((b₀ − a₀)/E)⌉\n"
+        "  PUNTO FLOTANTE (IEEE 754, double).\n"
+        "    52 bits de mantisa: épsilon de máquina = 2⁻⁵² ≈ 2.22·10⁻¹⁶\n"
+        "    0.1 no tiene representación binaria finita: 0.1 + 0.2 ≠ 0.3"
+    ),
 }

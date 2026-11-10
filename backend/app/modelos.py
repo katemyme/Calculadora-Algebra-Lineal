@@ -239,3 +239,50 @@ class PeticionCramer(BaseModel):
 
     A: List[List[str]]
     b: List[str]
+
+
+# ---------------------------------------------------------------------------
+# Programa 7 (Métodos Numéricos). Los números viajan como texto para validarlos
+# en Python con mensajes claros (y aceptar expresiones como pi/2).
+# ---------------------------------------------------------------------------
+class PeticionBiseccionP7(BaseModel):
+    """POST /api/p7/biseccion."""
+
+    funcion: str
+    a: str
+    b: str
+    tolerancia: str = "1e-4"
+    max_iter: str = "100"
+
+
+class PeticionGraficaP7(BaseModel):
+    """POST /api/p7/graficar. raiz e intervalo llegan desde Bisección (opcionales)."""
+
+    funcion: str
+    x_min: str
+    x_max: str
+    raiz: Optional[float] = None
+    intervalo: Optional[List[float]] = None
+    tipo_intervalo: Optional[Literal["inicial", "final"]] = None
+
+
+class PeticionPosicionalP7(BaseModel):
+    """POST /api/p7/posicional. base: "10" o "2"."""
+
+    numero: str
+    base: str
+
+
+class PeticionErroresP7(BaseModel):
+    """POST /api/p7/errores. xv = valor verdadero, xa = valor aproximado."""
+
+    xv: str
+    xa: str
+
+
+class PeticionPropagacionP7(BaseModel):
+    """POST /api/p7/propagacion."""
+
+    funcion: str
+    x: str
+    dx: str

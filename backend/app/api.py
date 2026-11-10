@@ -1,4 +1,4 @@
-"""API HTTP de la calculadora de Álgebra Lineal - Programas 2, 3, 4, 5 y 6."""
+"""API HTTP de la calculadora de Álgebra Lineal - Programas 2, 3, 4, 5, 6 y 7."""
 
 import logging
 import traceback
@@ -10,18 +10,23 @@ from fastapi.responses import JSONResponse
 
 from app.modelos import (
     PeticionBalanceo,
+    PeticionBiseccionP7,
     PeticionCombinacion,
     PeticionCramer,
     PeticionDeterminanteP5,
     PeticionDistributiva,
     PeticionEcuacion,
+    PeticionErroresP7,
+    PeticionGraficaP7,
     PeticionIndependencia,
     PeticionIndependenciaP4,
     PeticionInversaP5,
     PeticionLUP6,
     PeticionMatrices,
     PeticionOperacionP5,
+    PeticionPosicionalP7,
     PeticionProducto,
+    PeticionPropagacionP7,
     PeticionResolver,
     PeticionSubespacioP4,
     PeticionTLFormula,
@@ -37,6 +42,7 @@ import calculo.programa3_web as p3web
 import calculo.programa4_web as p4web
 import calculo.programa5_web as p5web
 import calculo.programa6_web as p6web
+import calculo.programa7_web as p7web
 import calculo.cramer_web as cramerweb
 import calculo.subespacio_web as subespacioweb
 import calculo.transformaciones_web as tlweb
@@ -241,6 +247,52 @@ def p6_lu(peticion: PeticionLUP6) -> dict:
           responses={422: {"model": RespuestaError}})
 def determinantes_cramer(peticion: PeticionCramer) -> dict:
     return serializar(cramerweb.resolver_por_cramer(peticion.A, peticion.b))
+
+
+# ---------------------------------------------------------------------------
+# Programa 7: Métodos Numéricos (el cálculo vive en
+# "backend/programa_4/modulos/numericos/")
+# ---------------------------------------------------------------------------
+@app.post("/api/p7/biseccion", summary="Método de Bisección con tabla, n_min y contraste con SciPy",
+          responses={422: {"model": RespuestaError}})
+def p7_biseccion(peticion: PeticionBiseccionP7) -> dict:
+    return p7web.resolver_biseccion(peticion.funcion, peticion.a, peticion.b,
+                                    peticion.tolerancia, peticion.max_iter)
+
+
+@app.post("/api/p7/graficar", summary="Puntos de f(x) en segmentos continuos",
+          responses={422: {"model": RespuestaError}})
+def p7_graficar(peticion: PeticionGraficaP7) -> dict:
+    return p7web.graficar(peticion.funcion, peticion.x_min, peticion.x_max, peticion.raiz,
+                          peticion.intervalo, peticion.tipo_intervalo)
+
+
+@app.post("/api/p7/posicional", summary="Notación posicional y conversión base 10 ↔ base 2",
+          responses={422: {"model": RespuestaError}})
+def p7_posicional(peticion: PeticionPosicionalP7) -> dict:
+    return p7web.convertir_base(peticion.numero, peticion.base)
+
+
+@app.get("/api/p7/flotante", summary="0.1 + 0.2, épsilon, overflow/underflow y tipos de error")
+def p7_flotante() -> dict:
+    return p7web.demostracion_flotante()
+
+
+@app.post("/api/p7/errores", summary="Error absoluto, relativo y porcentual",
+          responses={422: {"model": RespuestaError}})
+def p7_errores(peticion: PeticionErroresP7) -> dict:
+    return p7web.calcular_errores(peticion.xv, peticion.xa)
+
+
+@app.post("/api/p7/propagacion", summary="Propagación del error: Δy ≈ f′(x)·Δx",
+          responses={422: {"model": RespuestaError}})
+def p7_propagacion(peticion: PeticionPropagacionP7) -> dict:
+    return p7web.propagar_error(peticion.funcion, peticion.x, peticion.dx)
+
+
+@app.get("/api/p7/ejemplos", summary="Casos precargados del módulo de Métodos Numéricos")
+def p7_ejemplos() -> dict:
+    return p7web.ejemplos()
 
 
 @app.exception_handler(ErrorDeEntrada)

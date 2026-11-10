@@ -133,3 +133,15 @@ export const transformaciones = {
 export const determinantes = {
   cramer: (cuerpo) => enviar("/api/determinantes/cramer", cuerpo),
 };
+
+// Programa 7 (botón "Métodos Numéricos"): el cálculo lo hace
+// "backend/programa_4/modulos/numericos/". Los números viajan como texto.
+export const programa7 = {
+  biseccion: (cuerpo) => enviar("/api/p7/biseccion", cuerpo),
+  graficar: (cuerpo) => enviar("/api/p7/graficar", cuerpo),
+  posicional: (cuerpo) => enviar("/api/p7/posicional", cuerpo),
+  flotante: () => consultar("/api/p7/flotante"),
+  errores: (cuerpo) => enviar("/api/p7/errores", cuerpo),
+  propagacion: (cuerpo) => enviar("/api/p7/propagacion", cuerpo),
+  ejemplos: () => consultar("/api/p7/ejemplos"),
+};

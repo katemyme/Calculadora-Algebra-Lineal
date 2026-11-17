@@ -21,6 +21,7 @@ from app.modelos import (
     PeticionIndependencia,
     PeticionIndependenciaP4,
     PeticionInversaP5,
+    PeticionIterativosP8,
     PeticionLUP6,
     PeticionMatrices,
     PeticionOperacionP5,
@@ -43,6 +44,7 @@ import calculo.programa4_web as p4web
 import calculo.programa5_web as p5web
 import calculo.programa6_web as p6web
 import calculo.programa7_web as p7web
+import calculo.programa8_web as p8web
 import calculo.cramer_web as cramerweb
 import calculo.subespacio_web as subespacioweb
 import calculo.transformaciones_web as tlweb
@@ -294,6 +296,28 @@ def p7_propagacion(peticion: PeticionPropagacionP7) -> dict:
 def p7_ejemplos() -> dict:
     return p7web.ejemplos()
 
+# ---------------------------------------------------------------------------
+# Programa 8: Jacobi y Gauss-Seidel (el cálculo vive en "programas/Programa8_GrupoX.py")
+# ---------------------------------------------------------------------------
+@app.post(
+    "/api/p8/iterativos",
+    summary="Resuelve Ax = b por Jacobi y Gauss-Seidel con tablas, diagnóstico y comparación",
+    responses={422: {"model": RespuestaError}},
+)
+def p8_iterativos(peticion: PeticionIterativosP8) -> dict:
+    return p8web.resolver_iterativos(
+        A=peticion.A,
+        b=peticion.b,
+        x0=peticion.x0,
+        tolerancia=peticion.tolerancia,
+        max_iter=peticion.max_iter,
+        permitir_reordenamiento=peticion.permitir_reordenamiento,
+    )
+
+
+@app.get("/api/p8/ejemplos", summary="Los 3 casos de prueba obligatorios de Jacobi y Gauss-Seidel")
+def p8_ejemplos() -> dict:
+    return p8web.ejemplos()
 
 @app.exception_handler(ErrorDeEntrada)
 async def manejar_error_de_entrada(_: Request, exc: ErrorDeEntrada) -> JSONResponse:

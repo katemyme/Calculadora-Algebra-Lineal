@@ -286,3 +286,16 @@ class PeticionPropagacionP7(BaseModel):
     funcion: str
     x: str
     dx: str
+
+# ---------------------------------------------------------------------------
+# Programa 8 (Jacobi y Gauss-Seidel)
+# ---------------------------------------------------------------------------
+class PeticionIterativosP8(BaseModel):
+    """POST /api/p8/iterativos."""
+
+    A: List[List[str]]
+    b: List[str]
+    x0: Optional[List[str]] = None
+    tolerancia: str = "1e-4"
+    max_iter: str = "50"
+    permitir_reordenamiento: bool = True

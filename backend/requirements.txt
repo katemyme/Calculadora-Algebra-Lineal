@@ -13,6 +13,7 @@ numpy>=2.0,<3.0
 scipy>=1.13,<2.0
 sympy>=1.13,<2.0
 matplotlib>=3.8,<4.0
+pandas>=2.0,<3.0
 
 # Solo para pruebas (no lo necesita el núcleo).
 httpx>=0.28,<1.0

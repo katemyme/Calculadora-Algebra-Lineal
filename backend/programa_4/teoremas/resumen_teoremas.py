@@ -66,4 +66,17 @@ TEOREMAS: dict = {
         "    52 bits de mantisa: épsilon de máquina = 2⁻⁵² ≈ 2.22·10⁻¹⁶\n"
         "    0.1 no tiene representación binaria finita: 0.1 + 0.2 ≠ 0.3"
     ),
+    # PROGRAMA 8. Misma sangría que las claves anteriores: títulos con 2 espacios, enunciados con 4.
+    7: (
+        "MÉTODOS ITERATIVOS PARA SISTEMAS LINEALES Ax = b (Programa 8).\n"
+        "    Jacobi (actualización simultánea): calcula cada xᵢ⁽ᵏ⁾ usando exclusivamente "
+        "los valores x⁽ᵏ⁻¹⁾ de la iteración anterior\n"
+        "    Gauss-Seidel (actualización inmediata): utiliza dentro de la misma iteración k "
+        "los valores x₁⁽ᵏ⁾, …, xᵢ₋₁⁽ᵏ⁾ recién calculados\n"
+        "  CRITERIO DE CONVERGENCIA (DIAGONAL ESTRICTAMENTE DOMINANTE).\n"
+        "    Si |aᵢᵢ| > Σ_{j≠i} |aᵢⱼ| para toda fila i, ambos métodos convergen para cualquier x⁽⁰⁾\n"
+        "    Es una condición SUFICIENTE pero NO NECESARIA: su ausencia no implica divergencia\n"
+        "  CRITERIO DE PARADA Y VALIDACIÓN.\n"
+        "    Error entre iteraciones: ||x⁽ᵏ⁾ − x⁽ᵏ⁻¹⁾||∞ ≤ ε,   Residuo: ||Ax⁽ᵏ⁾ − b||∞"
+    ),
 }

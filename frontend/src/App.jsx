@@ -16,6 +16,7 @@ import Programa4 from "./components/programa4/Programa4.jsx";
 import Programa5 from "./components/programa5/Programa5.jsx";
 import ProgramaTransformaciones from "./components/transformaciones/ProgramaTransformaciones.jsx";
 import ProgramaMetodosNumericos from "./components/programa7/ProgramaMetodosNumericos.jsx";
+import ProgramaIterativos from "./components/programa8/ProgramaIterativos.jsx";
 // PROGRAMA 6: copiar / pegar matrices entre las pestañas de la calculadora.
 import {
   BotonPegarMatriz,
@@ -77,6 +78,14 @@ const PROGRAMAS = {
       "Aproxima raíces con el método de Bisección, grafica funciones sin unir sus " +
       "asíntotas, descompone números en notación posicional (base 10 ↔ base 2) y " +
       "muestra los errores de la aritmética de punto flotante.",
+  },
+  p8: {
+    etiqueta: "Jacobi y Gauss-Seidel",
+    resaltado: "Jacobi y Gauss-Seidel",
+    descripcion:
+      "Resuelve sistemas de ecuaciones lineales Ax = b mediante métodos iterativos, " +
+      "evalúa dominancia diagonal y reordenamiento de filas, compara convergencia " +
+      "y valida los resultados frente a la solución exacta.",
   },
 };
 
@@ -284,6 +293,8 @@ export default function App() {
         {programa === "tl" && <ProgramaTransformaciones />}
 
         {programa === "p7" && <ProgramaMetodosNumericos />}
+        
+        {programa === "p8" && <ProgramaIterativos />}
 
         {programa === "p2" && (
         <>

@@ -145,3 +145,10 @@ export const programa7 = {
   propagacion: (cuerpo) => enviar("/api/p7/propagacion", cuerpo),
   ejemplos: () => consultar("/api/p7/ejemplos"),
 };
+
+// Programa 8 (botón "Jacobi y Gauss-Seidel"): el cálculo lo hace
+// "programas/Programa8_GrupoX.py", a través del backend.
+export const programa8 = {
+  iterativos: (cuerpo) => enviar("/api/p8/iterativos", cuerpo),
+  ejemplos: () => consultar("/api/p8/ejemplos"),
+};

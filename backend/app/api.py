@@ -13,6 +13,7 @@ from app.modelos import (
     PeticionBiseccionP7,
     PeticionCombinacion,
     PeticionCramer,
+    PeticionDerivadasP9,
     PeticionDeterminanteP5,
     PeticionDistributiva,
     PeticionEcuacion,
@@ -26,10 +27,12 @@ from app.modelos import (
     PeticionMatrices,
     PeticionNewtonP9,
     PeticionOperacionP5,
+    PeticionPolinomioP9,
     PeticionPosicionalP7,
     PeticionProducto,
     PeticionPropagacionP7,
     PeticionResolver,
+    PeticionSecanteP9,
     PeticionSubespacioP4,
     PeticionTLFormula,
     PeticionTLVectores,
@@ -323,16 +326,37 @@ def p8_ejemplos() -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Programa 9: Newton-Raphson (el cálculo vive en "programas/Programa9_GrupoX.py")
+# Programa 9: métodos abiertos (el cálculo vive en "programas/Programa9_GrupoX.py")
 # ---------------------------------------------------------------------------
-@app.post("/api/p9/newton", summary="Newton-Raphson: tabla, estado, residuo y gráfica",
+@app.post("/api/p9/newton", summary="Newton-Raphson: tabla, paso a paso, convergencia y gráficas",
           responses={422: {"model": RespuestaError}})
 def p9_newton(peticion: PeticionNewtonP9) -> dict:
     return p9web.resolver_newton(peticion.funcion, peticion.x0, peticion.tolerancia,
-                                 peticion.max_iter)
+                                 peticion.max_iter, peticion.tipo_error, peticion.derivada,
+                                 peticion.h)
 
 
-@app.get("/api/p9/ejemplos", summary="Casos de prueba de Newton-Raphson")
+@app.post("/api/p9/secante", summary="Método de la secante comparado con Newton-Raphson",
+          responses={422: {"model": RespuestaError}})
+def p9_secante(peticion: PeticionSecanteP9) -> dict:
+    return p9web.resolver_secante(peticion.funcion, peticion.x0, peticion.x1, peticion.tolerancia,
+                                  peticion.max_iter, peticion.tipo_error)
+
+
+@app.post("/api/p9/derivadas", summary="Derivadas numéricas: hacia adelante, hacia atrás y central",
+          responses={422: {"model": RespuestaError}})
+def p9_derivadas(peticion: PeticionDerivadasP9) -> dict:
+    return p9web.calcular_derivadas(peticion.funcion, peticion.x, peticion.h)
+
+
+@app.post("/api/p9/polinomio", summary="Raíces de polinomios: Horner, Newton y deflación",
+          responses={422: {"model": RespuestaError}})
+def p9_polinomio(peticion: PeticionPolinomioP9) -> dict:
+    return p9web.resolver_polinomio(peticion.polinomio, peticion.x0, peticion.tolerancia,
+                                    peticion.max_iter, peticion.tipo_error)
+
+
+@app.get("/api/p9/ejemplos", summary="Casos de prueba y ejemplos de la clase del Programa 9")
 def p9_ejemplos() -> dict:
     return p9web.ejemplos()
 

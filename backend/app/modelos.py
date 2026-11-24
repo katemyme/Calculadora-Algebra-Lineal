@@ -302,12 +302,45 @@ class PeticionIterativosP8(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Programa 9 (Newton-Raphson). Los números viajan como texto (admiten pi/2, 1e-4...).
+# Programa 9 (métodos abiertos). Los números viajan como texto (admiten pi/2, 1e-4...).
+# Un campo vacío toma el valor predeterminado del programa.
 # ---------------------------------------------------------------------------
 class PeticionNewtonP9(BaseModel):
-    """POST /api/p9/newton. tolerancia = εs en porcentaje."""
+    """POST /api/p9/newton. tipo_error: "relativo" (εs en %) o "absoluto" (ε decimal)."""
 
     funcion: str
     x0: str
-    tolerancia: str = "0.0001"
+    tolerancia: str = ""
     max_iter: str = "50"
+    tipo_error: str = "relativo"
+    derivada: str = "analitica"   # "analitica" (SymPy) o "central" (diferencia central)
+    h: str = ""
+
+
+class PeticionSecanteP9(BaseModel):
+    """POST /api/p9/secante."""
+
+    funcion: str
+    x0: str
+    x1: str
+    tolerancia: str = ""
+    max_iter: str = "50"
+    tipo_error: str = "relativo"
+
+
+class PeticionDerivadasP9(BaseModel):
+    """POST /api/p9/derivadas."""
+
+    funcion: str
+    x: str
+    h: str = "0.01"
+
+
+class PeticionPolinomioP9(BaseModel):
+    """POST /api/p9/polinomio. polinomio: expresión en x o coeficientes separados por comas."""
+
+    polinomio: str
+    x0: str = "0"
+    tolerancia: str = ""
+    max_iter: str = "50"
+    tipo_error: str = "relativo"

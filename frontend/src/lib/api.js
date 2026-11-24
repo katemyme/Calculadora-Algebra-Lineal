@@ -157,5 +157,8 @@ export const programa8 = {
 // "programas/Programa9_GrupoX.py", a través del backend.
 export const programa9 = {
   newton: (cuerpo) => enviar("/api/p9/newton", cuerpo),
+  secante: (cuerpo) => enviar("/api/p9/secante", cuerpo),
+  derivadas: (cuerpo) => enviar("/api/p9/derivadas", cuerpo),
+  polinomio: (cuerpo) => enviar("/api/p9/polinomio", cuerpo),
   ejemplos: () => consultar("/api/p9/ejemplos"),
 };

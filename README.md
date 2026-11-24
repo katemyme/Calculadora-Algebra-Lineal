@@ -506,22 +506,29 @@ instala con `npm install`).
 
 ---
 
-## Programa 9 — Newton-Raphson
+## Programa 9 — Newton-Raphson y métodos abiertos
 
-Botón **Newton-Raphson** en la web y opción **7** del menú de consola. **Todo el
-módulo está en `programas/Programa9_GrupoX.py`**: lectura y validación de f(x), x₀,
-tolerancia εs (%) y Nmax; derivada simbólica con SymPy; el algoritmo propio
-xᵢ₊₁ = xᵢ − f(xᵢ)/f′(xᵢ); la tabla con Pandas y la gráfica con Matplotlib. La consola
-y la web usan las mismas funciones.
+Botón **Newton-Raphson** en la web (cuatro pestañas) y opción **7** del menú de consola.
+**Todo el módulo está en `programas/Programa9_GrupoX.py`**: lectura y validación de datos,
+derivada simbólica con SymPy, los algoritmos propios, las tablas con Pandas y las gráficas con
+Matplotlib. La consola y la web usan las mismas funciones.
 
-| Qué hace | Detalle |
+| Sección | Qué hace |
 | --- | --- |
-| Error aproximado | εa(%) = \|(xᵢ₊₁ − xᵢ)/xᵢ₊₁\|·100; si xᵢ₊₁ = 0 se usa el error absoluto \|xᵢ₊₁ − xᵢ\| (comparado con εs/100). |
-| Criterio de parada | εa ≤ εs o Nmax iteraciones (predeterminados: εs = 0.0001 %, Nmax = 50). |
-| Condiciones de fallo | \|f′(xᵢ)\| < 10⁻¹⁰ (no se divide), valores no finitos o \|xᵢ\| > 10¹⁵ y aproximaciones fuera del dominio de f. |
-| Salida | f(x) y f′(x); tabla i, xᵢ, f(xᵢ), f′(xᵢ), xᵢ₊₁, εa; aproximación (con las cifras que respalda εs), iteraciones, error, residuo \|f(x)\| y estado. |
-| Gráfica | f(x), eje x, rectas tangentes de las primeras iteraciones y aproximaciones (Matplotlib; en la web se muestra como imagen PNG). |
+| 1 · Newton-Raphson | xᵢ₊₁ = xᵢ − f(xᵢ)/f′(xᵢ) con f′ analítica (SymPy) o por diferencia central (compara ambas). |
+| 2 · Secante | xᵢ₊₁ = xᵢ − f(xᵢ)(xᵢ₋₁ − xᵢ)/(f(xᵢ₋₁) − f(xᵢ)), sin derivada; se compara con Newton. |
+| 3 · Derivadas numéricas | Diferencias hacia adelante, hacia atrás y central; error frente a la derivada analítica y análisis del paso h. |
+| 4 · Polinomios | Horner (p y p′), Newton, refinamiento, deflación y fórmula general para el último factor cuadrático; validación con `numpy.roots`. |
+
+| Qué incluye | Detalle |
+| --- | --- |
+| Errores | Se muestran los dos: Eₐ = \|xᵢ₊₁ − xᵢ\| y εₐ(%) = \|(xᵢ₊₁ − xᵢ)/xᵢ₊₁\|·100 (si xᵢ₊₁ = 0, εₐ no se calcula y se usa Eₐ). |
+| Criterio de parada | A elegir: absoluto (Eₐ < ε, decimal) o relativo (εₐ < εs, en %), o Nmax iteraciones. Predeterminados: relativo, 0.0001, Nmax = 50. |
+| Paso a paso | Por iteración: evaluar f y f′ (con la sustitución), aplicar la fórmula, calcular Eₐ y εₐ y decidir si se detiene. |
+| Convergencia | Razones Eₐ,ᵢ₊₁/Eₐ,ᵢ y Eₐ,ᵢ₊₁/Eₐ,ᵢ², orden estimado p (cuadrática, superlineal o lineal; raíz múltiple) y gráfica del error por iteración (escala logarítmica). |
+| Condiciones de fallo | \|f′(xᵢ)\| < 10⁻¹⁰ (no se divide), valores no finitos o \|xᵢ\| > 10¹⁵, aproximaciones fuera del dominio de f. Al final se verifica el residuo \|f(x)\|. |
 | Casos de prueba | 1 · x³ − 2x − 5, x₀ = 2 (convergencia) · 2 · x² − 4, x₀ = 0 (derivada nula) · 3 · x³ − 2x + 2, x₀ = 0 (oscila y agota Nmax). |
+| Ejemplos de la clase | e⁻ˣ − x (4 iteraciones), x¹⁰ − 1 (42), (x − 1)² (14, lineal), secante con cos(x) − x, derivadas de x³ − 2x − 5 y ln(x), polinomios de las tareas 3 y 6. |
 
 SciPy (`scipy.optimize.newton`) solo se usa como contraste opcional cuando el método converge.
 
@@ -531,12 +538,12 @@ Desde la raíz del repositorio (necesita las librerías de `backend/requirements
 
 ```powershell
 python programas/Programa9_GrupoX.py            # menú principal completo → opción 7
-python programas/Programa9_GrupoX.py --directo  # entra directo a Newton-Raphson
+python programas/Programa9_GrupoX.py --directo  # entra directo al módulo
 ```
 
 | Qué | Archivo |
 | --- | --- |
-| **Algoritmo, tabla, gráfica y menú** | **`programas/Programa9_GrupoX.py`** |
+| **Algoritmos, tablas, paso a paso, gráficas y menú** | **`programas/Programa9_GrupoX.py`** |
 | Conexión con el menú de consola (opción 7) | `backend/programa_4/modulos/modulo_newton_raphson.py`, `backend/programa_4/main.py` |
 | Adaptador web y rutas `/api/p9/*` | `backend/calculo/programa9_web.py`, `backend/app/api.py` |
 | Pruebas (pytest) | `backend/pruebas/pruebas_programa9.py` |
@@ -1066,8 +1073,11 @@ http://localhost:8000
 | `POST` | `/api/p7/errores` | Programa 7: error absoluto, relativo y porcentual |
 | `POST` | `/api/p7/propagacion` | Programa 7: propagación del error Δy ≈ f′(x)·Δx |
 | `GET` | `/api/p7/ejemplos` | Programa 7: casos precargados |
-| `POST` | `/api/p9/newton` | Programa 9: Newton-Raphson (tabla, estado, residuo y gráfica) |
-| `GET` | `/api/p9/ejemplos` | Programa 9: casos de prueba y valores predeterminados |
+| `POST` | `/api/p9/newton` | Programa 9: Newton-Raphson (tabla, paso a paso, convergencia y gráficas) |
+| `POST` | `/api/p9/secante` | Programa 9: método de la secante comparado con Newton |
+| `POST` | `/api/p9/derivadas` | Programa 9: derivadas numéricas (adelante, atrás y central) |
+| `POST` | `/api/p9/polinomio` | Programa 9: raíces de polinomios (Horner, Newton y deflación) |
+| `GET` | `/api/p9/ejemplos` | Programa 9: casos de prueba, ejemplos de la clase y valores predeterminados |
 | `GET` | `/docs` | Documentación interactiva de FastAPI |
 
 ---
@@ -1550,7 +1560,7 @@ python "programas/Programa 3_GrupoX.py"
 python programas/Programa7_GrupoX.py
 ```
 
-### Programa 9 (Newton-Raphson en consola)
+### Programa 9 (Newton-Raphson y métodos abiertos en consola)
 
 ```powershell
 python programas/Programa9_GrupoX.py --directo

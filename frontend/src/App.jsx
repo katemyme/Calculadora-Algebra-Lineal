@@ -92,9 +92,9 @@ const PROGRAMAS = {
     etiqueta: "Newton-Raphson",
     resaltado: "Newton-Raphson",
     descripcion:
-      "Aproxima una raíz de f(x) = 0 desde un valor inicial x₀ con rectas tangentes: " +
-      "deriva f con SymPy, controla la derivada nula, el error y la convergencia, y " +
-      "muestra la tabla de iteraciones, el residuo y la gráfica del proceso.",
+      "Aproxima raíces de f(x) = 0 con métodos abiertos: Newton-Raphson paso a paso " +
+      "(error absoluto o relativo y análisis de convergencia), secante, derivadas " +
+      "numéricas y raíces de polinomios con Horner y deflación, con tablas y gráficas.",
   },
 };
 

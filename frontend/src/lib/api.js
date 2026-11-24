@@ -152,3 +152,10 @@ export const programa8 = {
   iterativos: (cuerpo) => enviar("/api/p8/iterativos", cuerpo),
   ejemplos: () => consultar("/api/p8/ejemplos"),
 };
+
+// Programa 9 (botón "Newton-Raphson"): el cálculo lo hace
+// "programas/Programa9_GrupoX.py", a través del backend.
+export const programa9 = {
+  newton: (cuerpo) => enviar("/api/p9/newton", cuerpo),
+  ejemplos: () => consultar("/api/p9/ejemplos"),
+};

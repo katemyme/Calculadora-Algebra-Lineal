@@ -24,6 +24,7 @@ from app.modelos import (
     PeticionIterativosP8,
     PeticionLUP6,
     PeticionMatrices,
+    PeticionNewtonP9,
     PeticionOperacionP5,
     PeticionPosicionalP7,
     PeticionProducto,
@@ -45,6 +46,7 @@ import calculo.programa5_web as p5web
 import calculo.programa6_web as p6web
 import calculo.programa7_web as p7web
 import calculo.programa8_web as p8web
+import calculo.programa9_web as p9web
 import calculo.cramer_web as cramerweb
 import calculo.subespacio_web as subespacioweb
 import calculo.transformaciones_web as tlweb
@@ -318,6 +320,21 @@ def p8_iterativos(peticion: PeticionIterativosP8) -> dict:
 @app.get("/api/p8/ejemplos", summary="Los 3 casos de prueba obligatorios de Jacobi y Gauss-Seidel")
 def p8_ejemplos() -> dict:
     return p8web.ejemplos()
+
+
+# ---------------------------------------------------------------------------
+# Programa 9: Newton-Raphson (el cálculo vive en "programas/Programa9_GrupoX.py")
+# ---------------------------------------------------------------------------
+@app.post("/api/p9/newton", summary="Newton-Raphson: tabla, estado, residuo y gráfica",
+          responses={422: {"model": RespuestaError}})
+def p9_newton(peticion: PeticionNewtonP9) -> dict:
+    return p9web.resolver_newton(peticion.funcion, peticion.x0, peticion.tolerancia,
+                                 peticion.max_iter)
+
+
+@app.get("/api/p9/ejemplos", summary="Casos de prueba de Newton-Raphson")
+def p9_ejemplos() -> dict:
+    return p9web.ejemplos()
 
 @app.exception_handler(ErrorDeEntrada)
 async def manejar_error_de_entrada(_: Request, exc: ErrorDeEntrada) -> JSONResponse:

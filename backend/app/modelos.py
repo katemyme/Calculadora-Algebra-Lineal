@@ -299,3 +299,15 @@ class PeticionIterativosP8(BaseModel):
     tolerancia: str = "1e-4"
     max_iter: str = "50"
     permitir_reordenamiento: bool = True
+
+
+# ---------------------------------------------------------------------------
+# Programa 9 (Newton-Raphson). Los números viajan como texto (admiten pi/2, 1e-4...).
+# ---------------------------------------------------------------------------
+class PeticionNewtonP9(BaseModel):
+    """POST /api/p9/newton. tolerancia = εs en porcentaje."""
+
+    funcion: str
+    x0: str
+    tolerancia: str = "0.0001"
+    max_iter: str = "50"

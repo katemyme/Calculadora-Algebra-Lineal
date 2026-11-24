@@ -17,6 +17,7 @@ import Programa5 from "./components/programa5/Programa5.jsx";
 import ProgramaTransformaciones from "./components/transformaciones/ProgramaTransformaciones.jsx";
 import ProgramaMetodosNumericos from "./components/programa7/ProgramaMetodosNumericos.jsx";
 import ProgramaIterativos from "./components/programa8/ProgramaIterativos.jsx";
+import ProgramaNewtonRaphson from "./components/programa9/ProgramaNewtonRaphson.jsx";
 // PROGRAMA 6: copiar / pegar matrices entre las pestañas de la calculadora.
 import {
   BotonPegarMatriz,
@@ -86,6 +87,14 @@ const PROGRAMAS = {
       "Resuelve sistemas de ecuaciones lineales Ax = b mediante métodos iterativos, " +
       "evalúa dominancia diagonal y reordenamiento de filas, compara convergencia " +
       "y valida los resultados frente a la solución exacta.",
+  },
+  p9: {
+    etiqueta: "Newton-Raphson",
+    resaltado: "Newton-Raphson",
+    descripcion:
+      "Aproxima una raíz de f(x) = 0 desde un valor inicial x₀ con rectas tangentes: " +
+      "deriva f con SymPy, controla la derivada nula, el error y la convergencia, y " +
+      "muestra la tabla de iteraciones, el residuo y la gráfica del proceso.",
   },
 };
 
@@ -295,6 +304,8 @@ export default function App() {
         {programa === "p7" && <ProgramaMetodosNumericos />}
         
         {programa === "p8" && <ProgramaIterativos />}
+
+        {programa === "p9" && <ProgramaNewtonRaphson />}
 
         {programa === "p2" && (
         <>

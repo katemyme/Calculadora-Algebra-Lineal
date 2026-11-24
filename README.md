@@ -506,6 +506,44 @@ instala con `npm install`).
 
 ---
 
+## Programa 9 — Newton-Raphson
+
+Botón **Newton-Raphson** en la web y opción **7** del menú de consola. **Todo el
+módulo está en `programas/Programa9_GrupoX.py`**: lectura y validación de f(x), x₀,
+tolerancia εs (%) y Nmax; derivada simbólica con SymPy; el algoritmo propio
+xᵢ₊₁ = xᵢ − f(xᵢ)/f′(xᵢ); la tabla con Pandas y la gráfica con Matplotlib. La consola
+y la web usan las mismas funciones.
+
+| Qué hace | Detalle |
+| --- | --- |
+| Error aproximado | εa(%) = \|(xᵢ₊₁ − xᵢ)/xᵢ₊₁\|·100; si xᵢ₊₁ = 0 se usa el error absoluto \|xᵢ₊₁ − xᵢ\| (comparado con εs/100). |
+| Criterio de parada | εa ≤ εs o Nmax iteraciones (predeterminados: εs = 0.0001 %, Nmax = 50). |
+| Condiciones de fallo | \|f′(xᵢ)\| < 10⁻¹⁰ (no se divide), valores no finitos o \|xᵢ\| > 10¹⁵ y aproximaciones fuera del dominio de f. |
+| Salida | f(x) y f′(x); tabla i, xᵢ, f(xᵢ), f′(xᵢ), xᵢ₊₁, εa; aproximación (con las cifras que respalda εs), iteraciones, error, residuo \|f(x)\| y estado. |
+| Gráfica | f(x), eje x, rectas tangentes de las primeras iteraciones y aproximaciones (Matplotlib; en la web se muestra como imagen PNG). |
+| Casos de prueba | 1 · x³ − 2x − 5, x₀ = 2 (convergencia) · 2 · x² − 4, x₀ = 0 (derivada nula) · 3 · x³ − 2x + 2, x₀ = 0 (oscila y agota Nmax). |
+
+SciPy (`scipy.optimize.newton`) solo se usa como contraste opcional cuando el método converge.
+
+### Versión de consola
+
+Desde la raíz del repositorio (necesita las librerías de `backend/requirements.txt`):
+
+```powershell
+python programas/Programa9_GrupoX.py            # menú principal completo → opción 7
+python programas/Programa9_GrupoX.py --directo  # entra directo a Newton-Raphson
+```
+
+| Qué | Archivo |
+| --- | --- |
+| **Algoritmo, tabla, gráfica y menú** | **`programas/Programa9_GrupoX.py`** |
+| Conexión con el menú de consola (opción 7) | `backend/programa_4/modulos/modulo_newton_raphson.py`, `backend/programa_4/main.py` |
+| Adaptador web y rutas `/api/p9/*` | `backend/calculo/programa9_web.py`, `backend/app/api.py` |
+| Pruebas (pytest) | `backend/pruebas/pruebas_programa9.py` |
+| Interfaz | `frontend/src/components/programa9/` |
+
+---
+
 ## Requisitos
 
 | Herramienta | Versión | Uso |
@@ -1028,6 +1066,8 @@ http://localhost:8000
 | `POST` | `/api/p7/errores` | Programa 7: error absoluto, relativo y porcentual |
 | `POST` | `/api/p7/propagacion` | Programa 7: propagación del error Δy ≈ f′(x)·Δx |
 | `GET` | `/api/p7/ejemplos` | Programa 7: casos precargados |
+| `POST` | `/api/p9/newton` | Programa 9: Newton-Raphson (tabla, estado, residuo y gráfica) |
+| `GET` | `/api/p9/ejemplos` | Programa 9: casos de prueba y valores predeterminados |
 | `GET` | `/docs` | Documentación interactiva de FastAPI |
 
 ---
@@ -1508,4 +1548,10 @@ python "programas/Programa 3_GrupoX.py"
 
 ```powershell
 python programas/Programa7_GrupoX.py
+```
+
+### Programa 9 (Newton-Raphson en consola)
+
+```powershell
+python programas/Programa9_GrupoX.py --directo
 ```
